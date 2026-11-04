@@ -39,7 +39,10 @@ body{background:var(--paper);color:var(--ink);font-family:var(--body);font-size:
 body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--paper)}
 .wrap{max-width:1080px;margin:0 auto}
 header{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--paper);padding-block:18px 0;border-bottom:1px solid var(--line)}
-.brand{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap}
+.brand{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.segs.mkt{gap:2px;padding:3px;border:1px solid var(--line);border-radius:9px;background:var(--surface)}
+.segs.mkt label.seg span{border:0;padding:5px 12px;font-size:13px;font-weight:600;background:none}
+.segs.mkt label.seg input:checked+span{background:var(--ink);color:var(--paper)}
 .brand h1{font-family:var(--display);font-stretch:78%;font-weight:800;font-size:28px;letter-spacing:-.01em;margin:0;text-wrap:balance}
 .brand h1 span{color:var(--accent)}
 .brand .sub{color:var(--muted);font-size:13px}
@@ -481,6 +484,7 @@ main>*,.panel,.grid2>*,.ov>*{min-width:0}
 <header>
   <div class="brand">
     <h1>Trade <span>Journal</span></h1>
+    <div class="segs mkt" role="radiogroup" aria-label="Market"><label class="seg"><input type="radio" name="mkt" value="fx"><span>Forex</span></label><label class="seg"><input type="radio" name="mkt" value="stocks"><span>Stocks</span></label></div>
     <span class="acct"><span class="sync" id="sync">Starting…</span><button type="button" class="btn small ghost" id="openSettings" aria-label="Settings" title="Settings">⚙</button><button type="button" class="btn small ghost" id="signOut" hidden>Sign out</button></span>
   </div>
   <nav role="tablist">
@@ -664,8 +668,10 @@ const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,8);
 /* ---------- storage: Supabase (one row per doc, private per user) + local cache ---------- */
 let docs=[]; let editingId=null;
 let tab="live", activeProject=null, btOpen=false, editingProj=null, confirmId=null;
-const trades=()=>docs.filter(d=>!d.kind);
-const projects=()=>docs.filter(d=>d.kind==="project").sort((a,b)=>(b.created||0)-(a.created||0));
+let market=(()=>{try{return localStorage.getItem("tj-market")||"fx"}catch{return"fx"}})();
+const mktOf=d=>d.market||"fx";
+const trades=()=>docs.filter(d=>!d.kind&&mktOf(d)===market);
+const projects=()=>docs.filter(d=>d.kind==="project"&&mktOf(d)===market).sort((a,b)=>(b.created||0)-(a.created||0));
 const projName=id=>(docs.find(d=>d.id===id&&d.kind==="project")||{}).name;
 const LS="trade-journal-cache-v1";
 function lsLoad(){try{return JSON.parse(localStorage.getItem(LS)||"[]")}catch{return[]}}
@@ -1257,7 +1263,7 @@ function tableHTML(list,title,showMode){
 function openNewProj(){$("#npForm").reset();$("#newProj").hidden=false;setTimeout(()=>$("#npName").focus(),30)}
 function closeNewProj(){$("#newProj").hidden=true}
 $("#npForm").onsubmit=e=>{e.preventDefault();const name=$("#npName").value.trim();if(!name)return;
-  const p={kind:"project",id:uid(),name,pairs:"",from:"",to:"",method:"",target:null,focus:"",status:"active",created:Date.now()};
+  const p={kind:"project",market,id:uid(),name,pairs:"",from:"",to:"",method:"",target:null,focus:"",status:"active",created:Date.now()};
   closeNewProj();activeProject=p.id;btOpen=true;if(tab!=="backtest")show("backtest");saveDoc(p);toast("Project created")};
 function openProjForm(p){if(!p){openNewProj();return}editingProj=p?p.id:null;const f=$("#projForm");$("#projSheet").hidden=false;delete $("#pDelete").dataset.confirm;
   $("#projFormTitle").textContent=p?"Edit project":"New backtest project";$("#pSave").textContent=p?"Save project":"Start project";$("#pDelete").hidden=!p;$("#pDelete").textContent="Delete project";
@@ -1268,7 +1274,7 @@ $("#newProjBtn").onclick=()=>openProjForm(null);
 $("#pCancel").onclick=closeProjSheet;
 $("#pDelete").onclick=()=>{const b=$("#pDelete");if(b.dataset.confirm){delete b.dataset.confirm;deleteDoc(editingProj);closeProjSheet();activeProject=null;btOpen=false;toast("Project deleted")}else{b.dataset.confirm="1";b.textContent="Really delete? Trades stay, without project"}};
 $("#projForm").onsubmit=e=>{e.preventDefault();const old=docs.find(d=>d.id===editingProj)||{};
-  const p={...old,kind:"project",id:editingProj||uid(),name:$("#pName").value.trim()||"Untitled project",pairs:$("#pPairs").value.trim().toUpperCase(),from:$("#pFrom").value,to:$("#pTo").value,method:$("#pMethod").value,target:$("#pTarget").value?Number($("#pTarget").value):null,focus:$("#pFocus").value.trim(),status:old.status||"active",created:old.created||Date.now()};
+  const p={...old,kind:"project",market:old&&old.market||market,id:editingProj||uid(),name:$("#pName").value.trim()||"Untitled project",pairs:$("#pPairs").value.trim().toUpperCase(),from:$("#pFrom").value,to:$("#pTo").value,method:$("#pMethod").value,target:$("#pTarget").value?Number($("#pTarget").value):null,focus:$("#pFocus").value.trim(),status:old.status||"active",created:old.created||Date.now()};
   activeProject=p.id;btOpen=true;closeProjSheet();saveDoc(p);toast("Project saved")};
 
 /* ---------- trade form ---------- */
@@ -1278,7 +1284,10 @@ const radio=n=>document.querySelector(`input[name="${n}"]:checked`)?.value||"";
 const setRadio=(n,v)=>{document.querySelectorAll(`input[name="${n}"]`).forEach(i=>i.checked=i.value===String(v??""))};
 const num=id=>{const v=$("#"+id).value;return v===""?null:Number(v)};
 function toast(msg){const t=$("#toast");t.textContent=msg;t.classList.add("on");clearTimeout(toast.h);toast.h=setTimeout(()=>t.classList.remove("on"),2200)}
-$("#fab").onclick=()=>{if(tab==="backtest"&&!(btOpen&&activeProject)){openProjForm(null);return}openSheet2()};
+$("#fab").onclick=()=>{if(tab==="backtest"&&!(btOpen&&activeProject)){openProjForm(null);return}if(market==="stocks"){toast("The stocks trade form isn't built yet.");return}openSheet2()};
+document.querySelectorAll('input[name="mkt"]').forEach(i=>{i.checked=i.value===market;i.addEventListener("change",()=>{market=i.value;try{localStorage.setItem("tj-market",market)}catch{};activeProject=null;btOpen=false;selDay=null;calTouched=false;
+  document.documentElement.dataset.market=market;sets=[newSet({mode:"all"})];render();window.scrollTo(0,0)})});
+document.documentElement.dataset.market=market;
 /* ---------- new trade form (rebuild) ---------- */
 seg("seg-f2dir","f2dir",[["long","Long"],["short","Short"]]);
 function f2FillVariant(){const c=$("#f2Concept").value,v=PLAN.concepts[c],sel=$("#f2Variant");
@@ -1367,8 +1376,8 @@ seg("seg-f2status","f2status",[["taken","Taken"],["missed","Missed"]]);
 seg("seg-f2fase","f2fase",[["1","1"],["2","2"],["3","3"],["4","4"]]);
 seg("seg-f2wstruct","f2wstruct",[["inner","Inner"],["outer","Outer"]]);
 
-let f2Mode=null;
-function openSheet2(t,dup){const live=(t?t.mode:formMode())==="live",f=$("#tradeForm2");f.reset();editingId=t?t.id:null;f2Mode=t?t.mode:null;
+let f2Mode=null,f2Market="fx";
+function openSheet2(t,dup){const live=(t?t.mode:formMode())==="live",f=$("#tradeForm2");f.reset();editingId=t?t.id:null;f2Mode=t?t.mode:null;f2Market=t?mktOf(t):market;
   f.classList.toggle("mode-live",live);$("#f2ProjField").hidden=live;
   $("#f2Chip").className="chip "+(live?"live":"bt");$("#f2Chip").textContent=live?"Live":"Backtest";
   $("#f2Title").textContent=(t?"Edit ":"New ")+(live?"live trade":"backtest trade");$("#f2Save").textContent=t?"Save changes":"Save trade";
@@ -1402,7 +1411,7 @@ $("#f2Del").onclick=e=>{const b=e.currentTarget,id=editingId;if(!id)return;
   closeSheet2();deleteDoc(id);toast("Trade deleted")};
 function closeSheet2(){$("#sheet2").hidden=true;document.body.style.overflow="";editingId=null}
 $("#tradeForm2").onsubmit=e=>{e.preventDefault();const old=editingId?docs.find(d=>d.id===editingId):null,mode=old?old.mode:(f2Mode||formMode());
-  const t={id:old?old.id:uid(),mode,project:mode==="backtest"&&$("#f2Project").value!=="none"?$("#f2Project").value:null,status:radio("f2status")||"taken",
+  const t={id:old?old.id:uid(),mode,market:old?mktOf(old):f2Market,project:mode==="backtest"&&$("#f2Project").value!=="none"?$("#f2Project").value:null,status:radio("f2status")||"taken",
     date:$("#f2Date").value,closeDate:$("#f2Close").value,concept:$("#f2Concept").value,fase:radio("f2fase")?Number(radio("f2fase")):null,wStruct:radio("f2wstruct")||"",scaleIn:$("#f2Scale").checked,dMs:radio("f2dms")||"",hMs:radio("f2hms")||"",weekly:wcVals(),sub:$("#f2Variant").value,dailyFib:$("#f2DFib").checked?"ja":"nee",outcome:radio("f2out"),r:num("f2R"),maxR:num("f2MaxR"),evaluation:radio("f2eval"),onPlan:radio("f2eval")?radio("f2eval")==="plan":null,exitReason:$("#f2Exit").value,entry4h:$("#f2Entry").value,planEntry:num("f2PlanEntry"),slPips:num("f2SlPips"),tpPips:num("f2TpPips"),...f2CheckVals(),ecTf:$("#f2Entry").value==="Engulfing Candle"?radio("f2ectf"):"",shots:Object.fromEntries(Object.entries(f2Shots).filter(([,v])=>v&&v!=="uploading")),shotLinks:{...f2Links},pair:$("#f2Pair").value.trim().toUpperCase(),dir:radio("f2dir"),created:Date.now()};
   if(old)t.created=old.created||t.created;saveDoc(old?{...old,...t}:t);if(t.date){calMonth=t.date.slice(0,7);calTouched=true}toast(old?"Changes saved":"Trade saved");closeSheet2()};
 document.addEventListener("keydown",e=>{if(e.key!=="Escape")return;if(!$("#setSheet").hidden){$("#setSheet").hidden=true;return}if(!$("#newProj").hidden){closeNewProj();return}if(!$("#projSheet").hidden){closeProjSheet();return}if(!$("#viewer").hidden){$("#viewer").hidden=true;if($("#sheet2").hidden)document.body.style.overflow="";return}if(!$("#sheet2").hidden)closeSheet2()});
