@@ -1001,7 +1001,7 @@ let SPLITS={
   days:["Days in trade",t=>bucket(daysOpen(t),[1,2,4,8],["Same day","1 day","2 – 3 days","4 – 7 days","8 + days"]),["Same day","1 day","2 – 3 days","4 – 7 days","8 + days"]],
   weekday:["Entry weekday",t=>t.date?["Sun","Mon","Tue","Wed","Thu","Fri","Sat"][new Date(t.date+"T12:00:00").getDay()]:null,["Mon","Tue","Wed","Thu","Fri","Sat","Sun"]],
   month:["Month",t=>t.date?t.date.slice(0,7):null],
-  account:["Account",t=>t.account||null],
+  account:["Account",t=>acKey(t)],
   btmonth:["Backtested in (month)",t=>t.mode==="backtest"&&t.btDate?t.btDate.slice(0,7):null],
   btlag:["Time between trade and backtest",t=>t.mode==="backtest"&&t.btDate&&t.date?bucket(daysBetween(t.date,t.btDate),[30,90,180,365],["< 1 month","1–3 months","3–6 months","6–12 months","1 year +"]):null,["< 1 month","1–3 months","3–6 months","6–12 months","1 year +"]],
   actype:["Account type",t=>ACTYPE[(acOf(t.account)||{}).type]||null,Object.values(ACTYPE)],
@@ -1052,7 +1052,7 @@ let FDEF=[
   ["outcome","Outcome",()=>[["","Any"],["win","Win"],["be","BE"],["loss","Loss"]],t=>t.outcome||(t.r>0?"win":t.r<0?"loss":t.r===0?"be":"")],
   ["eval","Evaluation",()=>[["","Any"],["plan","According to plan"],["technical","Technical error"],["emotional","Emotional error"]],t=>t.evaluation],
   ["exit","Exit",()=>[["","Any"],...PLAN.exits.map(c=>[c,c])],t=>t.exitReason],
-  ["account","Account",()=>[["","Any"],...[...new Set([...accounts(market).map(a=>a.name),...trades().map(t=>t.account)].filter(Boolean))].sort().map(c=>[c,c])],t=>t.account],
+  ["account","Account",()=>[["","Any"],...[...new Set(trades().map(acKey).filter(Boolean))].sort((a,b)=>(a==="Removed account")-(b==="Removed account")||a.localeCompare(b)).map(c=>[c,c])],t=>acKey(t)],
   ["actype","Account type",()=>[["","Any"],...Object.entries(ACTYPE)],t=>(acOf(t.account)||{}).type||""],
 ];
 const FMAIN=["status","fase","pro","con","concept","entry4h","struct","room","pair","dir","outcome","eval"];
@@ -1093,7 +1093,7 @@ const ST_DEFS={
     ["swpat","Weekly pattern",()=>[["","Any"],["BM","BM"],["IHS","IHS"]],t=>t.swPat||""],
     ["exit","Exit strategy used",()=>[["","Any"],...[...new Set([...Object.values(EXITS).flat().map(x=>x[0]),...EXOTHER])].map(x=>[x,x])],(t,v)=>sHows(t).includes(v)],
     ["pair","Ticker",()=>[["","Any"],...[...new Set(trades().map(t=>t.ticker||t.pair).filter(Boolean))].sort().map(c=>[c,c])],t=>t.ticker||t.pair],
-    ["account","Account",()=>[["","Any"],...[...new Set([...accounts(market).map(a=>a.name),...trades().map(t=>t.account)].filter(Boolean))].sort().map(c=>[c,c])],t=>t.account],
+    ["account","Account",()=>[["","Any"],...[...new Set(trades().map(acKey).filter(Boolean))].sort((a,b)=>(a==="Removed account")-(b==="Removed account")||a.localeCompare(b)).map(c=>[c,c])],t=>acKey(t)],
     ["outcome","Outcome",()=>[["","Any"],["win","Win"],["be","BE"],["loss","Loss"]],t=>t.outcome||""],
   ],
   FGROUPS:[["Higher timeframes",["sphase","salign","s12ms","s6ms","s6bm","s3ms","s3room"]],["Monthly & weekly",["s1ms","s1cc","swms","swpat"]],["Context",["status","sstate","pair","account","dates"]],["Result",["outcome","exit"]]],
@@ -1111,7 +1111,7 @@ const ST_DEFS={
     exit:["Exit strategy (each)",t=>sHows(t)],
     hold:["Holding time",t=>t.date&&t.closeDate?bucket(daysBetween(t.date,t.closeDate),[30,90,180,365],["< 1 month","1–3 months","3–6 months","6–12 months","1 year +"]):null,["< 1 month","1–3 months","3–6 months","6–12 months","1 year +"]],
     pair:["Ticker",t=>t.ticker||t.pair||null],
-    account:["Account",t=>t.account||null],
+    account:["Account",t=>acKey(t)],
     status:["Status",t=>t.status==="missed"?"Missed":"Taken",["Taken","Missed"]],
     outcome:["Outcome",t=>({win:"Win",be:"BE",loss:"Loss"})[t.outcome]||null,["Win","BE","Loss"]],
     month:["Entry month",t=>t.date?t.date.slice(0,7):null],
@@ -1356,6 +1356,7 @@ $("#setForm").addEventListener("change",e=>{const n=e.target.name;if(n==="stheme
 matchMedia("(prefers-color-scheme: dark)").addEventListener("change",applySettings);
 /* ---------- trading accounts ---------- */
 const accounts=mk=>docs.filter(d=>d.kind==="account"&&(!mk||(d.market||"fx")===mk)).sort((a,b)=>(acStat(a)==="active"?0:1)-(acStat(b)==="active"?0:1)||a.name.localeCompare(b.name));
+const acKey=t=>{if(!t.account)return null;const have=new Set(accounts(mktOf(t)).map(a=>a.name)),parts=String(t.account).split(/\s*,\s*/).filter(p=>have.has(p));return parts.length?parts.join(", "):"Removed account"};
 const acOf=name=>docs.find(d=>d.kind==="account"&&d.name===name);
 const acRemember=(mk,name)=>{try{localStorage.setItem("tj-lastacct-"+mk,name||"")}catch{}};
 function acFill(sel,mk,cur){const list=accounts(mk).filter(a=>acStat(a)==="active"||a.name===cur);let v=cur;
