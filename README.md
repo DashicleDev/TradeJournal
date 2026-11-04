@@ -1,5 +1,7 @@
 # Trade Journal
 
+**[Open the app → willemdriessen.github.io/TradeJournal](https://willemdriessen.github.io/TradeJournal/)**
+
 Personal trade journal (Archer plan): journal, backtest projects and analysis.
 Static site (GitHub Pages) with Supabase for login, data and screenshots.
 
