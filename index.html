@@ -220,6 +220,9 @@ label.seg input:checked+span{background:var(--accent);border-color:var(--accent)
 .pastehint{display:grid;gap:3px;justify-items:center}
 .linkrow{display:flex;gap:6px;margin-top:6px;align-items:center}
 .shotlink{flex:1;min-width:0;font-size:13px;padding:6px 9px}
+.shotprev{display:block;margin-top:8px;border:1px solid var(--line);border-radius:8px;overflow:hidden;background:var(--paper)}
+.shotprev img{display:block;width:100%;height:auto}
+.shotprev.old{display:grid;gap:6px;padding:6px;overflow:visible}.shotprev.old img{border-radius:6px;cursor:zoom-in}.shotprev.old .btn{justify-self:start}
 .linkrow .btn{flex:none;text-decoration:none}
 .pastehint b{color:var(--accent);font-size:14px}
 .pastehint small{font-size:11px;opacity:.8}
@@ -1276,12 +1279,13 @@ function f2Check(){const v=f2CheckVals(),e=$("#f2Entry").value;
   $("#f2RoomL").hidden=v.room==="";
 }
 function f2Summaries(){f2Check();
-const n=k=>f2Shots[k]&&f2Shots[k]!=="uploading"?" · chart ✓":"";
+const n=k=>(f2Shots[k]&&f2Shots[k]!=="uploading")||f2Links[k]?" · chart ✓":"";
   const f=radio("f2fase"),w=wcVals();delete w.ms;const fo=Object.values(w).filter(v=>v==="for").length,ag=Object.values(w).filter(v=>v==="against").length;
   $("#f2SumW").textContent=[f?"Phase "+f:"",radio("f2wms")?(radio("f2wms")==="for"?"MS ✓":"MS ✗"):"",radio("f2wstruct")?(radio("f2wstruct")==="inner"?"Inner":"Outer")+" structure":"",Object.keys(w).length?`${fo} pro${fo===1?"":"s"} · ${ag} con${ag===1?"":"s"}`:""].filter(Boolean).join(" · ")+n("weekly");
   const msl=n=>radio(n)?(radio(n)==="for"?"MS ✓":"MS ✗"):"";
   $("#f2SumD").textContent=[msl("f2dms"),$("#f2Variant").value,$("#f2DFib").checked?"Fib completion":""].filter(Boolean).join(" · ")+n("daily");
   const e=$("#f2Entry").value,tf=radio("f2ectf");$("#f2SumH").textContent=(radio("f2hms")?msl("f2hms")+(e?" · ":""):"")+(e?e+(e==="Engulfing Candle"&&tf?" · "+tf.toUpperCase():""):"")+(radio("f2struct")&&!$("#f2StructF").hidden?" · "+radio("f2struct").replace("bos","BoS").replace("som","SoM"):"")+[["#f2Room","Room"],["#f2Scale","Scale-in"]].filter(([id])=>$(id).checked&&!$(id).closest("[hidden]")).map(([,l])=>" · "+l).join("")+n("h4")+(e==="Engulfing Candle"?n("ltf").replace("chart","LTF chart"):"")}
+{const _f2s=f2Summaries;f2Summaries=function(){_f2s();["#f2SumW","#f2SumD","#f2SumH"].forEach(id=>{const e=$(id);if(e)e.textContent=e.textContent.replace(/^ · /,"")})}}
 $("#tradeForm2").addEventListener("change",f2Summaries);
 const f2Subs=()=>[...document.querySelectorAll("#f2Analysis details.subsec")];
 function f2SyncChev(){const open=f2Subs().some(d=>d.open);$("#f2Analysis").classList.toggle("subs-closed",!open);$("#f2Analysis .legend-toggle").setAttribute("aria-expanded",String(open))}
@@ -1387,24 +1391,16 @@ async function uploadShot(k,file,store,rerender){
 /* new form: chart screenshots */
 let f2Shots={},f2Active=null,f2Links={};
 const F2SLOTS=[["weekly","#f2ShotW","Weekly chart"],["daily","#f2ShotD","Daily chart"],["h4","#f2ShotH","4H chart"],["ltf","#f2ShotL","1H / 2H chart"]];
-function renderF2Shots(){if(typeof f2Summaries==="function")setTimeout(f2Summaries);F2SLOTS.forEach(([k,sel,l])=>{if(k==="ltf"&&radio("f2ectf"))l=radio("f2ectf").toUpperCase()+" chart";const id=f2Shots[k],up=id==="uploading";
-  $(sel).innerHTML=`<div class="shot ${f2Active===k?"active":""}" data-f2slot="${k}"><span class="eyebrow">${l}</span>
-  <div class="shotbox ${id&&!up?"has":""}" tabindex="0" role="button" aria-label="${l}: click, then paste with ${PKEY}" data-f2box="${k}">${up?"Uploading…":id?`<img src="${shotSrc(id)}" alt="${l}" data-zoom="${id}" data-zlabel="${l}">`:f2Links[k]&&f2Active!==k?`${tvImg(f2Links[k])?`<img class="tvimg" src="${tvImg(f2Links[k])}" alt="${l} (TradingView)" onerror="this.nextElementSibling.hidden=false;this.remove()"><span class="pastehint" hidden>`:`<span class="pastehint">`}<b>TradingView link</b><a href="${esc(f2Links[k])}" target="_blank" rel="noopener">Open chart ↗</a><small>click, then paste to replace</small></span>`:f2Active===k?`<span class="pastehint"><b>Ready to paste</b>Press ${PKEY}</span>`:`<span class="pastehint">Click here, then press ${PKEY}<small>or drop an image</small></span>`}</div>
-  <div class="row"><label class="btn small ghost" for="f2file-${k}">Choose file</label><input type="file" id="f2file-${k}" accept="image/*" hidden data-f2file="${k}">${id&&!up?`<button type="button" class="btn small ghost danger" data-f2del="${k}">Remove</button>`:""}</div>
-  <div class="linkrow"><input type="url" class="shotlink" data-f2link="${k}" value="${esc(f2Links[k]||"")}" placeholder="Paste a TradingView link (optional)" aria-label="${l} link" autocomplete="off" spellcheck="false">${f2Links[k]?`<a class="btn small" href="${esc(f2Links[k])}" target="_blank" rel="noopener">Open ↗</a>`:""}</div></div>`})}
-const f2Up=(k,f)=>{f2Active=k;{const sl=F2SLOTS.find(x=>x[0]===k),dt=sl&&$(sl[1]).closest("details");if(dt)dt.open=true}uploadShot(k,f,f2Shots,renderF2Shots)};
+function renderF2Shots(){if(typeof f2Summaries==="function")setTimeout(f2Summaries);F2SLOTS.forEach(([k,sel,l])=>{if(k==="ltf"&&radio("f2ectf"))l=radio("f2ectf").toUpperCase()+" chart";const id=f2Shots[k],ln=f2Links[k],tv=tvImg(ln);
+  $(sel).innerHTML=`<div class="shot" data-f2slot="${k}"><span class="eyebrow">${l}</span>
+  <div class="linkrow"><input type="url" class="shotlink" data-f2link="${k}" value="${esc(ln||"")}" placeholder="Paste a TradingView link" aria-label="${l} link" autocomplete="off" spellcheck="false">${ln?`<a class="btn small" href="${esc(ln)}" target="_blank" rel="noopener">Open ↗</a>`:""}</div>
+  ${tv?`<a class="shotprev" href="${esc(ln)}" target="_blank" rel="noopener" title="Open in TradingView"><img src="${tv}" alt="${l} (TradingView)" loading="lazy" onerror="this.closest('.shotprev').hidden=true"></a>`:""}
+  ${id&&id!=="uploading"?`<div class="shotprev old"><img src="${shotSrc(id)}" alt="${l}" data-zoom="${id}" data-zlabel="${l}"><button type="button" class="btn small ghost danger" data-f2del="${k}">Remove old screenshot</button></div>`:""}</div>`})}
 F2SLOTS.forEach(([,sel])=>{const c=$(sel);
-  c.addEventListener("click",e=>{const d=e.target.closest("[data-f2del]");if(d){delete f2Shots[d.dataset.f2del];renderF2Shots();return}
-    if(e.target.closest("label,input,button"))return;
-    const sl=e.target.closest("[data-f2slot]");if(sl&&f2Active!==sl.dataset.f2slot){f2Active=sl.dataset.f2slot;renderF2Shots();$(`[data-f2box="${f2Active}"]`).focus()}});
-  c.addEventListener("focusin",e=>{const b=e.target.closest("[data-f2box]");if(b&&f2Active!==b.dataset.f2box){f2Active=b.dataset.f2box;renderF2Shots();$(`[data-f2box="${f2Active}"]`).focus()}});
+  c.addEventListener("click",e=>{const d=e.target.closest("[data-f2del]");if(d){delete f2Shots[d.dataset.f2del];renderF2Shots()}});
   c.addEventListener("input",e=>{const k=e.target.dataset.f2link;if(k){const v=e.target.value.trim();if(v)f2Links[k]=v;else delete f2Links[k]}});
-  c.addEventListener("change",e=>{if(e.target.dataset.f2link){renderF2Shots();return}const k=e.target.dataset.f2file;if(k){f2Up(k,e.target.files[0]);e.target.value=""}});
-  c.addEventListener("dragover",e=>{const b=e.target.closest("[data-f2box]");if(b){e.preventDefault();b.classList.add("drag")}});
-  c.addEventListener("dragleave",e=>{const b=e.target.closest("[data-f2box]");if(b)b.classList.remove("drag")});
-  c.addEventListener("drop",e=>{const b=e.target.closest("[data-f2box]");if(!b)return;e.preventDefault();f2Up(b.dataset.f2box,e.dataTransfer.files[0])})});
-document.addEventListener("paste",e=>{if($("#sheet2").hidden)return;const item=[...(e.clipboardData?.items||[])].find(i=>i.type.startsWith("image/"));if(!item)return;e.preventDefault();
-  const k=f2Active||(F2SLOTS.find(([x,sel])=>!f2Shots[x]&&!$(sel).closest("[hidden]"))||F2SLOTS[0])[0];f2Up(k,item.getAsFile())});
+  c.addEventListener("change",e=>{if(e.target.dataset.f2link)renderF2Shots()});
+  c.addEventListener("paste",e=>{const i=e.target.closest("[data-f2link]");if(i)setTimeout(()=>{i.dispatchEvent(new Event("input",{bubbles:true}));renderF2Shots()},0)})});
 function openViewer(id){const t=docs.find(x=>x.id===id);if(!t)return;viewTrade=t;
   $("#viewerTitle").textContent=`${t.pair||"Trade"} · ${t.date||""}`;
   $("#viewerTabs").innerHTML=LSLOTS.filter(([k])=>hasShot(t,k)).map(([k,l])=>`<label class="seg"><input type="radio" name="vtab" value="${k}" data-vtab="${k}"><span>${l}</span></label>`).join("");
