@@ -830,7 +830,7 @@ const METHOD={blind:"Bar replay, blind",replay:"Bar replay",scroll:"Chart scroll
 const $=s=>document.querySelector(s);
 const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const fmtR=v=>v==null||isNaN(v)?"—":(v>0?"+":"")+(market==="stocks"?v.toFixed(1)+"%":v.toFixed(2)+"R");
-const stLbl=h=>market!=="stocks"?h:h.replace(/Average R\b/g,"Average ROI").replace(/Avg R\b/g,"Avg ROI").replace(/Total R\b/g,"Total ROI").replace(/Cumulative R\b/g,"Cumulative ROI").replace(/the R realised/g,"the ROI realised").replace(/Avg return\b/g,"Avg ROI").replace(/Total return\b/g,"Total ROI").replace(/Start · 0R/g,"Start · 0%").replace(/>R</g,">ROI<").replace(/ At 1% risk, 1R is about 1% of your account\./g,"");
+const stLbl=h=>market!=="stocks"?h:h.replace(/Average R\b/g,"Average ROI").replace(/Avg R\b/g,"Avg ROI").replace(/Total R\b/g,"Total ROI").replace(/Cumulative R\b/g,"Cumulative ROI").replace(/the R realised/g,"the ROI realised").replace(/Avg return\b/g,"Avg ROI").replace(/Total return\b/g,"Total ROI").replace(/Start · 0R/g,"Start · 0%").replace(/R per period/g,"ROI per period").replace(/>R</g,">ROI<").replace(/ At 1% risk, 1R is about 1% of your account\./g,"");
 const fmtP=v=>v==null||isNaN(v)||!isFinite(v)?"—":Math.round(v*100)+"%";
 const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,8);
 
@@ -1282,7 +1282,7 @@ function jvCtx(){if(tab!=="backtest")return{key:"live",list:liveTrades(),cls:"li
     extra:`<div class="projmeta">${p?`${p.method?`<span class="pill ${p.method==="scroll"?"warn":"ok"}">${METHOD[p.method]}</span>`:""}<span>${esc(p.pairs||"All pairs")}${p.from||p.to?` · ${esc(fmtD(p.from)||"…")} – ${esc(fmtD(p.to)||"…")}`:""}</span>${tg?`<span class="projprog"><span class="bar"><i style="width:${Math.min(100,l.length/tg*100)}%"></i></span>${l.length}/${tg} trades</span>`:""}${p.status==="closed"?'<span class="pill">Closed</span>':""}<span class="spacer"></span><button class="btn small" data-editproj="${p.id}">Edit</button><button class="btn small" data-closeproj="${p.id}">${p.status==="closed"?"Reopen":"Close"}</button><button class="btn small ghost danger" data-delproj="${p.id}" data-label="Delete">Delete</button>`:`<span>Older backtest trades without a project</span>`}</div>${p&&p.focus?`<p class="hint" style="margin:0">${esc(p.focus)}</p>`:""}`}}
 function renderLive(){
   const C=jvCtx();jvSwap(C.key);const all=C.list;$("#liveHead").className="desk "+C.cls;
-  if(!calTouched&&all.length&&!all.some(t=>(t.date||"").startsWith(calMonth))){const last=all.map(t=>t.date||"").sort().pop();if(last)calMonth=last.slice(0,7)}
+  if(market!=="stocks"&&!calTouched&&all.length&&!all.some(t=>(t.date||"").startsWith(calMonth))){const last=all.map(t=>t.date||"").sort().pop();if(last)calMonth=last.slice(0,7)}
   const month=all.filter(t=>(t.date||"").startsWith(calMonth));
   const [y,m]=calMonth.split("-").map(Number);
   const days={};taken(month).forEach(t=>{(days[t.date]=days[t.date]||{r:0,n:0,w:0,tr:[]});days[t.date].tr.push(t);days[t.date].r+=t.r;days[t.date].n++;if(t.r>0)days[t.date].w++});
@@ -1312,7 +1312,10 @@ function renderLive(){
     ${jPeriod==="custom"?`<div class="row"><label class="f" style="min-width:150px"><span>From</span><input type="date" id="jFrom" value="${esc(jFrom)}"></label><label class="f" style="min-width:150px"><span>To</span><input type="date" id="jTo" value="${esc(jTo)}"></label></div>`:""}
     <div class="perlabel"><b>${esc(P.label)}</b>${P.from||P.to?`<span>${esc(fmtD(P.from)||"…")} – ${esc(fmtD(P.to)||"…")}</span>`:""}</div>
     ${all.length?"":`<p class="hint" style="margin:0">No trades yet. Tap + to log your first one.</p>`}`;
-  if(market==="stocks"){$("#liveCharts").innerHTML=stocksOverviewHTML(all,per,P);$("#liveCal").innerHTML="";renderNotes(C);
+  if(market==="stocks"){const D=ovData(per.map(sPct));D.o.openN=per.filter(sIsOpen).length;
+    const cg=D.tk.map(t=>({...t,r:capPct(t,sPnl(t))})),useCap=cg.length&&cg.every(t=>t.r!=null);
+    let h=stLbl(overviewHTML(D.tk,D.ps,D.o,P));if(useCap)h=h.replace("Total ROI after each trade","Account growth after each trade").replace("Line going up means you're making money.","Each trade's result as a % of your account size, added up.");
+    $("#liveCharts").innerHTML=h+stocksOverviewHTML(all,per,P);lastTk=useCap?cg:D.tk;fitEquity();$("#liveCal").innerHTML="";renderNotes(C);
     $("#liveTable").innerHTML=tableHTML(per,`Trades · ${P.label}`,false);return}
   $("#liveCharts").innerHTML=overviewHTML(tk,ps,{wins,bes,losses,dd,maxStreak},P);lastTk=tk;fitEquity();
   $("#liveCal").innerHTML=`<div class="panel calblock"><div class="row spread"><div class="calnav"><button class="btn small ghost" data-mon="-1" aria-label="Previous month">‹</button><b>${MONTHS[m-1]} ${y}</b><button class="btn small ghost" data-mon="1" aria-label="Next month">›</button></div>
@@ -1478,12 +1481,13 @@ function overviewHTML(tk,ps,o,P){
   return `<div class="ov">
   <div class="ov-left">
     <div class="tiles">${market==="stocks"?(()=>{const rs=tk.map(t=>t.retPct).filter(v=>v!=null),ar=rs.length?rs.reduce((a,b)=>a+b,0)/rs.length:null,open=trades().filter(t=>t.status!=="missed"&&!t.closeDate).length;
-      const oi=tk.filter(t=>t.openR).length;return `<div class="tile"><span class="eyebrow">Trades</span><b>${n}</b><small class="hint" style="margin:0">${n-oi} closed · ${oi} open</small></div>`+tile("Win rate",fmtP(ps.wr))+tile("Avg return",ar==null?"—":(ar>0?"+":"")+ar.toFixed(1)+"%",ar>0?"pos":ar<0?"neg":"")+tile("Open positions",open)})()
+      const oi=o.openN??tk.filter(t=>t.openR).length,cn=tk.filter(t=>!t.openR).length;return `<div class="tile"><span class="eyebrow">Trades</span><b>${cn+oi}</b><small class="hint" style="margin:0">${cn} closed · ${oi} open</small></div>`+tile("Win rate",fmtP(ps.wr))+plTile(tk)+tile("Avg ROI",fmtR(ps.avg),ps.avg>0?"pos":ps.avg<0?"neg":"")})()
       :tile("Trades",n)+tile("Win rate",fmtP(ps.wr))+tile("Total R",fmtR(ps.total),ps.total>0?"pos":ps.total<0?"neg":"")+tile("Average R",fmtR(ps.avg),ps.avg>0?"pos":ps.avg<0?"neg":"")}</div>
     <div class="panel"><span class="eyebrow">Outcomes</span>
       <div class="bstack" role="img" aria-label="${o.wins} wins, ${o.bes} break-even, ${o.losses} losses">${seg("wins","var(--good)","Win")}${seg("bes","var(--be)","BE")}${seg("losses","var(--bad)","Loss")}</div>
       <div class="blegend"><span><i style="background:var(--good)"></i>Win <b class="num">${o.wins}</b> <em>${Math.round(o.wins/n*100)}%</em></span><span><i style="background:var(--be)"></i>BE <b class="num">${o.bes}</b> <em>${Math.round(o.bes/n*100)}%</em></span><span><i style="background:var(--bad)"></i>Loss <b class="num">${o.losses}</b> <em>${Math.round(o.losses/n*100)}%</em></span></div>
-      <dl class="minis"><div><dt>Profit factor</dt><dd class="num">${ps.pf==null?"—":isFinite(ps.pf)?ps.pf.toFixed(2):"∞"}</dd></div><div><dt>Longest losing streak</dt><dd class="num">${o.maxStreak}</dd></div><div><dt>Avg winner / loser</dt><dd class="num">${fmtR(ps.avgWin)} / ${fmtR(ps.avgLoss)}</dd></div></dl>
+      <dl class="minis">${market==="stocks"?(()=>{const cg=tk.map(t=>capPct(t,sPnl(t))).filter(v=>v!=null),g=cg.length?cg.reduce((a,b)=>a+b,0):null,h=tk.filter(t=>t.date&&t.closeDate).map(t=>daysBetween(t.date,t.closeDate)),ah=h.length?Math.round(h.reduce((a,b)=>a+b,0)/h.length):null;
+        return `<div><dt>Capital growth</dt><dd class="num ${g>0?"pos":g<0?"neg":""}">${g==null?"—":pct(g)}</dd></div><div><dt>Avg hold</dt><dd class="num">${ah==null?"—":ah+" days"}</dd></div>`})():`<div><dt>Profit factor</dt><dd class="num">${ps.pf==null?"—":isFinite(ps.pf)?ps.pf.toFixed(2):"∞"}</dd></div><div><dt>Longest losing streak</dt><dd class="num">${o.maxStreak}</dd></div>`}<div><dt>Avg winner / loser</dt><dd class="num">${fmtR(ps.avgWin)} / ${fmtR(ps.avgLoss)}</dd></div></dl>
     </div>
   </div>
   <div class="panel ov-right">
@@ -1576,6 +1580,9 @@ const capAcct=(t,pnl)=>{const a=acOf(t.account);if(a&&a.currency&&a.currency!==s
 const capPct=(t,pnl)=>{if(pnl==null)return null;{const a=acOf(t.account),cap=a&&(acInit(a)??a.current),v=capAcct(t,pnl);if(v!=null&&cap)return v/cap*100}const c=capOf(t.account,stCur(t),t.sFx);return c?pnl*c.rate/c.cap*100:null};
 const sPnl=t=>t.pnl!=null&&!sIsOpen(t)?t.pnl:(t.sExits||[]).length?(t.sExits||[]).reduce((a,x)=>a+(Number(x.shares)||0)*((Number(x.price)||0)-(Number(t.sEntry)||0)),0):null;
 const pct=v=>v==null?"—":(v>0?"+":"")+v.toFixed(v!==0&&Math.abs(v)<1?2:1)+"%";
+const inAcct=(t,v)=>{const a=acOf(t.account),c=stCur(t);if(v==null)return[c,0];if(!a||!a.currency||a.currency===c)return[c,v];const x=capAcct(t,v);if(x!=null)return[a.currency,x];if(t.sFx)return[a.currency,v*Number(t.sFx)];return[c,v]};
+const plTile=list=>{const by={};list.forEach(t=>{const[c,v]=inAcct(t,sPnl(t));if(sPnl(t)!=null)by[c]=(by[c]||0)+v});const e=Object.entries(by),cl=v=>v>0?"pos":v<0?"neg":"";
+  return `<div class="tile"><span class="eyebrow">Realised P&amp;L</span>${!e.length?"<b>—</b>":e.length>1?e.map(([c,v])=>`<b class="${cl(v)}" style="font-size:18px;line-height:1.25">${esc(fmtMoney(v,c))}</b>`).join(""):`<b class="${cl(e[0][1])}">${esc(fmtMoney(e[0][1],e[0][0]))}</b>`}${e.length>1?`<small class="hint" style="margin:0">${fxBusy?"Loading exchange rates…":"No exchange rates yet"}</small>`:""}</div>`};
 const sSold=t=>(t.sExits||[]).reduce((a,x)=>a+(Number(x.shares)||0),0);
 const sIsOpen=t=>t.status!=="missed"&&!(t.closeDate&&(!Number(t.sShares)||sSold(t)>=Number(t.sShares)));
 const daysBetween=(a,b)=>Math.max(0,Math.round((new Date((b||new Date().toISOString().slice(0,10))+"T12:00:00")-new Date(a+"T12:00:00"))/864e5));
@@ -1595,13 +1602,11 @@ function stocksOverviewHTML(all,per,P){
   const openRows=open.map(t=>{const sh=Number(t.sShares)||0,left=sh-sSold(t),real=(t.sExits||[]).reduce((a,x)=>a+(Number(x.shares)||0)*((Number(x.price)||0)-(Number(t.sEntry)||0)),0);
     return `<tr class="clickrow" data-edit="${t.id}" tabindex="0" title="Open trade"><td class="c-pair"><b>${esc(t.ticker||t.pair||"")}</b></td><td>${esc([t.sPhase?"Phase "+t.sPhase:"",t.swPat||""].filter(Boolean).join(" · ")||"—")}</td>
       <td class="num">${esc(fmtD(t.date)||"")} <span class="hint" style="margin:0">· ${daysBetween(t.date)}d</span></td><td class="r num">${sh?`${left} / ${sh}`:"—"}</td>
-      <td class="r num">${t.sEntry!=null?t.sEntry:"—"}</td><td class="r num ${cls(real)}">${(t.sExits||[]).length?esc(fmtMoney(real,cur(t))):"—"}</td></tr>`}).join("");
+      <td class="r num">${t.sEntry!=null?t.sEntry:"—"}</td><td class="r num ${cls(real)}">${(t.sExits||[]).length?esc(fmtMoney(real,cur(t))):"—"}</td><td class="r">${shotCount(t)?`<button class="camb chico" data-view="${t.id}" title="View charts"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 3v18h18"/><path d="M7 15l4-4 3 3 5-6"/></svg>${shotCount(t)}</button>`:""}</td></tr>`}).join("");
   const bars=closed.map(t=>({v:+(t.retPct||0).toFixed(1),x:t.ticker||t.pair||"",tip:`${t.ticker||""} · ${fmtD(t.closeDate||t.date)} · ${t.retPct!=null?(t.retPct>0?"+":"")+t.retPct.toFixed(2)+"%":"—"} · ${fmtMoney(t.pnl,cur(t))}`}));
-  return `<div class="sov"><div class="panel"><div class="row spread"><div><span class="eyebrow">Now</span><h2>Open positions</h2></div><span class="hint" style="margin:0">${open.length} open</span></div>
-    ${open.length?`<div class="tbl"><table class="opentab"><thead><tr><th>Ticker</th><th>Setup</th><th>Since</th><th class="r">Shares left</th><th class="r">Entry</th><th class="r">Realised so far</th></tr></thead><tbody>${openRows}</tbody></table></div>`:`<p class="hint" style="margin:0">No open positions.</p>`}</div>
-  <div class="panel"><span class="eyebrow">${esc(P.label)}</span><h2>Trades</h2>
-    <div class="stiles"><div class="tile"><span class="eyebrow">Trades</span><b>${closed.length+perOpen.length}</b><small class="hint" style="margin:0">${closed.length} closed · ${perOpen.length} open</small></div><div class="tile"><span class="eyebrow">Win rate</span><b>${w+l?Math.round(w/(w+l)*100)+"%":"—"}</b>${openWin?`<small class="hint" style="margin:0">incl. ${openWin} open in profit</small>`:""}</div>${tile("Avg ROI",avg==null?"—":(avg>0?"+":"")+avg.toFixed(1)+"%",cls(avg))}${(()=>{const xs=closed.concat(perOpen).map(t=>capPct(t,sPnl(t))).filter(v=>v!=null),g=xs.length?xs.reduce((a,b)=>a+b,0):null;return`<div class="tile"><span class="eyebrow">Capital growth</span><b class="${cls(g)}">${g==null?"—":pct(g)}</b><small class="hint" style="margin:0">${g==null?"set account sizes":"of account size, realised"}</small></div>`})()}<div class="tile"><span class="eyebrow">Realised P&amp;L</span>${Object.keys(byCur).length>1?Object.entries(byCur).map(([c,v])=>`<b class="${cls(v)}" style="font-size:18px;line-height:1.25">${esc(fmtMoney(v,c))}</b>`).join(""):`<b class="${cls(pnlSum)}">${esc(pnlTxt)}</b>`}${Object.keys(byCur).length>1?`<small class="hint" style="margin:0">${fxBusy?"Loading exchange rates…":"No exchange rates here yet"}</small>`:""}${perOpen.some(t=>(t.sExits||[]).length)?`<small class="hint" style="margin:0">incl. partial exits</small>`:""}</div>${tile("Avg hold",ah==null?"—":ah+" days")}</div>
-    ${bars.length?`<h3 class="ctitle" style="margin-top:16px">ROI per closed trade</h3>${barChart(bars,{label:"ROI per closed trade, in percent",narrow:innerWidth<640,wide:true,fmt:v=>(v>0?"+":"")+(+v.toFixed(1))+"%"})}`:`<p class="hint" style="margin:12px 0 0">No closed trades in this period yet.</p>`}</div></div>`}
+  return `<div class="sov" style="margin-top:16px"><div class="panel"><div class="row spread"><div><span class="eyebrow">Now</span><h2>Open positions</h2></div><span class="hint" style="margin:0">${open.length} open</span></div>
+    ${open.length?`<div class="tbl"><table class="opentab"><thead><tr><th>Ticker</th><th>Setup</th><th>Since</th><th class="r">Shares left</th><th class="r">Entry</th><th class="r">Realised so far</th><th></th></tr></thead><tbody>${openRows}</tbody></table></div>`:`<p class="hint" style="margin:0">No open positions.</p>`}</div>
+</div>`}
 function stockTableHTML(list,title){
   list=list.slice().sort((a,b)=>(b.date||"").localeCompare(a.date||"")||(b.created||0)-(a.created||0));
   const cls=v=>v>0?"pos":v<0?"neg":"";
@@ -1763,12 +1768,12 @@ $("#stockForm").onsubmit=e=>{e.preventDefault();const old=sEditing?docs.find(d=>
     if(c&&xs.length&&c.left<=0){t.r=c.r!=null?+c.r.toFixed(2):null;t.pnl=+c.pnl.toFixed(2);t.retPct=c.ret!=null?+c.ret.toFixed(2):null;t.outcome=c.pnl>0?"win":c.pnl<0?"loss":"be";
       if(!t.closeDate)t.closeDate=xs.map(x=>x.date).filter(Boolean).sort().pop()||""}
     else{t.r=null;t.pnl=c&&xs.length?+c.pnl.toFixed(2):null;t.retPct=null;t.outcome=""}}
-  saveDoc(t);fxFill(t).then(nt=>{if(nt)saveDoc(nt)});acRemember("stocks",t.account);if(t.date){calMonth=t.date.slice(0,7);calTouched=true}toast(old?"Changes saved":"Trade saved");closeStock()};
+  saveDoc(t);fxFill(t).then(nt=>{if(nt)saveDoc(nt)});acRemember("stocks",t.account);if(t.date&&!old){calMonth=t.date.slice(0,7);calTouched=true}toast(old?"Changes saved":"Trade saved");closeStock()};
 $("#sDup").onclick=()=>{const id=sEditing;if(!id)return;closeStock();dupTrade(id)};
 $("#sDel").onclick=e=>{const b=e.currentTarget,id=sEditing;if(!id)return;
   if(!b.dataset.armed){b.dataset.armed="1";b.textContent="Click again to delete";setTimeout(()=>{if(b.dataset.armed){delete b.dataset.armed;b.textContent="Delete"}},3000);return}
   closeStock();deleteDoc(id);toast("Trade deleted")};
-document.querySelectorAll('input[name="mkt"]').forEach(i=>{i.checked=i.value===market;i.addEventListener("change",()=>{market=i.value;try{localStorage.setItem("tj-market",market)}catch{};{const st=getSet();jPeriod=(market==="stocks"?st.periodSt:st.period)||"month";jFrom="";jTo=""}activeProject=null;btOpen=false;selDay=null;calTouched=false;
+document.querySelectorAll('input[name="mkt"]').forEach(i=>{i.checked=i.value===market;i.addEventListener("change",()=>{market=i.value;try{localStorage.setItem("tj-market",market)}catch{};{const st=getSet();jPeriod=(market==="stocks"?st.periodSt:st.period)||"month";jFrom="";jTo=""}activeProject=null;btOpen=false;selDay=null;calTouched=false;calMonth=new Date().toISOString().slice(0,7);
   document.documentElement.dataset.market=market;useMarketDefs();sets=[newSet({mode:"all"})];render();window.scrollTo(0,0)})});
 document.documentElement.dataset.market=market;useMarketDefs();
 /* ---------- new trade form (rebuild) ---------- */
@@ -1901,7 +1906,7 @@ function closeSheet2(){$("#sheet2").hidden=true;document.body.style.overflow="";
 $("#tradeForm2").onsubmit=e=>{e.preventDefault();const old=editingId?docs.find(d=>d.id===editingId):null,mode=old?old.mode:(f2Mode||formMode());
   const t={id:old?old.id:uid(),mode,market:old?mktOf(old):f2Market,project:mode==="backtest"&&$("#f2Project").value!=="none"?$("#f2Project").value:null,status:$("#f2Missed").checked?"missed":"taken",account:$("#f2Account").value,btDate:mode==="backtest"?($("#f2BtDate").value||todayISO()):null,
     date:$("#f2Date").value,closeDate:$("#f2Close").value,concept:$("#f2Concept").value,fase:radio("f2fase")?Number(radio("f2fase")):null,wStruct:radio("f2wstruct")||"",scaleIn:$("#f2Scale").checked,dMs:radio("f2dms")||"",hMs:radio("f2hms")||"",weekly:wcVals(),sub:$("#f2Variant").value,dailyFib:$("#f2DFib").checked?"ja":"nee",outcome:radio("f2out"),r:num("f2R"),maxR:num("f2MaxR"),evaluation:radio("f2eval"),onPlan:radio("f2eval")?radio("f2eval")==="plan":null,exitReason:$("#f2Exit").value,entry4h:$("#f2Entry").value,planEntry:num("f2PlanEntry"),slPips:num("f2SlPips"),tpPips:num("f2TpPips"),...f2CheckVals(),ecTf:$("#f2Entry").value==="Engulfing Candle"?radio("f2ectf"):"",shots:Object.fromEntries(Object.entries(f2Shots).filter(([,v])=>v&&v!=="uploading")),shotLinks:{...f2Links},pair:$("#f2Pair").value.trim().toUpperCase(),dir:radio("f2dir"),created:Date.now()};
-  if(old)t.created=old.created||t.created;saveDoc(old?{...old,...t}:t);acRemember("fx",t.account);if(t.date){calMonth=t.date.slice(0,7);calTouched=true}toast(old?"Changes saved":"Trade saved");closeSheet2()};
+  if(old)t.created=old.created||t.created;saveDoc(old?{...old,...t}:t);acRemember("fx",t.account);if(t.date&&!old){calMonth=t.date.slice(0,7);calTouched=true}toast(old?"Changes saved":"Trade saved");closeSheet2()};
 document.addEventListener("keydown",e=>{if(e.key!=="Escape")return;if(!$("#sheetS").hidden){closeStock();return}if(!$("#setSheet").hidden){$("#setSheet").hidden=true;return}if(!$("#newProj").hidden){closeNewProj();return}if(!$("#projSheet").hidden){closeProjSheet();return}if(!$("#viewer").hidden){$("#viewer").hidden=true;if($("#sheet2").hidden)document.body.style.overflow="";return}if(!$("#sheet2").hidden)closeSheet2()});
 
 /* ---------- chart screenshots ---------- */
