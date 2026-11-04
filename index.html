@@ -1586,7 +1586,8 @@ function stocksOverviewHTML(all,per,P){
   const openWin=per.filter(t=>sIsOpen(t)&&(t.sExits||[]).length&&realised(t)>0).length;
   const w=closed.filter(t=>t.pnl>0).length+openWin,l=closed.filter(t=>t.pnl<0).length,rets=closed.map(t=>t.retPct).filter(v=>v!=null);
   const perOpen=per.filter(sIsOpen);
-  const avg=rets.length?rets.reduce((a,b)=>a+b,0)/rets.length:null,byCur={};closed.forEach(t=>{byCur[cur(t)]=(byCur[cur(t)]||0)+t.pnl});perOpen.forEach(t=>{if((t.sExits||[]).length)byCur[cur(t)]=(byCur[cur(t)]||0)+realised(t)});
+  const inAcct=(t,v)=>{const a=acOf(t.account),c=stCur(t);if(!a||!a.currency||a.currency===c)return[c,v];const x=capAcct(t,v);if(x!=null)return[a.currency,x];if(t.sFx)return[a.currency,v*Number(t.sFx)];return[c,v]};
+  const avg=rets.length?rets.reduce((a,b)=>a+b,0)/rets.length:null,byCur={},add=([c,v])=>{byCur[c]=(byCur[c]||0)+v};closed.forEach(t=>add(inAcct(t,t.pnl)));perOpen.forEach(t=>{if((t.sExits||[]).length)add(inAcct(t,realised(t)))});
   const pnlTxt=Object.keys(byCur).length?Object.entries(byCur).map(([c,v])=>fmtMoney(v,c)).join(" · "):"—",pnlSum=Object.values(byCur).reduce((a,b)=>a+b,0);
   const hold=closed.filter(t=>t.date&&t.closeDate).map(t=>daysBetween(t.date,t.closeDate)),ah=hold.length?Math.round(hold.reduce((a,b)=>a+b,0)/hold.length):null;
   const tile=(lab,v,c="")=>`<div class="tile"><span class="eyebrow">${lab}</span><b class="${c}">${v}</b></div>`;
