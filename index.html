@@ -341,6 +341,12 @@ fieldset.subs-closed .legend-toggle .chev{transform:none}
 .db{height:16px;background:var(--soft);border-radius:4px;overflow:hidden}
 .db i{display:block;height:100%;border-radius:0 4px 4px 0;min-width:0}
 .dn{text-align:right}
+.swatches{display:flex;gap:10px;flex-wrap:wrap}
+.swatches label{position:relative;cursor:pointer}
+.swatches input{position:absolute;opacity:0;pointer-events:none}
+.swatches span{display:block;width:32px;height:32px;border-radius:50%;border:2px solid var(--surface);box-shadow:0 0 0 1px var(--line)}
+.swatches input:checked+span{box-shadow:0 0 0 2px var(--ink)}
+.swatches input:focus-visible+span{outline:2px solid var(--ink);outline-offset:3px}
 .np-inner{width:min(100%,440px);margin-top:12vh;border-radius:14px;padding:20px}
 .np-inner form{display:grid;gap:14px}
 .np-inner h3{margin:0;font-family:var(--display);font-stretch:85%;font-size:20px}
@@ -475,7 +481,7 @@ main>*,.panel,.grid2>*,.ov>*{min-width:0}
 <header>
   <div class="brand">
     <h1>Trade <span>Journal</span></h1>
-    <span class="acct"><span class="sync" id="sync">Starting…</span><button type="button" class="btn small ghost" id="signOut" hidden>Sign out</button></span>
+    <span class="acct"><span class="sync" id="sync">Starting…</span><button type="button" class="btn small ghost" id="openSettings" aria-label="Settings" title="Settings">⚙</button><button type="button" class="btn small ghost" id="signOut" hidden>Sign out</button></span>
   </div>
   <nav role="tablist">
     <button role="tab" data-tab="live" aria-selected="true"><span class="dot"></span>Journal <span class="count" id="cLive"></span></button>
@@ -604,6 +610,14 @@ main>*,.panel,.grid2>*,.ov>*{min-width:0}
   <div class="formbar"><button type="submit" class="btn" id="f2Save">Save trade</button><button type="button" class="btn ghost" data-closesheet2>Cancel</button><span class="spacer"></span><button type="button" class="btn ghost" id="f2Dup" hidden>Duplicate</button><button type="button" class="btn ghost danger" id="f2Del" hidden>Delete</button></div>
 </form>
 </div></div>
+<div class="sheet" id="setSheet" hidden><div class="scrim" data-closeset></div><div class="sheet-inner np-inner" role="dialog" aria-modal="true" aria-labelledby="setTitle">
+<form id="setForm" autocomplete="off"><h3 id="setTitle">Settings</h3>
+<div class="f"><span>Theme</span><div class="segs" id="seg-stheme"></div></div>
+<div class="f"><span>Accent colour</span><div class="swatches" id="sAccent" role="radiogroup" aria-label="Accent colour"></div></div>
+<div class="f"><span>Journal opens on</span><div class="segs" id="seg-speriod"></div></div>
+<p class="hint" style="margin:0">Saved to your account, so your phone and PC look the same.</p>
+<div class="row" style="justify-content:flex-end"><button type="button" class="btn ghost" data-closeset>Done</button></div></form>
+</div></div>
 <div class="sheet" id="newProj" hidden><div class="scrim" data-closenp></div><div class="sheet-inner np-inner" role="dialog" aria-modal="true" aria-labelledby="npTitle">
 <form id="npForm" autocomplete="off"><h3 id="npTitle">New backtest project</h3>
 <label class="f"><span>Name</span><input type="text" id="npName" required maxlength="80"></label>
@@ -650,7 +664,7 @@ const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,8);
 /* ---------- storage: Supabase (one row per doc, private per user) + local cache ---------- */
 let docs=[]; let editingId=null;
 let tab="live", activeProject=null, btOpen=false, editingProj=null, confirmId=null;
-const trades=()=>docs.filter(d=>d.kind!=="project");
+const trades=()=>docs.filter(d=>!d.kind);
 const projects=()=>docs.filter(d=>d.kind==="project").sort((a,b)=>(b.created||0)-(a.created||0));
 const projName=id=>(docs.find(d=>d.id===id&&d.kind==="project")||{}).name;
 const LS="trade-journal-cache-v1";
@@ -1058,6 +1072,30 @@ function renderLive(){
   $("#liveTable").innerHTML=tableHTML(list,selDay?`Trades on ${dd2.getDate()} ${MONTHS[dd2.getMonth()]}`:`Trades · ${P.label}`,false).replace('<div class="row"><button class="btn small" data-export>',`<div class="row">${selDay?'<button class="btn small" data-day="">Back to period</button>':""}<button class="btn small" data-export>`);
 }
 let jPeriod="month",jFrom="",jTo="";
+/* ---------- settings (look) ---------- */
+const ACCENTS=[["blue","Blue","#2230d6","#8590ff"],["violet","Violet","#6b3fd4","#a98bff"],["teal","Teal","#0f7f86","#45c4c9"],["green","Green","#1f7a46","#5cc98a"],["rose","Rose","#b8326a","#f07aa8"],["slate","Slate","#3b4664","#a3acc6"]];
+const SKEY="tj-look";
+const getSet=()=>{const d=docs.find(x=>x.id==="settings");let l={};try{l=JSON.parse(localStorage.getItem(SKEY)||"{}")}catch{}return{theme:"system",accent:"blue",period:"month",...l,...(d||{})}};
+let _periodApplied=false;
+function applySettings(){const st=getSet(),r=document.documentElement;
+  if(st.theme==="system")delete r.dataset.theme;else r.dataset.theme=st.theme;
+  const a=ACCENTS.find(x=>x[0]===st.accent)||ACCENTS[0];
+  const dark=st.theme==="dark"||(st.theme==="system"&&matchMedia("(prefers-color-scheme: dark)").matches);
+  const c=dark?a[3]:a[2];r.style.setProperty("--accent",c);r.style.setProperty("--bt",c);
+  const m=document.querySelector('meta[name="theme-color"]');if(m)m.content=dark?"#141a2e":"#f2f3f8";
+  if(!_periodApplied&&st.period){jPeriod=st.period;_periodApplied=true}
+  try{localStorage.setItem(SKEY,JSON.stringify({theme:st.theme,accent:st.accent,period:st.period}))}catch{}}
+function saveSetting(k,v){const cur=docs.find(x=>x.id==="settings")||{id:"settings",kind:"settings"};const nd={...cur,[k]:v};
+  if(k==="period")jPeriod=v;saveDoc(nd);applySettings()}
+seg("seg-stheme","stheme",[["system","System"],["light","Light"],["dark","Dark"]]);
+seg("seg-speriod","speriod",[["week","Week"],["month","Month"],["quarter","Quarter"],["year","Year"],["all","All time"]]);
+$("#sAccent").innerHTML=ACCENTS.map(([k,l,c])=>`<label title="${l}"><input type="radio" name="saccent" value="${k}" aria-label="${l}"><span style="background:${c}"></span></label>`).join("");
+function openSettings(){const st=getSet();setRadio("stheme",st.theme);setRadio("saccent",st.accent);setRadio("speriod",st.period);$("#setSheet").hidden=false}
+$("#openSettings").onclick=openSettings;
+document.querySelectorAll("[data-closeset]").forEach(b=>b.onclick=()=>{$("#setSheet").hidden=true});
+$("#setForm").addEventListener("change",e=>{const n=e.target.name;if(n==="stheme")saveSetting("theme",e.target.value);else if(n==="saccent")saveSetting("accent",e.target.value);else if(n==="speriod")saveSetting("period",e.target.value)});
+matchMedia("(prefers-color-scheme: dark)").addEventListener("change",applySettings);
+applySettings();
 const fmtD=d=>{if(!d)return "";const x=new Date(d+"T12:00:00");return `${x.getDate()} ${MONTHS[x.getMonth()].slice(0,3)} ${x.getFullYear()}`};
 const isoD=x=>`${x.getFullYear()}-${String(x.getMonth()+1).padStart(2,"0")}-${String(x.getDate()).padStart(2,"0")}`;
 function jRange(){const [y,m]=calMonth.split("-").map(Number),now=new Date();
@@ -1360,7 +1398,7 @@ $("#tradeForm2").onsubmit=e=>{e.preventDefault();const old=editingId?docs.find(d
   const t={id:old?old.id:uid(),mode,project:mode==="backtest"&&$("#f2Project").value!=="none"?$("#f2Project").value:null,status:radio("f2status")||"taken",
     date:$("#f2Date").value,closeDate:$("#f2Close").value,concept:$("#f2Concept").value,fase:radio("f2fase")?Number(radio("f2fase")):null,wStruct:radio("f2wstruct")||"",scaleIn:$("#f2Scale").checked,dMs:radio("f2dms")||"",hMs:radio("f2hms")||"",weekly:wcVals(),sub:$("#f2Variant").value,dailyFib:$("#f2DFib").checked?"ja":"nee",outcome:radio("f2out"),r:num("f2R"),maxR:num("f2MaxR"),evaluation:radio("f2eval"),onPlan:radio("f2eval")?radio("f2eval")==="plan":null,exitReason:$("#f2Exit").value,entry4h:$("#f2Entry").value,planEntry:num("f2PlanEntry"),slPips:num("f2SlPips"),tpPips:num("f2TpPips"),...f2CheckVals(),ecTf:$("#f2Entry").value==="Engulfing Candle"?radio("f2ectf"):"",shots:Object.fromEntries(Object.entries(f2Shots).filter(([,v])=>v&&v!=="uploading")),shotLinks:{...f2Links},pair:$("#f2Pair").value.trim().toUpperCase(),dir:radio("f2dir"),created:Date.now()};
   if(old)t.created=old.created||t.created;saveDoc(old?{...old,...t}:t);if(t.date){calMonth=t.date.slice(0,7);calTouched=true}toast(old?"Changes saved":"Trade saved");closeSheet2()};
-document.addEventListener("keydown",e=>{if(e.key!=="Escape")return;if(!$("#newProj").hidden){closeNewProj();return}if(!$("#projSheet").hidden){closeProjSheet();return}if(!$("#viewer").hidden){$("#viewer").hidden=true;if($("#sheet2").hidden)document.body.style.overflow="";return}if(!$("#sheet2").hidden)closeSheet2()});
+document.addEventListener("keydown",e=>{if(e.key!=="Escape")return;if(!$("#setSheet").hidden){$("#setSheet").hidden=true;return}if(!$("#newProj").hidden){closeNewProj();return}if(!$("#projSheet").hidden){closeProjSheet();return}if(!$("#viewer").hidden){$("#viewer").hidden=true;if($("#sheet2").hidden)document.body.style.overflow="";return}if(!$("#sheet2").hidden)closeSheet2()});
 
 /* ---------- chart screenshots ---------- */
 const SLOTS=[["weekly","Weekly"],["daily","Daily"],["h4","4H"],["ltf","1H/2H"]];
@@ -1512,7 +1550,7 @@ document.addEventListener("click",e=>{const el=e.target.closest("[data-go],[data
   else if(d.rmset){if(sets.length>1){sets=sets.filter(x=>x.id!==d.rmset);renderAnalyze()}}
   else if(d.resetset){const st=sets.find(x=>x.id===d.resetset);if(st){st.f=blankSet("all");renderAnalyze()}}
 });
-function render(){
+function render(){applySettings();
   $("#cLive").textContent=liveTrades().length||"";$("#cBt").textContent=btTrades().length||"";
   if(tab==="analyze")renderAnalyze();else if(tab==="live")renderLive();else renderBacktest();
 }
