@@ -676,8 +676,12 @@ let ME=null;
 docs=lsLoad();
 function setSync(t){$("#sync").textContent=t}
 const row=t=>({user_id:ME,id:t.id,data:t,updated_at:new Date().toISOString()});
-async function dbPut(t){lsSave();if(!ME)return;const{error}=await SB.from("docs").upsert(row(t));setSync(error?"Save failed: "+(error.message||error.code||"error"):"Synced");if(error)console.warn(error)}
-async function dbPutMany(list){lsSave();if(!ME)return;for(let i=0;i<list.length;i+=200){const{error}=await SB.from("docs").upsert(list.slice(i,i+200).map(row));if(error){setSync("Save failed: "+(error.message||error.code||"error"));console.warn(error);return}}setSync("Synced")}
+const PK="trade-journal-pending-v1";
+const pending=new Set((()=>{try{return JSON.parse(localStorage.getItem(PK)||"[]")}catch{return[]}})());
+const savePending=()=>{try{localStorage.setItem(PK,JSON.stringify([...pending]))}catch{}};
+const markPending=(ids,on)=>{ids.forEach(id=>on?pending.add(id):pending.delete(id));savePending()};
+async function dbPut(t){markPending([t.id],true);lsSave();if(!ME)return;const{error}=await SB.from("docs").upsert(row(t));if(!error)markPending([t.id],false);setSync(error?"Save failed: "+(error.message||error.code||"error"):"Synced");if(error)console.warn(error)}
+async function dbPutMany(list){markPending(list.map(t=>t.id),true);lsSave();if(!ME)return;for(let i=0;i<list.length;i+=200){const part=list.slice(i,i+200);const{error}=await SB.from("docs").upsert(part.map(row));if(!error)markPending(part.map(t=>t.id),false);if(error){setSync("Save failed: "+(error.message||error.code||"error"));console.warn(error);return}}setSync("Synced")}
 async function dbDel(id){lsSave();if(!ME)return;const{error}=await SB.from("docs").delete().eq("user_id",ME).eq("id",id);if(error)console.warn(error)}
 async function saveDoc(t){const i=docs.findIndex(x=>x.id===t.id);if(i>=0)docs[i]=t;else docs.push(t);render();await dbPut(t)}
 async function deleteDoc(id){docs=docs.filter(t=>t.id!==id);render();await dbDel(id)}
@@ -685,7 +689,10 @@ async function loadAll(){let all=[],from=0;for(;;){const{data,error}=await SB.fr
 function upsertLocal(t){const i=docs.findIndex(d=>d.id===t.id);if(i>=0)docs[i]=t;else docs.push(t)}
 async function startSession(user){if(ME===user.id)return;ME=user.id;$("#auth").hidden=true;$("#signOut").hidden=false;$("#signOut").title=user.email||"";
   setSync("Connecting…");
-  try{docs=await loadAll();lsSave();await refreshShotUrls();setSync("Synced")}catch(e){console.warn(e);setSync("Can't reach database: "+((e&&(e.message||e.code))||"unknown error"));$("#sync").title=JSON.stringify(e)}
+  try{const server=await loadAll(),local=docs.slice();
+    const keep=local.filter(l=>pending.has(l.id));
+    docs=server.filter(s=>!keep.some(k=>k.id===s.id)).concat(keep);
+    lsSave();if(keep.length)await dbPutMany(keep);await refreshShotUrls();if(!keep.length)setSync("Synced")}catch(e){console.warn(e);setSync("Can't reach database: "+((e&&(e.message||e.code))||"unknown error"));$("#sync").title=JSON.stringify(e)}
   render();
   SB.channel("docs-"+ME)
     .on("postgres_changes",{event:"INSERT",schema:"public",table:"docs",filter:"user_id=eq."+ME},async p=>{const t={...p.new.data,id:p.new.id};upsertLocal(t);await ensureShotUrls([t]);lsSave();render()})
