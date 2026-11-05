@@ -779,6 +779,8 @@ main>*,.panel,.grid2>*,.ov>*{min-width:0}
         <div class="f"><span>Weekly phase</span><div class="segs" id="seg-f2fase"></div></div>
         <div class="f"><span>Inner / outer</span><div class="segs" id="seg-f2wstruct"></div></div>
         <div class="f"><span>Market structure</span><div class="mstf" role="radiogroup" aria-label="Weekly market structure"><label class="seg msok"><input type="radio" name="f2wms" value="for"><span>✓ With</span></label><label class="seg msno"><input type="radio" name="f2wms" value="against"><span>✗ Against</span></label></div></div>
+        <label class="f"><span>Weekly pattern</span><select id="f2WPat"><option value="">No pattern</option><option>Continuation</option><option>Reversal</option><option>Pattern in Pattern</option></select></label>
+        <label class="f" id="f2WPatSubF" hidden><span>Pattern variant <em class="opt">optional</em></span><select id="f2WPatSub"></select></label>
       </div>
       <div class="fields" style="margin-top:14px">
         <div class="f"><span id="f2ProsLbl">Pros</span><div class="ms" id="f2Pros" data-kind="for"></div></div>
@@ -1053,7 +1055,7 @@ function findings(bt,lv,S,T){
   if(f.length===(T.n<30?1:0))f.push(["good","No clear leak found","Backtest and live are close on the measured points. Keep logging."]);
   return f;
 }
-const WLAB=k=>({ms:"Market structure",trend:"Market trend",fibc:"FC",fiba:"Fib active",ic:"IC",pattern:"Pattern",whl:"Weekly high / low",sd:"S&D zone",lcc:"Last CC",pz:"Proven zone"})[k]||k;
+const WLAB=k=>({ms:"Market structure",trend:"Market trend",fibc:"FC",fiba:"Fib active",ic:"IC",pattern:"Pattern",whl:"High / Low",sd:"S&D zone",lcc:"Last CC",pz:"Proven zone"})[k]||k;
 const WKEYS=["ms","trend","fibc","fiba","ic","pattern","whl","sd","pz","lcc"];
 const structOf=t=>t.struct||(t.bos==="ja"?"bos":t.bos==="nee"&&(t.entry4h==="Reversal"||t.entry4h==="Continuation")?"som":"");
 const rrOf=t=>t.slPips>0&&t.tpPips!=null?t.tpPips/t.slPips:null;
@@ -1061,6 +1063,8 @@ const daysOpen=t=>t.date&&t.closeDate?Math.round((new Date(t.closeDate)-new Date
 const bucket=(v,edges,labels)=>{if(v==null||isNaN(v))return null;for(let i=0;i<edges.length;i++)if(v<edges[i])return labels[i];return labels[labels.length-1]};
 let SPLITS={
   fase:["Weekly phase",t=>t.fase?"Phase "+t.fase:null,["Phase 1","Phase 2","Phase 3","Phase 4"]],
+  wpat:["Weekly pattern",t=>t.wPat||null,["Continuation","Reversal","Pattern in Pattern"]],
+  wpatsub:["Weekly pattern variant",t=>t.wPat&&t.wPatSub?t.wPat+" · "+t.wPatSub:null],
   wstruct:["Weekly structure",t=>t.wStruct==="inner"?"Inner":t.wStruct==="outer"?"Outer":null,["Inner","Outer"]],
   wms:["Weekly market structure",t=>{const v=(t.weekly||{}).ms;return v==="for"?"With":v==="against"?"Against":null},["With","Against"]],
   dpro:["Daily pros (each pro)",t=>dProsOf(t).map(k=>(DCRIT.find(c=>c[0]===k)||[,k])[1]),DCRIT.map(c=>c[1])],
@@ -1103,8 +1107,8 @@ function splitRowsN(lists,key){
   const keys=[...new Set(taken(lists.flat()).flatMap(vals))].sort((x,y)=>order&&order.includes(x)&&order.includes(y)?order.indexOf(x)-order.indexOf(y):String(x).localeCompare(y));
   return keys.map(k=>({k,st:lists.map(l=>stats(l.filter(t=>vals(t).includes(k))))}));
 }
-const blankSet=mode=>({mode,grade:"",project:"all",status:"",actype:"",fase:"",wstruct:"",wms:"",scale:"",align:"",dms:"",hms:"",pro:"",con:"",concept:"",sub:"",dfib:"",dpro:"",entry4h:"",struct:"",room:"",ectf:"",pair:"",dir:"",outcome:"",eval:"",exit:"",account:"",from:"",to:""});
-let SPLITGROUPS=[["Weekly",["fase","wstruct","wms","align","wpro","wcon","wscore"]],["Daily",["dms","concept","sub","dpro"]],["4H",["hms","entry4h","struct","room","scale","ectf","rr","sl"]],["Context",["grade","score","pair","dir","status","weekday","month","account","actype","project","btmonth","btlag"]],["Result",["outcome","evaluation","exit","maxr","days"]]];
+const blankSet=mode=>({mode,grade:"",wpat:"",project:"all",status:"",actype:"",fase:"",wstruct:"",wms:"",scale:"",align:"",dms:"",hms:"",pro:"",con:"",concept:"",sub:"",dfib:"",dpro:"",entry4h:"",struct:"",room:"",ectf:"",pair:"",dir:"",outcome:"",eval:"",exit:"",account:"",from:"",to:""});
+let SPLITGROUPS=[["Weekly",["fase","wpat","wpatsub","wstruct","wms","align","wpro","wcon","wscore"]],["Daily",["dms","concept","sub","dpro"]],["4H",["hms","entry4h","struct","room","scale","ectf","rr","sl"]],["Context",["grade","score","pair","dir","status","weekday","month","account","actype","project","btmonth","btlag"]],["Result",["outcome","evaluation","exit","maxr","days"]]];
 const MAXSETS=8;
 function newSet(f){const used=new Set(sets.map(x=>x.c));let c=0;while(used.has(c))c++;return{id:uid(),c,f:{...blankSet("all"),...f}}}
 let sets=[],split="fase";
@@ -1125,6 +1129,7 @@ let FDEF=[
   ["grade","Setup grade",()=>[["","Any"],["A",`A (score ${GRADE.a}+)`],["B",GRADE.a-1>GRADE.b?`B (${GRADE.b}–${GRADE.a-1})`:`B (${GRADE.b})`],["C",`C (${GRADE.b-1} or less)`]],t=>tGrade(t)],
   ["status","Status",()=>[["","Taken and missed"],["taken","Taken"],["missed","Missed (hypothetical R)"]],t=>t.status],
   ["fase","Weekly phase",()=>[["","Any"],["1","Phase 1"],["2","Phase 2"],["3","Phase 3"],["4","Phase 4"]],t=>String(t.fase??"")],
+  ["wpat","Weekly pattern",()=>[["","Any"],["none","No pattern"],["Continuation","Continuation"],["Reversal","Reversal"],["Pattern in Pattern","Pattern in Pattern"]],(t,v)=>v==="none"?!t.wPat:t.wPat===v],
   ["wstruct","Weekly structure",()=>[["","Any"],["inner","Inner"],["outer","Outer"]],t=>t.wStruct],
   ["wms","Weekly market structure",()=>[["","Any"],["for","With"],["against","Against"]],t=>(t.weekly||{}).ms],
   ["pro","Weekly pros",()=>[["","Any"],...WKEYS.filter(k=>k!=="ms").map(k=>[k,WLAB(k)])],(t,v)=>(t.weekly||{})[v]==="for"],
@@ -1161,7 +1166,7 @@ function describe(f){const p=[];p.push(f.mode==="all"?"All trades":f.mode==="liv
   FDEF.forEach(([k,label,opts])=>{const vs=fvals(f[k]);if(!vs.length)return;const O=opts();const l=vs.map(v=>{const o=O.find(x=>x[0]===v);return o?o[1]:v}).join(k==="fase"?" & ":" / ");
     p.push(k==="pro"?"Pro: "+l:k==="dpro"?"Daily pro: "+l:k==="con"?"Con: "+l:["fase","pair","concept","sub","outcome","eval","status","sphase","swpat","sstate"].includes(k)?l:label+": "+l)});
   if(f.from||f.to)p.push((f.from||"…")+" → "+(f.to||"…"));return p.join(" · ")}
-let FGROUPS=[["Weekly",["fase","wstruct","wms","align","pro","con"]],["Daily",["dms","concept","sub","dpro"]],["4H",["hms","entry4h","struct","room","scale","ectf"]],["Context",["status","grade","pair","dir","account","actype","dates"]],["Result",["outcome","eval","exit"]]];
+let FGROUPS=[["Weekly",["fase","wpat","wstruct","wms","align","pro","con"]],["Daily",["dms","concept","sub","dpro"]],["4H",["hms","entry4h","struct","room","scale","ectf"]],["Context",["status","grade","pair","dir","account","actype","dates"]],["Result",["outcome","eval","exit"]]];
 /* ---------- Analyze definitions per market ---------- */
 const FX_DEFS={FDEF,FGROUPS,SPLITS,SPLITGROUPS,PRESETS,split:"fase"};
 const MSO=()=>[["","Any"],["for","With"],["against","Against"]];
@@ -1458,7 +1463,7 @@ $("#wipeGo").onclick=async()=>{const list=wipeSel();if(!list.length||$("#wipeTxt
   $("#setIo").textContent=`Deleted ${list.length} items.`;$("#wipeBox").hidden=true;$("#wipeOpen").hidden=false;toast("Data deleted")};
 
 /* ---------- news calendar: subscribe links to the feed built by GitHub Actions ---------- */
-const NEWS_BASE=window.TJ_CONFIG?location.host+location.pathname.replace(/[^/]*$/,"")+"news/":"dashicle.github.io/TradeJournal/news/",NSTEPS=[5,10,15,30,45,60,120,180,240,1440];
+const NEWS_BASE=window.TJ_CONFIG?location.host+location.pathname.replace(/[^/]*$/,"")+"news/":"dashicledev.github.io/TradeJournal/news/",NSTEPS=[5,10,15,30,45,60,120,180,240,1440];
 const nLab=m=>m>=1440?"1 day":m>=60?(m/60)+" hour"+(m>60?"s":""):m+" min";
 const nRemsOf=st=>Array.isArray(st.newsRems)?st.newsRems.map(Number).filter(m=>NSTEPS.includes(m)).slice(0,2):[60,15];
 function nSave(patch){const cur=docs.find(x=>x.id==="settings")||{id:"settings",kind:"settings"};saveDoc({...cur,...patch});newsLinks()}
@@ -1905,11 +1910,13 @@ document.querySelectorAll('input[name="mkt"]').forEach(i=>{i.checked=i.value===m
 document.documentElement.dataset.market=market;useMarketDefs();
 /* ---------- new trade form (rebuild) ---------- */
 seg("seg-f2dir","f2dir",[["long","Long"],["short","Short"]]);
+function wpFill(keep){const v=$("#f2WPat").value,opts=v==="Reversal"?[]:(PLAN.concepts[v]||[]).filter(x=>x!=="—"),sel=$("#f2WPatSub"),cur=keep??sel.value;$("#f2WPatSubF").hidden=!opts.length;sel.innerHTML=`<option value="">Not set</option>`+opts.map(o=>`<option ${o===cur?"selected":""}>${esc(o)}</option>`).join("")}
 function f2FillVariant(){const c=$("#f2Concept").value,v=PLAN.concepts[c],sel=$("#f2Variant");
   const none=!c||c==="Weekly - 4H"||!v||v.length===1&&v[0]==="—";$("#f2VarField").hidden=none;
   if(none){sel.innerHTML='<option value=""></option>';return}
   sel.innerHTML='<option value="">None</option>'+v.map(x=>`<option>${esc(x)}</option>`).join("")}
 $("#f2Concept").addEventListener("change",f2FillVariant);
+$("#f2WPat").addEventListener("change",()=>{const v=$("#f2WPat").value;if(v&&v!=="?")wcSel.pattern="for";else if(!v)delete wcSel.pattern;wpFill();msRender();f2Summaries()});$("#f2WPatSub").addEventListener("change",()=>f2Summaries());
 seg("seg-f2eval","f2eval",[["plan","According to plan"],["technical","Technical error"],["emotional","Emotional error"]]);
 seg("seg-f2out","f2out",[["win","Win"],["be","BE"],["loss","Loss"]]);
 $("#f2Exit").innerHTML+=PLAN.exits.filter(x=>x!=="Invalid, cancelled").map(x=>`<option value="${x}">${x==="Break-even"?"Out on BE":x}</option>`).join("");
@@ -1917,9 +1924,9 @@ $("#seg-f2out").addEventListener("change",()=>{const o=radio("f2out"),r=$("#f2R"
   if(o==="be"&&r.value==="")r.value="0";
   if(o==="loss"&&r.value!==""&&+r.value>0)r.value=-r.value;
   if(o==="win"&&r.value!==""&&+r.value<0)r.value=-r.value});
-const WCRIT=[["trend","Market trend"],["fibc","FC"],["fiba","Fib active"],["ic","IC"],["pattern","Pattern"],["whl","Weekly high / low"],["sd","S&D zone"],["pz","Proven zone"],["lcc","Last CC"]];
+const WCRIT=[["trend","Market trend"],["fibc","FC"],["fiba","Fib active"],["ic","IC"],["pattern","Pattern"],["whl","High / Low"],["sd","S&D zone"],["pz","Proven zone"],["lcc","Last CC"]];
 let wcSel={};/* key -> "for"|"against" */
-function msRender(){setRadio("f2wms",wcSel.ms||"");[["#f2Pros",WCRIT,wcSel],["#f2Cons",WCRIT,wcSel],["#f2DPros",DCRIT,dSel]].forEach(([id,CR,SEL])=>{const box=$(id);if(!box)return;const kind=box.dataset.kind,open=box.classList.contains("open");
+function msRender(){setRadio("f2wms",wcSel.ms||"");[["#f2Pros",WCRIT.filter(([k])=>k!=="pattern"),wcSel],["#f2Cons",WCRIT.filter(([k])=>k!=="pattern"),wcSel],["#f2DPros",DCRIT,dSel]].forEach(([id,CR,SEL])=>{const box=$(id);if(!box)return;const kind=box.dataset.kind,open=box.classList.contains("open");
   const mine=CR.filter(([k])=>SEL[k]===kind);
   box.innerHTML=`<button type="button" class="ms-field" aria-haspopup="listbox" aria-expanded="${open}" aria-labelledby="${id.slice(1)}Lbl">${mine.length?mine.map(([k,l])=>`<span class="chip-sel ${kind}">${l}<span class="x" data-msx="${k}" aria-label="Remove ${l}">×</span></span>`).join(""):'<span class="ph">Choose criteria…</span>'}<span class="caret">▾</span></button>
   <ul class="ms-list" role="listbox" aria-multiselectable="true" ${open?"":"hidden"}>${CR.map(([k,l])=>{const other=SEL[k]&&SEL[k]!==kind,on=SEL[k]===kind;
@@ -1950,7 +1957,7 @@ function f2Check(){const v=f2CheckVals(),e=$("#f2Entry").value;
 function f2Summaries(){f2Check();
 const n=k=>(f2Shots[k]&&f2Shots[k]!=="uploading")||f2Links[k]?" · chart ✓":"";
   const f=radio("f2fase"),w=wcVals();delete w.ms;const fo=Object.values(w).filter(v=>v==="for").length,ag=Object.values(w).filter(v=>v==="against").length;
-  $("#f2SumW").textContent=[f?"Phase "+f:"",radio("f2wms")?(radio("f2wms")==="for"?"MS ✓":"MS ✗"):"",radio("f2wstruct")?(radio("f2wstruct")==="inner"?"Inner":"Outer")+" structure":"",Object.keys(w).length?`${fo} pro${fo===1?"":"s"} · ${ag} con${ag===1?"":"s"}`:""].filter(Boolean).join(" · ")+n("weekly");
+  $("#f2SumW").textContent=[f?"Phase "+f:"",$("#f2WPat").value&&$("#f2WPat").value!=="?"?$("#f2WPat").value+($("#f2WPatSub").value?" · "+$("#f2WPatSub").value:""):"",radio("f2wms")?(radio("f2wms")==="for"?"MS ✓":"MS ✗"):"",radio("f2wstruct")?(radio("f2wstruct")==="inner"?"Inner":"Outer")+" structure":"",Object.keys(w).length?`${fo} pro${fo===1?"":"s"} · ${ag} con${ag===1?"":"s"}`:""].filter(Boolean).join(" · ")+n("weekly");
   const msl=n=>radio(n)?(radio(n)==="for"?"MS ✓":"MS ✗"):"";
   $("#f2SumD").textContent=[msl("f2dms"),$("#f2Variant").value,...DCRIT.filter(([k])=>dSel[k]).map(([,l])=>l)].filter(Boolean).join(" · ")+n("daily");
   const e=$("#f2Entry").value,tf=radio("f2ectf");$("#f2SumH").textContent=(radio("f2hms")?msl("f2hms")+(e?" · ":""):"")+(e?e+(e==="Engulfing Candle"&&tf?" · "+tf.toUpperCase():""):"")+(radio("f2struct")&&!$("#f2StructF").hidden?" · "+radio("f2struct").replace("bos","BoS").replace("som","SoM"):"")+[["#f2Room","Room"],["#f2Scale","Scale-in"]].filter(([id])=>$(id).checked&&!$(id).closest("[hidden]")).map(([,l])=>" · "+l).join("")+n("h4")+(e==="Engulfing Candle"?n("ltf").replace("chart","LTF chart"):"")}
@@ -2011,7 +2018,7 @@ function f2Fill(t){const ch=(el)=>el.dispatchEvent(new Event("change",{bubbles:t
   $("#f2Pair").value=t.pair||"";$("#f2Date").value=t.date||"";$("#f2Close").value=t.closeDate||"";
   $("#f2Missed").checked=t.status==="missed";acFill("#f2Account","fx",t.account||"");setRadio("f2dir",t.dir||"");
   $("#f2Concept").value=t.concept||"";f2FillVariant();$("#f2Variant").value=t.sub&&t.sub!=="—"?t.sub:"";
-  setRadio("f2fase",t.fase||"");setRadio("f2wstruct",t.wStruct||"");setRadio("f2dms",t.dMs||"");setRadio("f2hms",t.hMs||"");wcSel={...(t.weekly||{})};msRender();dSel=Object.fromEntries(dProsOf(t).map(k=>[k,"for"]));msRender();
+  setRadio("f2fase",t.fase||"");setRadio("f2wstruct",t.wStruct||"");{$("#f2WPat").value=t.wPat||"";wpFill(t.wPatSub||"")}setRadio("f2dms",t.dMs||"");setRadio("f2hms",t.hMs||"");wcSel={...(t.weekly||{})};msRender();dSel=Object.fromEntries(dProsOf(t).map(k=>[k,"for"]));msRender();
   $("#f2Entry").value=t.entry4h||"";ch($("#f2Entry"));setRadio("f2ectf",t.ecTf||"");
   setRadio("f2struct",t.struct||(t.bos==="ja"?"bos":t.bos==="nee"?"som":""));$("#f2Room").checked=t.room==="ja";$("#f2Scale").checked=!!t.scaleIn;
   $("#f2PlanEntry").value=t.planEntry??"";$("#f2SlPips").value=t.slPips??"";$("#f2TpPips").value=t.tpPips??"";
@@ -2032,7 +2039,7 @@ $("#f2Del").onclick=e=>{const b=e.currentTarget,id=editingId;if(!id)return;
 function closeSheet2(){$("#sheet2").hidden=true;document.body.style.overflow="";editingId=null}
 $("#tradeForm2").onsubmit=e=>{e.preventDefault();const old=editingId?docs.find(d=>d.id===editingId):null,mode=old?old.mode:(f2Mode||formMode());
   const t={id:old?old.id:uid(),mode,market:old?mktOf(old):f2Market,project:mode==="backtest"&&$("#f2Project").value!=="none"?$("#f2Project").value:null,status:$("#f2Missed").checked?"missed":"taken",account:$("#f2Account").value,btDate:mode==="backtest"?($("#f2BtDate").value||todayISO()):null,
-    date:$("#f2Date").value,closeDate:$("#f2Close").value,concept:$("#f2Concept").value,fase:radio("f2fase")?Number(radio("f2fase")):null,wStruct:radio("f2wstruct")||"",scaleIn:$("#f2Scale").checked,dMs:radio("f2dms")||"",hMs:radio("f2hms")||"",weekly:wcVals(),sub:$("#f2Variant").value,dPros:DCRIT.map(([k])=>k).filter(k=>dSel[k]),dailyFib:dSel.fc?"ja":"nee",outcome:radio("f2out"),r:num("f2R"),maxR:num("f2MaxR"),evaluation:radio("f2eval"),onPlan:radio("f2eval")?radio("f2eval")==="plan":null,exitReason:$("#f2Exit").value,entry4h:$("#f2Entry").value,planEntry:num("f2PlanEntry"),slPips:num("f2SlPips"),tpPips:num("f2TpPips"),...f2CheckVals(),ecTf:$("#f2Entry").value==="Engulfing Candle"?radio("f2ectf"):"",shots:Object.fromEntries(Object.entries(f2Shots).filter(([,v])=>v&&v!=="uploading")),shotLinks:{...f2Links},pair:$("#f2Pair").value.trim().toUpperCase(),dir:radio("f2dir"),created:Date.now()};
+    date:$("#f2Date").value,closeDate:$("#f2Close").value,concept:$("#f2Concept").value,fase:radio("f2fase")?Number(radio("f2fase")):null,wStruct:radio("f2wstruct")||"",wPat:$("#f2WPat").value==="?"?"":$("#f2WPat").value,wPatSub:$("#f2WPat").value&&$("#f2WPat").value!=="?"?$("#f2WPatSub").value:"",scaleIn:$("#f2Scale").checked,dMs:radio("f2dms")||"",hMs:radio("f2hms")||"",weekly:wcVals(),sub:$("#f2Variant").value,dPros:DCRIT.map(([k])=>k).filter(k=>dSel[k]),dailyFib:dSel.fc?"ja":"nee",outcome:radio("f2out"),r:num("f2R"),maxR:num("f2MaxR"),evaluation:radio("f2eval"),onPlan:radio("f2eval")?radio("f2eval")==="plan":null,exitReason:$("#f2Exit").value,entry4h:$("#f2Entry").value,planEntry:num("f2PlanEntry"),slPips:num("f2SlPips"),tpPips:num("f2TpPips"),...f2CheckVals(),ecTf:$("#f2Entry").value==="Engulfing Candle"?radio("f2ectf"):"",shots:Object.fromEntries(Object.entries(f2Shots).filter(([,v])=>v&&v!=="uploading")),shotLinks:{...f2Links},pair:$("#f2Pair").value.trim().toUpperCase(),dir:radio("f2dir"),created:Date.now()};
   if(old)t.created=old.created||t.created;saveDoc(old?{...old,...t}:t);acRemember("fx",t.account);if(t.date&&!old){calMonth=t.date.slice(0,7);calTouched=true}toast(old?"Changes saved":"Trade saved");closeSheet2()};
 document.addEventListener("keydown",e=>{if(e.key!=="Escape")return;if(!$("#sheetS").hidden){closeStock();return}if(!$("#setSheet").hidden){$("#setSheet").hidden=true;return}if(!$("#newProj").hidden){closeNewProj();return}if(!$("#projSheet").hidden){closeProjSheet();return}if(!$("#viewer").hidden){$("#viewer").hidden=true;if($("#sheet2").hidden)document.body.style.overflow="";return}if(!$("#sheet2").hidden)closeSheet2()});
 
