@@ -92,6 +92,7 @@ td.acts{width:1%}
 .restag.hollow{background:none;box-shadow:inset 0 0 0 1px currentColor;opacity:.8}
 .chico{display:inline-flex;align-items:center;gap:5px;background:none;border:1px solid var(--line,#444);color:inherit;border-radius:6px;padding:3px 7px;font:600 12px var(--body);cursor:pointer}
 .chico:hover{border-color:var(--accent);color:var(--accent)}
+.accost{display:block;font:12.5px var(--mono);color:var(--muted);margin-top:2px}
 .setsec{display:grid;gap:12px;padding:14px 0}
 .setsec:first-of-type{border-top:0;padding-top:4px}
 .setsec h4{margin:0;font:700 11px var(--body);letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
@@ -101,6 +102,9 @@ td.acts{width:1%}
 .dangerb:disabled{opacity:.45;cursor:not-allowed}
 .wipebox{display:grid;gap:10px;margin-top:10px;padding:12px;border:1px solid color-mix(in srgb,var(--bad) 40%,var(--line));border-radius:10px;background:color-mix(in srgb,var(--bad) 6%,transparent)}
 .linkish{all:unset;cursor:pointer;color:var(--accent);font-weight:600;margin-left:6px;text-decoration:underline;text-underline-offset:2px}
+.nchecks{display:flex;flex-wrap:wrap;gap:6px 12px}
+.nck{display:inline-flex;align-items:center;gap:5px;font-size:13px;cursor:pointer}.nck input{margin:0;accent-color:var(--accent)}
+#nCal{font:14px var(--body);padding:7px 9px;border:1px solid var(--line);border-radius:7px;background:var(--paper);color:var(--ink);max-width:100%}
 .settabs{display:flex;gap:4px;border-bottom:1px solid var(--line);margin:4px 0 6px}
 .settabs button{all:unset;cursor:pointer;padding:8px 12px;font:600 14px var(--body);color:var(--muted);border-bottom:2px solid transparent;margin-bottom:-1px}
 .settabs button[aria-selected="true"]{color:var(--ink);border-bottom-color:var(--accent)}
@@ -123,6 +127,7 @@ td.acts{width:1%}
 @media (max-width:520px){.setrow{grid-template-columns:1fr;gap:6px}}
 .gcut{display:inline-flex!important;flex-direction:row!important;align-items:center;gap:6px;font-size:13px;color:var(--muted);white-space:nowrap}
 .gcut input{width:56px!important;flex:none;font:14px var(--mono);padding:6px 8px;border:1px solid var(--line);border-radius:6px;background:var(--paper);color:var(--ink)}
+.gtaken{display:flex;align-items:center;gap:5px}.gtaken .grade{min-width:20px;height:20px;font-size:11px}.gtaken b{margin-right:6px;font-weight:600}.gtaken b:last-child{margin-right:0}
 .scoreline{margin:0 0 12px;font-size:13px;color:var(--muted);display:flex;align-items:center;gap:8px}
 .scoreline b{color:var(--ink);font-size:14px}
 .grade{display:inline-grid;place-items:center;min-width:26px;height:22px;padding:0 5px;border-radius:6px;font:800 12px var(--body)}
@@ -820,7 +825,7 @@ main>*,.panel,.grid2>*,.ov>*{min-width:0}
 </div></div>
 <div class="sheet" id="setSheet" hidden><div class="scrim" data-closeset></div><div class="sheet-inner np-inner" role="dialog" aria-modal="true" aria-labelledby="setTitle">
 <form id="setForm" autocomplete="off"><h3 id="setTitle">Settings</h3>
-<div class="setbody"><div class="settabs" role="tablist" aria-orientation="vertical"><button type="button" role="tab" data-settab="look">Look</button><button type="button" role="tab" data-settab="fx">Forex</button><button type="button" role="tab" data-settab="st">Stocks</button><button type="button" role="tab" data-settab="data">Data</button></div>
+<div class="setbody"><div class="settabs" role="tablist" aria-orientation="vertical"><button type="button" role="tab" data-settab="look">Look</button><button type="button" role="tab" data-settab="fx">Forex</button><button type="button" role="tab" data-settab="st">Stocks</button><button type="button" role="tab" data-settab="news">News</button><button type="button" role="tab" data-settab="data">Data</button></div>
 <div class="setpanes"><section class="setsec" data-setpane="look">
 <div class="setrow"><span class="setl">Theme</span><div class="segs" id="seg-stheme"></div></div>
 <div class="setrow"><span class="setl">Primary<small>Buttons, tabs, backtest</small></span><div class="swatches" id="sAccent" role="radiogroup" aria-label="Primary colour"></div></div>
@@ -829,6 +834,14 @@ main>*,.panel,.grid2>*,.ov>*{min-width:0}
 <section class="setsec" data-setpane="fx" hidden>
 <div class="setrow"><span class="setl">Journal opens on</span><div class="segs" id="seg-speriod"></div></div>
 <div class="setrow"><span class="setl">Setup grades<small>Score needed</small></span><div class="gcuts"><label class="gcut"><span class="grade gA">A</span><input type="number" id="sGA" step="1" inputmode="numeric" aria-label="Score for A">+</label><label class="gcut"><span class="grade gB">B</span><input type="number" id="sGB" step="1" inputmode="numeric" aria-label="Score for B">+</label><span class="gcut"><span class="grade gC">C</span><span id="sGC"></span></span></div></div>
+</section>
+<section class="setsec" data-setpane="news" hidden>
+<p class="hint" style="margin:0">Puts Forex Factory news for this week in your Google Calendar. Each person links their own Google account.</p>
+<div class="setrow"><span class="setl">Google<small id="gAcct">Not linked</small></span><div class="row" style="gap:6px"><button type="button" class="btn small" id="gLink">Link Google account</button><button type="button" class="btn small" id="gUnlink" hidden>Unlink</button></div></div>
+<div class="setrow"><span class="setl">Calendar</span><select id="nCal"><option value="primary">Main calendar</option></select></div>
+<div class="setrow"><span class="setl">Currencies</span><div class="nchecks" id="nCur"></div></div>
+<div class="setrow"><span class="setl">Impact</span><div class="nchecks" id="nImp"></div></div>
+<div class="setrow"><span class="setl"></span><div class="row" style="gap:8px;align-items:center"><button type="button" class="btn small primary" id="nSync">Sync this week</button><span class="hint" style="margin:0" id="nMsg"></span></div></div>
 </section>
 <section class="setsec" data-setpane="data" hidden>
 <div class="setrow"><span class="setl">Backup<small>All markets, accounts, settings</small></span><div class="row" style="gap:6px"><button type="button" class="btn small" data-backup>Back up everything</button><label class="btn small" for="restoreIn">Restore backup</label></div></div>
@@ -1434,7 +1447,50 @@ $("#wipeCancel").onclick=()=>{$("#wipeBox").hidden=true;$("#wipeOpen").hidden=fa
 $("#wipeGo").onclick=async()=>{const list=wipeSel();if(!list.length||$("#wipeTxt").value.trim()!=="DELETE"||!$("#wipeBk").checked)return;$("#wipeGo").disabled=true;$("#setIo").textContent=`Deleting ${list.length} items…`;
   holdRender=true;try{for(const d of list)await deleteDoc(d.id)}finally{holdRender=false}activeProject=null;render();
   $("#setIo").textContent=`Deleted ${list.length} items.`;$("#wipeBox").hidden=true;$("#wipeOpen").hidden=false;toast("Data deleted")};
-function openSettings(){showSetTab(setTab);$("#wipeBox").hidden=true;$("#wipeOpen").hidden=false;$("#setIo").textContent="";$("#csvMk").textContent=(market==="stocks"?"Stocks":"Forex")+" trades only";const st=getSet();setRadio("stheme",st.theme);setRadio("saccent",st.accent);setRadio("saccent2",st.accent2);setRadio("speriod",st.period);setRadio("speriod2",st.periodSt);$("#sGA").value=st.gradeA;$("#sGB").value=st.gradeB;gcHint();$("#setSheet").hidden=false}
+
+/* ---------- news → Google Calendar (per user, Google Identity Services in the browser) ---------- */
+const NCUR=["USD","EUR","GBP","JPY","CAD","AUD","CHF","NZD"],NIMP=["Heavy","High","Medium","Low"],HEAVY=/\bCPI y\/y\b|Non-Farm Employment Change|\bFOMC\b|Federal Funds Rate|Interest Rate|Rate Decision|Rate Statement|Monetary Policy|Main Refinancing Rate|Official Bank Rate|Cash Rate|Overnight Rate|Policy Rate|Fed Chair|Powell/i,FF_URL="https://nfs.faireconomy.media/ff_calendar_thisweek.xml",FF_TAG="Source: Forex Factory";
+let gTok=null,gTokExp=0,gClient=null;
+const gId=()=>(window.TJ_CONFIG||{}).googleClientId||"";
+function newsPrefs(){const st=getSet();return{cal:st.newsCal||"primary",cur:st.newsCur||NCUR,imp:st.newsImp||["Heavy","High","Medium"]}}
+function newsSave(k,v){const cur=docs.find(x=>x.id==="settings")||{id:"settings",kind:"settings"};saveDoc({...cur,[k]:v})}
+function newsRender(){const P=newsPrefs(),ok=!!gId();
+  $("#nCur").innerHTML=NCUR.map(c=>`<label class="nck"><input type="checkbox" value="${c}" ${P.cur.includes(c)?"checked":""}>${c}</label>`).join("");
+  $("#nImp").innerHTML=NIMP.map(c=>`<label class="nck"><input type="checkbox" value="${c}" ${P.imp.includes(c)?"checked":""}>${c}</label>`).join("");
+  if(![...$("#nCal").options].some(o=>o.value===P.cal))$("#nCal").insertAdjacentHTML("beforeend",`<option value="${esc(P.cal)}">${esc(P.cal)}</option>`);$("#nCal").value=P.cal;
+  const linked=gTok&&Date.now()<gTokExp;$("#gUnlink").hidden=!linked;$("#gLink").textContent=linked?"Linked ✓":"Link Google account";$("#gLink").disabled=!ok;
+  if(!ok){const sa=!!window.TJ_CONFIG;$("#gAcct").textContent=sa?"Not set up yet":"Only in the GitHub app";$("#nSync").disabled=true;$("#nMsg").textContent=sa?"Google sign-in is not configured yet.":"Open the GitHub app to use this."}else{$("#nSync").disabled=false}}
+function gsiLoad(){return new Promise((res,rej)=>{if(window.google?.accounts?.oauth2)return res();const sc=document.createElement("script");sc.src="https://accounts.google.com/gsi/client";sc.async=true;sc.onload=()=>res();sc.onerror=()=>rej(new Error("Could not load Google sign-in"));document.head.appendChild(sc)})}
+async function gToken(interactive){if(gTok&&Date.now()<gTokExp-60000)return gTok;await gsiLoad();
+  return new Promise((res,rej)=>{gClient=google.accounts.oauth2.initTokenClient({client_id:gId(),scope:"https://www.googleapis.com/auth/calendar.events https://www.googleapis.com/auth/calendar.calendarlist.readonly",
+    callback:r=>{if(r.error)return rej(new Error(r.error_description||r.error));gTok=r.access_token;gTokExp=Date.now()+(Number(r.expires_in)||3600)*1000;res(gTok)},error_callback:e=>rej(new Error(e.message||e.type||"Google sign-in cancelled"))});
+    gClient.requestAccessToken({prompt:interactive?"consent":""})})}
+async function gApi(path,opt={}){const t=await gToken(false);const r=await fetch("https://www.googleapis.com/calendar/v3"+path,{...opt,headers:{Authorization:"Bearer "+t,"Content-Type":"application/json",...(opt.headers||{})}});
+  if(r.status===204)return null;const j=await r.json().catch(()=>({}));if(!r.ok)throw new Error((j.error&&j.error.message)||("Google error "+r.status));return j}
+async function gCalendars(){try{const j=await gApi("/users/me/calendarList?minAccessRole=writer&maxResults=250");const P=newsPrefs();
+  $("#nCal").innerHTML=(j.items||[]).map(c=>`<option value="${esc(c.primary?"primary":c.id)}">${esc(c.summaryOverride||c.summary)}${c.primary?" (main)":""}</option>`).join("");$("#nCal").value=P.cal;if(!$("#nCal").value)$("#nCal").value="primary"}catch(e){console.warn(e)}}
+$("#gLink").onclick=async()=>{try{$("#nMsg").textContent="Linking…";await gToken(true);$("#gAcct").textContent="Linked";$("#nMsg").textContent="";await gCalendars();newsRender()}catch(e){$("#nMsg").textContent=e.message}};
+$("#gUnlink").onclick=()=>{try{if(gTok&&window.google?.accounts?.oauth2)google.accounts.oauth2.revoke(gTok,()=>{})}catch{}gTok=null;gTokExp=0;$("#gAcct").textContent="Not linked";newsRender()};
+$("#nCal").onchange=()=>newsSave("newsCal",$("#nCal").value);
+$("#nCur").onchange=()=>newsSave("newsCur",[...document.querySelectorAll("#nCur input:checked")].map(i=>i.value));
+$("#nImp").onchange=()=>newsSave("newsImp",[...document.querySelectorAll("#nImp input:checked")].map(i=>i.value));
+function ffParse(xml){const d=new DOMParser().parseFromString(xml,"text/xml"),out=[];
+  d.querySelectorAll("event").forEach(e=>{const g=k=>(e.querySelector(k)?.textContent||"").trim(),date=g("date"),time=g("time").toLowerCase(),m=time.match(/^(\d{1,2}):(\d{2})(am|pm)$/),dm=date.match(/^(\d{2})-(\d{2})-(\d{4})$/);
+    if(!m||!dm)return;let h=Number(m[1])%12+(m[3]==="pm"?12:0);const start=new Date(Date.UTC(+dm[3],+dm[1]-1,+dm[2],h,+m[2]));const title=g("title");out.push({title,cur:g("country"),impact:HEAVY.test(title)?"Heavy":g("impact"),ffImpact:g("impact"),start})});return out}
+async function newsSync(){const P=newsPrefs(),cal=encodeURIComponent(P.cal),msg=$("#nMsg");$("#nSync").disabled=true;
+  try{await gToken(!gTok);msg.textContent="Downloading Forex Factory…";
+    let xml;try{const r=await fetch(FF_URL,{cache:"no-store"});if(!r.ok)throw new Error(r.status);xml=await r.text()}catch(e){throw new Error("Forex Factory could not be reached from the browser.")}
+    const all=ffParse(xml),want=all.filter(e=>P.cur.includes(e.cur)&&P.imp.includes(e.impact));if(!all.length)throw new Error("No events found in the Forex Factory file.");
+    const t0=new Date(Math.min(...all.map(e=>e.start))-3*864e5).toISOString(),t1=new Date(Math.max(...all.map(e=>e.start))+3*864e5).toISOString();
+    msg.textContent="Removing old news events…";let old=[],page="";
+    do{const j=await gApi(`/calendars/${cal}/events?timeMin=${t0}&timeMax=${t1}&singleEvents=true&maxResults=2500&q=${encodeURIComponent("Forex Factory")}${page?"&pageToken="+page:""}`);old=old.concat((j.items||[]).filter(ev=>(ev.description||"").includes(FF_TAG)||ev.extendedProperties?.private?.tjsrc==="ff"));page=j.nextPageToken||""}while(page);
+    for(const ev of old)await gApi(`/calendars/${cal}/events/${ev.id}`,{method:"DELETE"}).catch(()=>{});
+    let n=0;for(const e of want){msg.textContent=`Adding ${++n}/${want.length}…`;
+      await gApi(`/calendars/${cal}/events`,{method:"POST",body:JSON.stringify({summary:`${e.impact==="Heavy"?"⚠ ":""}[${e.cur}] ${e.title}`,description:`Impact: ${e.impact==="Heavy"?"Heavy news ("+e.ffImpact+")":e.impact}\n${FF_TAG}`,start:{dateTime:e.start.toISOString(),timeZone:"Europe/Brussels"},end:{dateTime:new Date(+e.start+30*6e4).toISOString(),timeZone:"Europe/Brussels"},colorId:e.impact==="Heavy"?"11":e.impact==="High"?"6":e.impact==="Medium"?"5":"8",extendedProperties:{private:{tjsrc:"ff"}}})})}
+    msg.textContent=`Done: removed ${old.length}, added ${want.length} events.`;newsSave("newsLast",Date.now())}
+  catch(e){msg.textContent=e.message||"Sync failed"}finally{$("#nSync").disabled=!gId()}}
+$("#nSync").onclick=newsSync;
+function openSettings(){showSetTab(setTab);newsRender();$("#wipeBox").hidden=true;$("#wipeOpen").hidden=false;$("#setIo").textContent="";$("#csvMk").textContent=(market==="stocks"?"Stocks":"Forex")+" trades only";const st=getSet();setRadio("stheme",st.theme);setRadio("saccent",st.accent);setRadio("saccent2",st.accent2);setRadio("speriod",st.period);setRadio("speriod2",st.periodSt);$("#sGA").value=st.gradeA;$("#sGB").value=st.gradeB;gcHint();$("#setSheet").hidden=false}
 $("#openSettings").onclick=openSettings;
 document.querySelectorAll("[data-closeset]").forEach(b=>b.onclick=()=>{$("#setSheet").hidden=true});
 $("#setForm").addEventListener("change",e=>{const n=e.target.name;if(n==="stheme")saveSetting("theme",e.target.value);else if(n==="saccent")saveSetting("accent",e.target.value);else if(n==="saccent2")saveSetting("accent2",e.target.value);else if(n==="speriod")saveSetting("period",e.target.value);else if(n==="speriod2")saveSetting("periodSt",e.target.value);else if(e.target.id==="sGA"||e.target.id==="sGB"){let a=Math.round(Number($("#sGA").value)),b=Math.round(Number($("#sGB").value));if(!isFinite(a))a=4;if(!isFinite(b))b=2;if(b>a){b=a;$("#sGB").value=b}const cur=docs.find(x=>x.id==="settings")||{id:"settings",kind:"settings"};saveDoc({...cur,gradeA:a,gradeB:b});applySettings();gcHint()}});
@@ -1460,7 +1516,8 @@ function acRender(){const L=accounts(market),mk=market==="fx"?"Forex":"Stocks";$
       ${removable?`<button type="button" class="acx" data-acdel="${a.id}" aria-label="Remove ${esc(name)}" title="Remove account">✕</button>`:""}</div>
       <dl class="scstats"><div><dt>Trades</dt><dd class="num">${list.length}</dd></div><div><dt>Win rate</dt><dd class="num">${fmtP(st.wr)}</dd></div><div><dt>Total R</dt><dd class="num ${st.total>0?"pos":st.total<0?"neg":""}">${tk.length?fmtR(st.total):"—"}</dd></div><div><dt>Last trade</dt><dd class="num">${last?esc(fmtD(last)):"—"}</dd></div></dl>
       ${a?(()=>{const ini=acInit(a),cur=a.current??ini,chg=ini&&cur!=null?(cur-ini)/ini*100:null;return `<div class="acmoney"><label>Initial size<input type="number" min="0" step="any" inputmode="decimal" value="${ini??""}" data-acnum="initial" data-acid="${a.id}"></label><label>Current size<input type="number" min="0" step="any" inputmode="decimal" value="${cur??""}" data-acnum="current" data-acid="${a.id}"></label><label>Currency<select data-accur="${a.id}">${["USD","EUR","GBP","CHF","CAD","AUD","JPY"].map(c=>`<option ${(a.currency||"USD")===c?"selected":""}>${c}</option>`).join("")}</select></label></div>
-      ${chg!=null?`<span class="acchg ${chg>0?"pos":chg<0?"neg":""}">${chg>0?"+":""}${chg.toFixed(2)}% since start · ${fmtMoney(cur-ini,a.currency)}</span>`:""}`})():""}
+      ${chg!=null?`<span class="acchg ${chg>0?"pos":chg<0?"neg":""}">${chg>0?"+":""}${chg.toFixed(2)}% since start · ${fmtMoney(cur-ini,a.currency)}</span>`:""}${(()=>{if(market!=="fx"||!ini||cur==null)return"";const tt=taken(list.filter(t=>t.mode==="live"));if(!tt.length)return"";const exp=tt.reduce((x,t)=>x+t.r,0)*ini/100,c=(cur-ini)-exp,pt=c/tt.length;
+        return `<span class="accost" title="Account change minus what your logged R should have made at 1% of the initial size">Costs ≈ ${fmtMoney(c,a.currency)} · ${fmtMoney(pt,a.currency)}/trade (${(pt/(ini/100)>0?"+":"")+(pt/(ini/100)).toFixed(2)}R)</span>`})()}`})():""}
       ${a?`<div class="acmoney acsel"><label>Status<select data-acstat="${a.id}">${Object.entries(ACSTAT).map(([k,l])=>`<option value="${k}" ${acStat(a)===k?"selected":""}>${l}</option>`).join("")}</select></label><label>Type<select data-actype="${a.id}"><option value="">—</option>${Object.entries(ACTYPE).map(([k,l])=>`<option value="${k}" ${a.type===k?"selected":""}>${l}</option>`).join("")}</select></label></div>`:""}</div>`};
   const all=docs.filter(t=>!t.kind&&mktOf(t)===market);
   const cards=L.map(a=>card(a,a.name,all.filter(t=>t.account===a.name),true));
