@@ -1458,7 +1458,7 @@ $("#wipeGo").onclick=async()=>{const list=wipeSel();if(!list.length||$("#wipeTxt
   $("#setIo").textContent=`Deleted ${list.length} items.`;$("#wipeBox").hidden=true;$("#wipeOpen").hidden=false;toast("Data deleted")};
 
 /* ---------- news calendar: subscribe links to the feed built by GitHub Actions ---------- */
-const NEWS_BASE="willemdriessen.github.io/TradeJournal/news/",NSTEPS=[5,10,15,30,45,60,120,180,240,1440];
+const NEWS_BASE=window.TJ_CONFIG?location.host+location.pathname.replace(/[^/]*$/,"")+"news/":"dashicle.github.io/TradeJournal/news/",NSTEPS=[5,10,15,30,45,60,120,180,240,1440];
 const nLab=m=>m>=1440?"1 day":m>=60?(m/60)+" hour"+(m>60?"s":""):m+" min";
 const nRemsOf=st=>Array.isArray(st.newsRems)?st.newsRems.map(Number).filter(m=>NSTEPS.includes(m)).slice(0,2):[60,15];
 function nSave(patch){const cur=docs.find(x=>x.id==="settings")||{id:"settings",kind:"settings"};saveDoc({...cur,...patch});newsLinks()}
