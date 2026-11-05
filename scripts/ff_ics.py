@@ -11,6 +11,13 @@ VARIANTS = {  # file -> impact levels included
     "news-high.ics": {"Heavy", "High"},
     "news-heavy.ics": {"Heavy"},
 }
+REMINDERS = {  # file suffix -> reminders before each event
+    "": ("-PT1H", "-PT15M"),
+    "-r60": ("-PT1H",),
+    "-r30": ("-PT30M",),
+    "-r15": ("-PT15M",),
+    "-r0": (),
+}
 NAMES = {"news.ics": "Forex news (heavy, high, medium)", "news-high.ics": "Forex news (heavy + high)", "news-heavy.ics": "Forex news (heavy only)"}
 
 def fetch():
@@ -35,17 +42,17 @@ def parse(raw):
 def esc(s):
     return s.replace("\\", "\\\\").replace(";", r"\;").replace(",", r"\,").replace("\n", r"\n")
 
-def ics(events, name):
+def ics(events, name, alarms=("-PT1H", "-PT15M")):
     now = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
     L = ["BEGIN:VCALENDAR", "VERSION:2.0", "PRODID:-//TradeJournal//Forex news//EN", "CALSCALE:GREGORIAN", "METHOD:PUBLISH",
          f"X-WR-CALNAME:{esc(name)}", "X-PUBLISHED-TTL:PT3H", "REFRESH-INTERVAL;VALUE=DURATION:PT3H"]
     for e in events:
         uid = hashlib.sha1(f"{e['cur']}|{e['title']}|{e['start'].date()}".encode()).hexdigest() + "@tradejournal"
         s, en = e["start"], e["start"] + timedelta(minutes=30)
-        L += ["BEGIN:VEVENT", f"UID:{uid}", f"DTSTAMP:{now}", f"DTSTART:{s:%Y%m%dT%H%M%SZ}", f"DTEND:{en:%Y%m%dT%H%M%SZ}",
+        L += ["BEGIN:VEVENT", f"UID:{uid}", f"DTSTAMP:{s:%Y%m%dT%H%M%SZ}", f"DTSTART:{s:%Y%m%dT%H%M%SZ}", f"DTEND:{en:%Y%m%dT%H%M%SZ}",
               f"SUMMARY:{esc(('⚠ ' if e['level'] == 'Heavy' else '') + '[' + e['cur'] + '] ' + e['title'])}",
               f"DESCRIPTION:{esc('Impact: ' + ('Heavy news (' + e['imp'] + ')' if e['level'] == 'Heavy' else e['imp']) + chr(10) + 'Source: Forex Factory')}",
-              "TRANSP:TRANSPARENT", "BEGIN:VALARM", "ACTION:DISPLAY", "DESCRIPTION:" + esc(e["cur"] + " " + e["title"]), "TRIGGER:-PT15M", "END:VALARM", "END:VEVENT"]
+              "TRANSP:TRANSPARENT", *[x for t in alarms for x in ("BEGIN:VALARM", "ACTION:DISPLAY", "DESCRIPTION:" + esc(e["cur"] + " " + e["title"]), "TRIGGER:" + t, "END:VALARM")], "END:VEVENT"]
     L.append("END:VCALENDAR")
     return "\r\n".join(L) + "\r\n"
 
@@ -55,8 +62,10 @@ def main(out_dir="news"):
         sys.exit("No events parsed; keeping the old files.")
     for fn, levels in VARIANTS.items():
         sel = [e for e in events if e["level"] in levels]
-        with open(f"{out_dir}/{fn}", "w", encoding="utf-8", newline="") as f:
-            f.write(ics(sel, NAMES[fn]))
+        for suf, alarms in REMINDERS.items():
+            out = fn.replace(".ics", suf + ".ics")
+            with open(f"{out_dir}/{out}", "w", encoding="utf-8", newline="") as f:
+                f.write(ics(sel, NAMES[fn], alarms))
         print(fn, len(sel), "events")
 
 if __name__ == "__main__":

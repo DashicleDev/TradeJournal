@@ -103,7 +103,7 @@ td.acts{width:1%}
 .wipebox{display:grid;gap:10px;margin-top:10px;padding:12px;border:1px solid color-mix(in srgb,var(--bad) 40%,var(--line));border-radius:10px;background:color-mix(in srgb,var(--bad) 6%,transparent)}
 .linkish{all:unset;cursor:pointer;color:var(--accent);font-weight:600;margin-left:6px;text-decoration:underline;text-underline-offset:2px}
 a.btn{text-decoration:none}
-#nLvl{font:14px var(--body);padding:7px 9px;border:1px solid var(--line);border-radius:7px;background:var(--paper);color:var(--ink);max-width:100%}
+#nLvl,#nRem{font:14px var(--body);padding:7px 9px;border:1px solid var(--line);border-radius:7px;background:var(--paper);color:var(--ink);max-width:100%}
 .settabs{display:flex;gap:4px;border-bottom:1px solid var(--line);margin:4px 0 6px}
 .settabs button{all:unset;cursor:pointer;padding:8px 12px;font:600 14px var(--body);color:var(--muted);border-bottom:2px solid transparent;margin-bottom:-1px}
 .settabs button[aria-selected="true"]{color:var(--ink);border-bottom-color:var(--accent)}
@@ -835,10 +835,11 @@ main>*,.panel,.grid2>*,.ov>*{min-width:0}
 <div class="setrow"><span class="setl">Setup grades<small>Score needed</small></span><div class="gcuts"><label class="gcut"><span class="grade gA">A</span><input type="number" id="sGA" step="1" inputmode="numeric" aria-label="Score for A">+</label><label class="gcut"><span class="grade gB">B</span><input type="number" id="sGB" step="1" inputmode="numeric" aria-label="Score for B">+</label><span class="gcut"><span class="grade gC">C</span><span id="sGC"></span></span></div></div>
 </section>
 <section class="setsec" data-setpane="news" hidden>
-<p class="hint" style="margin:0">Adds Forex Factory news to your own calendar, with a reminder 15 minutes before. It stays up to date by itself.</p>
+<p class="hint" style="margin:0">Adds Forex Factory news to your own calendar, with reminders before each event. It stays up to date by itself.</p>
 <div class="setrow"><span class="setl">Which news</span><select id="nLvl"><option value="news">Heavy, high and medium</option><option value="news-high">Heavy and high</option><option value="news-heavy">Heavy only (CPI, NFP, rates)</option></select></div>
+<div class="setrow"><span class="setl">Reminders</span><select id="nRem"><option value="">1 hour and 15 min before</option><option value="-r60">1 hour before</option><option value="-r30">30 min before</option><option value="-r15">15 min before</option><option value="-r0">No reminders</option></select></div>
 <div class="setrow"><span class="setl">Add to</span><div class="row" style="gap:6px;flex-wrap:wrap"><a class="btn small" id="nGoogle" target="_blank" rel="noopener">Google Calendar</a><a class="btn small" id="nApple">Apple Calendar</a><a class="btn small" id="nOutlook" target="_blank" rel="noopener">Outlook</a><button type="button" class="btn small ghost" id="nCopy">Copy link</button></div></div>
-<p class="hint" style="margin:0" id="nMsg">Apple and Outlook use the built-in 15-minute reminder. Google may not: if you get no reminders there, set a notification in that calendar's settings.</p>
+<p class="hint" style="margin:0" id="nMsg">Apple and Outlook use these reminders. Google may not: if you get none there, set a notification in that calendar's settings. To change reminders later, remove the calendar and add it again.</p>
 </section>
 <section class="setsec" data-setpane="data" hidden>
 <div class="setrow"><span class="setl">Backup<small>All markets, accounts, settings</small></span><div class="row" style="gap:6px"><button type="button" class="btn small" data-backup>Back up everything</button><label class="btn small" for="restoreIn">Restore backup</label></div></div>
@@ -1447,10 +1448,10 @@ $("#wipeGo").onclick=async()=>{const list=wipeSel();if(!list.length||$("#wipeTxt
 
 /* ---------- news calendar: subscribe links to the feed built by GitHub Actions ---------- */
 const NEWS_BASE="willemdriessen.github.io/TradeJournal/news/";
-function newsLinks(){const st=getSet(),lvl=st.newsLvl||"news",https="https://"+NEWS_BASE+lvl+".ics",webcal="webcal://"+NEWS_BASE+lvl+".ics",name=encodeURIComponent("Forex news");
-  $("#nLvl").value=lvl;$("#nGoogle").href="https://calendar.google.com/calendar/r?cid="+encodeURIComponent(webcal);$("#nApple").href=webcal;
+function newsLinks(){const st=getSet(),lvl=st.newsLvl||"news",rem=st.newsRem||"",https="https://"+NEWS_BASE+lvl+rem+".ics",webcal="webcal://"+NEWS_BASE+lvl+rem+".ics",name=encodeURIComponent("Forex news");
+  $("#nLvl").value=lvl;$("#nRem").value=rem;$("#nGoogle").href="https://calendar.google.com/calendar/r?cid="+encodeURIComponent(webcal);$("#nApple").href=webcal;
   $("#nOutlook").href=`https://outlook.live.com/calendar/0/addfromweb?url=${encodeURIComponent(https)}&name=${name}`;$("#nCopy").dataset.url=https}
-$("#nLvl").onchange=()=>{const cur=docs.find(x=>x.id==="settings")||{id:"settings",kind:"settings"};saveDoc({...cur,newsLvl:$("#nLvl").value});newsLinks()};
+["#nLvl","#nRem"].forEach(id=>$(id).onchange=()=>{const cur=docs.find(x=>x.id==="settings")||{id:"settings",kind:"settings"};saveDoc({...cur,newsLvl:$("#nLvl").value,newsRem:$("#nRem").value});newsLinks()});
 $("#nCopy").onclick=async()=>{try{await navigator.clipboard.writeText($("#nCopy").dataset.url);toast("Link copied")}catch{$("#nMsg").textContent=$("#nCopy").dataset.url}};
 function openSettings(){showSetTab(setTab);newsLinks();$("#wipeBox").hidden=true;$("#wipeOpen").hidden=false;$("#setIo").textContent="";$("#csvMk").textContent=(market==="stocks"?"Stocks":"Forex")+" trades only";const st=getSet();setRadio("stheme",st.theme);setRadio("saccent",st.accent);setRadio("saccent2",st.accent2);setRadio("speriod",st.period);setRadio("speriod2",st.periodSt);$("#sGA").value=st.gradeA;$("#sGB").value=st.gradeB;gcHint();$("#setSheet").hidden=false}
 $("#openSettings").onclick=openSettings;
