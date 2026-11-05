@@ -1288,7 +1288,12 @@ function setControls(st,i){const f=st.f,k=st.id;
   ${f.mode==="backtest"?`<select id="f${k}-project" data-set="${k}" data-key="project" aria-label="Backtest project">${[["all","All projects"],...projects().map(p=>[p.id,p.name]),["none","No project"]].map(([v,l])=>`<option value="${esc(v)}" ${f.project===v?"selected":""}>${esc(l)}</option>`).join("")}</select>`:""}</div>
   <div class="fchips">${chips.join("")}<button type="button" class="addf" data-addf="${k}">+ Add filter</button></div>
   </div>`}
-function fpopRender(){const P=$("#fpop"),st=sets.find(x=>x.id===fpop.set);if(!st){P.hidden=true;return}
+const allF=()=>{const f={};FDEF.forEach(([k])=>{const L=sets.map(x=>fvals(x.f[k]));f[k]=L[0].filter(v=>L.every(l=>l.includes(v)))});const fr=sets.map(x=>x.f.from||""),to=sets.map(x=>x.f.to||"");f.from=fr.every(x=>x===fr[0])?fr[0]:"";f.to=to.every(x=>x===to[0])?to[0]:"";return f};
+function allBar(){if(sets.length<2)return"";const f=allF();
+  const chips=FDEF.filter(d=>f[d[0]].length).map(d=>{const O=d[2]();const l=f[d[0]].map(v=>{const o=O.find(x=>x[0]===v);return o?o[1]:v}).join(", ");return `<span class="fchip"><em>${esc(d[1])}</em>${esc(l)}<button type="button" data-rmfilter="${d[0]}" data-fset="__all" aria-label="Remove ${esc(d[1])} from all sets">×</button></span>`});
+  if(f.from||f.to)chips.push(`<span class="fchip"><em>Dates</em>${esc(f.from?fmtD(f.from):"…")} – ${esc(f.to?fmtD(f.to):"…")}<button type="button" data-rmfilter="dates" data-fset="__all" aria-label="Remove date filter from all sets">×</button></span>`);
+  return `<div class="panel allbar"><span class="eyebrow">All sets</span><div class="fchips">${chips.join("")}<button type="button" class="addf" data-addf="__all">+ Add filter to all sets</button></div></div>`}
+function fpopRender(){const P=$("#fpop"),st=fpop.set==="__all"?(sets.length?{f:allF()}:null):sets.find(x=>x.id===fpop.set);if(!st){P.hidden=true;return}
   if(!fpop.field){P.innerHTML=FGROUPS.map(([g,ks])=>`<div class="fpg"><span class="eyebrow">${g}</span>${ks.map(k=>{const on=k==="dates"?(st.f.from||st.f.to):fvals(st.f[k]).length;return `<button type="button" class="fpi ${on?"on":""}" data-pickf="${k}">${esc(flabel(k))}<span>›</span></button>`}).join("")}</div>`).join("");return}
   const back=`<button type="button" class="fpback" data-pickf="">‹ ${esc(flabel(fpop.field))}</button>`;
   if(fpop.field==="dates"){P.innerHTML=`${back}<div class="fpdates"><label class="f"><span>From</span><input type="date" id="fpFrom" value="${esc(st.f.from)}"></label><label class="f"><span>To</span><input type="date" id="fpTo" value="${esc(st.f.to)}"></label><button type="button" class="btn small primary" data-applydates>Apply</button></div>`;return}
@@ -1301,10 +1306,14 @@ function fpopOpen(btn){fpop={set:btn.dataset.addf,field:null};const P=$("#fpop")
 function fpopClose(){$("#fpop").hidden=true;fpop={set:null,field:null}}
 document.addEventListener("click",e=>{const P=$("#fpop");
   const add=e.target.closest("[data-addf]");if(add){e.stopPropagation();if(!P.hidden&&fpop.set===add.dataset.addf)fpopClose();else fpopOpen(add);return}
-  const rm=e.target.closest("[data-rmfilter]");if(rm){const st=sets.find(x=>x.id===rm.dataset.fset);if(st){if(rm.dataset.rmfilter==="dates"){st.f.from="";st.f.to=""}else st.f[rm.dataset.rmfilter]="";renderAnalyze()}return}
+  const rm=e.target.closest("[data-rmfilter]");if(rm&&rm.dataset.fset==="__all"){const k=rm.dataset.rmfilter;if(k==="dates")sets.forEach(x=>{x.f.from="";x.f.to=""});else{const c=allF()[k];sets.forEach(x=>{x.f[k]=fvals(x.f[k]).filter(v=>!c.includes(v))})}renderAnalyze();return}
+  if(rm){const st=sets.find(x=>x.id===rm.dataset.fset);if(st){if(rm.dataset.rmfilter==="dates"){st.f.from="";st.f.to=""}else st.f[rm.dataset.rmfilter]="";renderAnalyze()}return}
   if(P.hidden)return;
   if(!e.target.closest("#fpop")){fpopClose();return}
   const pf=e.target.closest("[data-pickf]");if(pf){fpop.field=pf.dataset.pickf||null;fpopRender();return}
+  if(fpop.set==="__all"){const pv=e.target.closest("[data-pickv]");if(pv){const k=fpop.field,v=pv.dataset.pickv,on=allF()[k].includes(v);sets.forEach(x=>{const vs=fvals(x.f[k]);x.f[k]=on?vs.filter(y=>y!==v):vs.includes(v)?vs:[...vs,v]});renderAnalyze();fpopRender();return}
+    if(e.target.closest("[data-fpdone]")){fpopClose();return}
+    if(e.target.closest("[data-applydates]")){const a=$("#fpFrom").value,b=$("#fpTo").value;sets.forEach(x=>{x.f.from=a;x.f.to=b});fpopClose();renderAnalyze()}return}
   const st=sets.find(x=>x.id===fpop.set);if(!st)return;
   const pv=e.target.closest("[data-pickv]");if(pv){const vs=fvals(st.f[fpop.field]),v=pv.dataset.pickv;st.f[fpop.field]=vs.includes(v)?vs.filter(x=>x!==v):[...vs,v];renderAnalyze();fpopRender();return}
   if(e.target.closest("[data-fpdone]")){fpopClose();return}
@@ -1320,7 +1329,7 @@ function renderAnalyze(){
   const demo=docs.some(t=>t.demo);
   v.innerHTML=`${demo?`<div class="banner"><span>You are viewing sample data, not your own trades.</span><button class="btn small" id="clearDemo">Clear sample</button></div>`:""}
   <div class="panel"><span class="eyebrow">Quick start</span><div class="row" style="margin-top:8px">${PRESETS.map((p,i)=>`<button type="button" class="btn small" data-preset="${i}">${esc(p[0])}</button>`).join("")}</div></div>
-  <div class="setgrid">${sets.map(setControls).join("")}${sets.length<MAXSETS?`<button type="button" class="proj new addset" data-addset>+ Add set</button>`:""}</div>
+  ${allBar()}<div class="setgrid">${sets.map(setControls).join("")}${sets.length<MAXSETS?`<button type="button" class="proj new addset" data-addset>+ Add set</button>`:""}</div>
   <div id="results" style="display:grid;gap:20px"></div>`;
   const cd=$("#clearDemo");if(cd)cd.onclick=()=>docs.filter(t=>t.demo).forEach(t=>deleteDoc(t.id));
   renderResults();
