@@ -142,6 +142,8 @@ a.btn{text-decoration:none}
 .rvzbar{display:flex;gap:6px;align-items:center;justify-content:center;padding:10px;flex-wrap:wrap}.rvzbar span{min-width:54px;text-align:center;color:#fff;font:600 13px var(--mono)}
 .rvzstage{position:relative;flex:1;overflow:hidden;touch-action:none;cursor:grab}.rvzstage:active{cursor:grabbing}
 .rvzinner{position:absolute;left:0;top:0;transform-origin:0 0;overflow:hidden;border-radius:6px}.rvzinner img{display:block;width:100%;margin-top:-1.4%;user-select:none;-webkit-user-drag:none;pointer-events:none}
+#rvZoom.nomask .rvmask{display:none}#rvZoom.nomask .rvzinner img{margin-top:0}
+a.shotprev,a.tvwrap,a[id^="slp-"]{cursor:zoom-in}
 .rvzhelp{margin:0;padding:8px;text-align:center;color:#aab;font-size:12px}
 @media (max-width:640px){.rvzhelp{display:none}}
 .rvimg{position:relative;overflow:hidden;border-radius:10px;border:1px solid var(--line);background:var(--soft);margin:12px 0 16px}
@@ -1100,7 +1102,8 @@ function findings(bt,lv,S,T){
 }
 const WLAB=k=>({ms:"Market structure",trend:"Market trend",fibc:"FC",fiba:"Fib active",ic:"IC",pattern:"Pattern",whl:"High / Low",sd:"S&D zone",lcc:"Last CC",pz:"Proven zone"})[k]||k;
 const WKEYS=["ms","trend","fibc","fiba","ic","pattern","whl","sd","pz","lcc"];
-const structOf=t=>t.struct||(t.bos==="ja"?"bos":t.bos==="nee"&&(t.entry4h==="Reversal"||t.entry4h==="Continuation")?"som":"");
+const hasStruct=e=>e==="Reversal"||e==="Continuation"||e==="Pattern in Pattern";
+const structOf=t=>t.struct||(t.bos==="ja"?"bos":t.bos==="nee"&&hasStruct(t.entry4h)?"som":"");
 const rrOf=t=>t.slPips>0&&t.tpPips!=null?t.tpPips/t.slPips:null;
 const daysOpen=t=>t.date&&t.closeDate?Math.round((new Date(t.closeDate)-new Date(t.date))/864e5):null;
 const bucket=(v,edges,labels)=>{if(v==null||isNaN(v))return null;for(let i=0;i<edges.length;i++)if(v<edges[i])return labels[i];return labels[labels.length-1]};
@@ -1477,7 +1480,7 @@ function rvStepHTML(a,step){
     <div class="fields rv2" style="margin-top:14px">${rvMsBox("wp","Pros","for",rvWkCrit(),k=>a.weekly[k])}${rvMsBox("wc","Cons","against",rvWkCrit(),k=>a.weekly[k])}</div>`;
   if(step==="Daily")return`<div class="fields">${rvF("Trade concept",rvSel("concept",Object.keys(PLAN.concepts),a.concept,"Choose…"))}${a.concept!=="Weekly - 4H"&&(PLAN.concepts[a.concept]||[]).filter(x=>x!=="—").length?rvF("Daily variant <em class=\"opt\">optional</em>",rvSel("sub",PLAN.concepts[a.concept].filter(x=>x!=="—"),a.sub,"Not set")):""}${rvF("Market structure",rvMs("dMs",a.dMs))}</div>
     <div class="fields" style="margin-top:12px"><div class="f wide">${rvMsBox("dp","Pros","for",DCRIT,k=>a.dPros.includes(k)?"for":"").replace(/^<div class="f">/,"").replace(/<\/div>$/,"")}</div></div>`;
-  return`<div class="fields">${rvF("4H entry",rvSel("entry4h",PLAN.entries,a.entry4h,"Choose…"))}${rvF("Market structure",rvMs("hMs",a.hMs))}${a.entry4h==="Reversal"||a.entry4h==="Continuation"?rvF("4H structure",rvSeg("struct",[["bos","BoS"],["som","SoM"]],a.struct)):""}</div>
+  return`<div class="fields">${rvF("4H entry",rvSel("entry4h",PLAN.entries,a.entry4h,"Choose…"))}${rvF("Market structure",rvMs("hMs",a.hMs))}${hasStruct(a.entry4h)?rvF("4H structure",rvSeg("struct",[["bos","BoS"],["som","SoM"]],a.struct)):""}</div>
     <div class="row" style="gap:16px;margin-top:12px"><label class="checkline"><input type="checkbox" data-rc="room" ${a.room?"checked":""}><span>Room</span></label><label class="checkline"><input type="checkbox" data-rc="scaleIn" ${a.scaleIn?"checked":""}><span>Scale-in</span></label></div>`}
 const rvPick=(o,k)=>k==="wpros"||k==="wcons"?WCRIT.map(c=>c[0]).filter(x=>(o.weekly||{})[x]===(k==="wpros"?"for":"against")):k==="dPros"?DCRIT.map(c=>c[0]).filter(x=>(o.dPros||[]).includes(x)):o[k];
 function rvLab(k,v){if(k==="wpros"||k==="wcons")return v.length?v.map(x=>WLAB(x)).join(", "):"—";if(v==null||v===""||(Array.isArray(v)&&!v.length))return"—";
@@ -1522,7 +1525,7 @@ function rvRender(){const box=$("#rvBox"),S=rvState();
     <div class="row spread" style="margin-top:16px"><button type="button" class="btn" id="rvBack">← Back</button>${S.plan&&S.repl?"":`<span class="hint rvneed" style="margin:0">Answer ${!S.plan&&!S.repl?"both questions":!S.plan?"“According to plan?”":"“Save your new analysis?”"} to continue</span>`}<button type="button" class="btn primary" id="rvSaveNext" ${S.plan&&S.repl?"":"disabled"}>${S.i+1<S.queue.length?"Save & next trade →":"Save & finish"}</button></div></div>`}
 function rvApply(t,a,plan,repl){const n={...t,evaluation:plan,onPlan:plan==="plan",reviews:[...(t.reviews||[]),{at:new Date().toISOString(),plan,replaced:repl==="yes",a}]};
   if(repl==="yes")Object.assign(n,{dir:a.dir||t.dir,fase:a.fase?Number(a.fase):null,wStruct:a.wStruct,weekly:rvAsTrade(a).weekly,wPat:a.wPat,wPatSub:a.wPat&&a.wPat!=="Reversal"?a.wPatSub:"",concept:a.concept,sub:a.sub,dMs:a.dMs,dPros:a.dPros,dailyFib:a.dPros.includes("fc")?"ja":"nee",
-    entry4h:a.entry4h,hMs:a.hMs,struct:a.entry4h==="Reversal"||a.entry4h==="Continuation"?a.struct:"",room:a.room?"ja":"nee",scaleIn:a.scaleIn});
+    entry4h:a.entry4h,hMs:a.hMs,struct:hasStruct(a.entry4h)?a.struct:"",room:a.room?"ja":"nee",scaleIn:a.scaleIn});
   saveDoc(n)}
 $("#rvBox").addEventListener("click",e=>{const S=rvState();
   const pick=e.target.closest("[data-rvpick],[data-rvx]");if(pick&&S&&S.cur){e.stopPropagation();const [key,k]=(pick.dataset.rvpick||pick.dataset.rvx).split(":"),a=S.cur,rem=!!pick.dataset.rvx;
@@ -1554,7 +1557,7 @@ $("#rvBox").addEventListener("click",e=>{const S=rvState();
 $("#rvBox").addEventListener("change",e=>{const el=e.target,S=rvState();
   if(el.dataset.ros){rvOpts[el.dataset.ros]=el.value;return rvRender()}
   if(!S||!S.cur)return;
-  if(el.dataset.rks){const k=el.dataset.rks;S.cur[k]=el.value;if(k==="wPat")S.cur.wPatSub="";if(k==="concept")S.cur.sub="";if(k==="entry4h"&&!(el.value==="Reversal"||el.value==="Continuation"))S.cur.struct="";rvSave();return rvRender()}
+  if(el.dataset.rks){const k=el.dataset.rks;S.cur[k]=el.value;if(k==="wPat")S.cur.wPatSub="";if(k==="concept")S.cur.sub="";if(k==="entry4h"&&!hasStruct(el.value))S.cur.struct="";rvSave();return rvRender()}
   if(el.dataset.rc){S.cur[el.dataset.rc]=el.checked;rvSave()}});
 
 /* ---------- chart zoom (review) ---------- */
@@ -1562,11 +1565,12 @@ const Z={s:1,x:0,y:0,pts:new Map(),pinch:null,drag:null};
 function zApply(){const el=$("#rvzInner");el.style.transform=`translate(${Z.x}px,${Z.y}px) scale(${Z.s})`;$("#rvzPct").textContent=Math.round(Z.s*100)+"%"}
 function zFit(){const st=$("#rvzStage"),el=$("#rvzInner");el.style.width=Math.min(st.clientWidth,(st.clientHeight)*1.62)+"px";Z.s=1;Z.x=(st.clientWidth-el.offsetWidth)/2;Z.y=Math.max(0,(st.clientHeight-el.offsetHeight)/2);zApply()}
 function zAt(ns,cx,cy){ns=Math.min(8,Math.max(1,ns));const r=$("#rvzStage").getBoundingClientRect(),px=cx-r.left,py=cy-r.top;Z.x=px-(px-Z.x)*ns/Z.s;Z.y=py-(py-Z.y)*ns/Z.s;Z.s=ns;if(ns===1)return zFit();zApply()}
-function zOpen(src){const o=$("#rvZoom");o.querySelector("img").src=src;o.hidden=false;document.body.style.overflow="hidden";const img=o.querySelector("img");if(img.complete)zFit();else img.onload=zFit}
+function zOpen(src,mask=true){const o=$("#rvZoom");o.classList.toggle("nomask",!mask);o.querySelector("img").src=src;o.hidden=false;document.body.style.overflow="hidden";const img=o.querySelector("img");if(img.complete)zFit();else img.onload=zFit}
 function zClose(){$("#rvZoom").hidden=true;document.body.style.overflow=""}
-document.addEventListener("click",e=>{const im=e.target.closest("[data-rvzoom]");if(im){zOpen(im.dataset.rvzoom);return}const z=e.target.closest("#rvZoom [data-z]");if(!z)return;const r=$("#rvzStage").getBoundingClientRect(),cx=r.left+r.width/2,cy=r.top+r.height/2;
+document.addEventListener("click",e=>{const im=e.target.closest("[data-rvzoom]");if(im){zOpen(im.dataset.rvzoom);return}
+  const pv=e.target.closest("a.shotprev,a.tvwrap,a[id^='slp-']");if(pv&&pv.querySelector("img")&&!e.metaKey&&!e.ctrlKey){e.preventDefault();zOpen(pv.querySelector("img").src,false);return}const z=e.target.closest("#rvZoom [data-z]");if(!z)return;const r=$("#rvzStage").getBoundingClientRect(),cx=r.left+r.width/2,cy=r.top+r.height/2;
   if(z.dataset.z==="in")zAt(Z.s*1.5,cx,cy);else if(z.dataset.z==="out")zAt(Z.s/1.5,cx,cy);else if(z.dataset.z==="reset")zFit();else zClose()});
-document.addEventListener("keydown",e=>{if($("#rvZoom").hidden)return;if(e.key==="Escape")zClose();else if(e.key==="+"||e.key==="=")$("#rvZoom [data-z=in]").click();else if(e.key==="-")$("#rvZoom [data-z=out]").click()});
+document.addEventListener("keydown",e=>{if($("#rvZoom").hidden)return;e.stopImmediatePropagation();if(e.key==="Escape"){e.preventDefault();zClose()}else if(e.key==="+"||e.key==="=")$("#rvZoom [data-z=in]").click();else if(e.key==="-")$("#rvZoom [data-z=out]").click()},true);
 {const st=$("#rvzStage");
   st.addEventListener("wheel",e=>{e.preventDefault();zAt(Z.s*Math.exp(-e.deltaY*0.0015),e.clientX,e.clientY)},{passive:false});
   st.addEventListener("dblclick",e=>zAt(Z.s<2?2.5:1,e.clientX,e.clientY));
@@ -2146,10 +2150,10 @@ seg("seg-f2ectf","f2ectf",[["1h","1 hour"],["2h","2 hour"]]);
 $("#f2Entry").addEventListener("change",()=>{const ec=$("#f2Entry").value==="Engulfing Candle";$("#f2EcBlock").hidden=!ec;
   if(!ec){delete f2Shots.ltf;setRadio("f2ectf","");if(f2Active==="ltf")f2Active=null}renderF2Shots()});
 $("#seg-f2ectf").addEventListener("change",renderF2Shots);
-function f2CheckVals(){const en=$("#f2Entry").value,rev=en==="Reversal";if(rev||en==="Continuation"){}else return{struct:"",bos:"",dfs:"",som:"",room:""};const st=radio("f2struct"),bos=st==="bos",som=st==="som";
+function f2CheckVals(){const en=$("#f2Entry").value,rev=en==="Reversal";if(!hasStruct(en)) return{struct:"",bos:"",dfs:"",som:"",room:""};const st=radio("f2struct"),bos=st==="bos",som=st==="som";
   return{struct:st,bos:bos?"ja":som?"nee":"",dfs:"",som:som&&rev?"ja":"",room:som?($("#f2Room").checked?"ja":"nee"):""}}
 function f2Check(){const v=f2CheckVals(),e=$("#f2Entry").value;
-  const sv=e==="Reversal"||e==="Continuation";$("#f2StructF").hidden=!sv;if(!sv){setRadio("f2struct","");$("#f2Room").checked=false}
+  const sv=hasStruct(e);$("#f2StructF").hidden=!sv;if(!sv){setRadio("f2struct","");$("#f2Room").checked=false}
   $("#f2RoomL").hidden=v.room==="";
 }
 function f2Summaries(){f2Check();
@@ -2273,7 +2277,7 @@ const F2SLOTS=[["weekly","#f2ShotW","Weekly chart"],["daily","#f2ShotD","Daily c
 function renderF2Shots(){if(typeof f2Summaries==="function")setTimeout(f2Summaries);F2SLOTS.forEach(([k,sel,l])=>{if(k==="ltf"&&radio("f2ectf"))l=radio("f2ectf").toUpperCase()+" chart";const id=f2Shots[k],ln=f2Links[k],tv=tvImg(ln);
   $(sel).innerHTML=`<div class="shot" data-f2slot="${k}"><span class="eyebrow">${l}</span>
   <div class="linkrow"><input type="url" class="shotlink" data-f2link="${k}" value="${esc(ln||"")}" placeholder="Paste a TradingView link" aria-label="${l} link" autocomplete="off" spellcheck="false">${ln?`<a class="btn small" href="${esc(ln)}" target="_blank" rel="noopener">Open ↗</a>`:""}</div>
-  ${tv?`<a class="shotprev" href="${esc(ln)}" target="_blank" rel="noopener" title="Open in TradingView"><img src="${tv}" alt="${l} (TradingView)" loading="lazy" onerror="this.closest('.shotprev').hidden=true"></a>`:""}
+  ${tv?`<a class="shotprev" href="${esc(ln)}" target="_blank" rel="noopener" title="Click to zoom"><img src="${tv}" alt="${l} (TradingView)" loading="lazy" onerror="this.closest('.shotprev').hidden=true"></a>`:""}
   ${id&&id!=="uploading"?`<div class="shotprev old"><img src="${shotSrc(id)}" alt="${l}" data-zoom="${id}" data-zlabel="${l}"><button type="button" class="btn small ghost danger" data-f2del="${k}">Remove old screenshot</button></div>`:""}</div>`})}
 F2SLOTS.forEach(([,sel])=>{const c=$(sel);
   c.addEventListener("click",e=>{const d=e.target.closest("[data-f2del]");if(d){delete f2Shots[d.dataset.f2del];renderF2Shots()}});
