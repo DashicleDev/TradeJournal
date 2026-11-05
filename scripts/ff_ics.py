@@ -68,6 +68,22 @@ def main(out_dir="news"):
             with open(f"{out_dir}/{out}", "w", encoding="utf-8", newline="") as f:
                 f.write(ics(sel, NAMES[fn], alarms))
         print(fn, len(sel), "events")
+    # JSON for the journal's own calendar: this week + a growing history
+    import json, os
+    rows = [dict(cur=e["cur"], title=e["title"], level=e["level"], start=e["start"].strftime("%Y-%m-%dT%H:%M:%SZ")) for e in events]
+    hist_path = f"{out_dir}/history.json"
+    hist = {}
+    if os.path.exists(hist_path):
+        try:
+            hist = {f"{r['cur']}|{r['title']}|{r['start'][:10]}": r for r in json.load(open(hist_path, encoding="utf-8"))}
+        except Exception:
+            hist = {}
+    week = {r["start"][:10] for r in rows}
+    hist = {k: v for k, v in hist.items() if v["start"][:10] not in week}  # this week's file replaces its own days
+    for r in rows:
+        hist[f"{r['cur']}|{r['title']}|{r['start'][:10]}"] = r
+    with open(hist_path, "w", encoding="utf-8") as f:
+        json.dump(sorted(hist.values(), key=lambda r: r["start"]), f, ensure_ascii=False, separators=(",", ":"))
 
 if __name__ == "__main__":
     main(*sys.argv[1:])

@@ -469,6 +469,10 @@ fieldset.subs-closed .legend-toggle .chev{transform:none}
 .calnav b{font-family:var(--display);font-stretch:85%;font-size:18px;min-width:9em;text-align:center}
 .calwrap{overflow-x:auto}
 .cal{display:grid;grid-template-columns:repeat(5,minmax(44px,1fr)) repeat(2,minmax(26px,.32fr)) minmax(56px,.9fr);gap:4px;min-width:420px}
+.day .dnews{font:600 10.5px var(--mono);color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:block;margin-top:2px}
+.dnews.heavy{color:var(--bad)}.dnews em{font-style:normal;opacity:.8}
+.cal .day.we .dnews{display:none}
+@media (max-width:640px){.day .dnews .nt{display:none}.day .dnews{font-size:11px}}
 .cal .day.we .dpairs{display:none}.cal .day.we .dr{font-size:11px}
 .cal .dow{font-size:11px;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);font-weight:600;padding:2px 6px}
 .day{border:1px solid var(--line);border-radius:8px;min-height:74px;padding:6px 7px;display:grid;align-content:space-between;background:var(--surface);font:inherit;color:inherit;text-align:left;cursor:pointer}
@@ -839,6 +843,7 @@ main>*,.panel,.grid2>*,.ov>*{min-width:0}
 <p class="hint" style="margin:0">Adds Forex Factory news to your own calendar, with reminders before each event. It stays up to date by itself.</p>
 <div class="setrow"><span class="setl">Which news</span><select id="nLvl"><option value="news">Heavy, high and medium</option><option value="news-high">Heavy and high</option><option value="news-heavy">Heavy only (CPI, NFP, rates)</option></select></div>
 <div class="setrow" style="align-items:start"><span class="setl">Reminders<small>Up to 2</small></span><div><div id="nRems" class="nrems"></div><button type="button" class="addf" id="nRemAdd">+ Add reminder</button></div></div>
+<div class="setrow"><span class="setl">In the journal</span><label class="checkline"><input type="checkbox" id="nInCal"><span>Show this news in my forex calendar</span></label></div>
 <div class="setrow"><span class="setl">Add to</span><div class="row" style="gap:6px;flex-wrap:wrap"><a class="btn small" id="nGoogle" target="_blank" rel="noopener" hidden>Google Calendar</a><a class="btn small" id="nApple">Apple Calendar</a><a class="btn small" id="nOutlook" target="_blank" rel="noopener">Outlook</a><button type="button" class="btn small ghost" id="nCopy">Copy link</button></div></div>
 <p class="hint" style="margin:0" id="nMsg">To change reminders later, remove the calendar and add it again.</p>
 </section>
@@ -1364,6 +1369,17 @@ function jvCtx(){if(tab!=="backtest")return{key:"live",list:liveTrades(),cls:"li
   return{key:"bt:"+activeProject,list:l,cls:"bt",
     title:`<nav class="crumbs" aria-label="Breadcrumb"><button type="button" class="crumb" data-backproj>← All projects</button><span aria-hidden="true">/</span><span>${esc(p?p.name:"No project")}</span></nav><div class="projhead"><h2><span>${esc(p?p.name:"No project")}</span></h2></div>`,
     extra:`<div class="projmeta">${p?`${p.method?`<span class="pill ${p.method==="scroll"?"warn":"ok"}">${METHOD[p.method]}</span>`:""}<span>${esc(p.pairs||"All pairs")}${p.from||p.to?` · ${esc(fmtD(p.from)||"…")} – ${esc(fmtD(p.to)||"…")}`:""}</span>${tg?`<span class="projprog"><span class="bar"><i style="width:${Math.min(100,l.length/tg*100)}%"></i></span>${l.length}/${tg} trades</span>`:""}${p.status==="closed"?'<span class="pill">Closed</span>':""}<span class="spacer"></span><button class="btn small" data-editproj="${p.id}">Edit</button><button class="btn small" data-closeproj="${p.id}">${p.status==="closed"?"Reopen":"Close"}</button><button class="btn small ghost danger" data-delproj="${p.id}" data-label="Delete">Delete</button>`:`<span>Older backtest trades without a project</span>`}</div>${p&&p.focus?`<p class="hint" style="margin:0">${esc(p.focus)}</p>`:""}`}}
+
+/* ---------- news in the journal calendar ---------- */
+let NEWS=null,newsLoading=false,newsAt=0;
+const NLVLS={news:["Heavy","High","Medium"],"news-high":["Heavy","High"],"news-heavy":["Heavy"]};
+async function newsLoad(force){if(newsLoading||(!force&&Date.now()-newsAt<30*6e4))return;newsLoading=true;
+  try{const r=await fetch((window.TJ_CONFIG?"news/history.json":"https://willemdriessen.github.io/TradeJournal/news/history.json")+"?t="+Math.floor(Date.now()/9e5),{cache:"no-cache"});if(r.ok){NEWS=await r.json();newsAt=Date.now();render()}}catch(e){console.warn("news",e)}finally{newsLoading=false}}
+const nTime=d=>d.toLocaleTimeString([], {hour:"2-digit",minute:"2-digit",hourCycle:"h23"});
+function newsCell(ds){const st=getSet();if(market!=="fx"||!st.newsInCal)return"";if(!NEWS){newsLoad();return""}
+  const lv=NLVLS[st.newsLvl||"news"],day=NEWS.filter(n=>lv.includes(n.level)).map(n=>({...n,d:new Date(n.start)})).filter(n=>isoD(n.d)===ds).sort((a,b)=>(a.level==="Heavy"?-1:0)-(b.level==="Heavy"?-1:0)||a.d-b.d);
+  if(!day.length)return"";const f=day[0],tip=day.map(n=>`${n.level==="Heavy"?"⚠ ":""}${nTime(n.d)} ${n.cur} ${n.title}`).join("\n");
+  return `<span class="dnews ${f.level==="Heavy"?"heavy":""}" title="${esc(tip)}">${f.level==="Heavy"?"⚠":"•"}<span class="nt"> ${nTime(f.d)} ${esc(f.cur)}${day.length>1?` <em>+${day.length-1}</em>`:""}</span></span>`}
 function renderLive(){
   const C=jvCtx();jvSwap(C.key);const all=C.list;$("#liveHead").className="desk "+C.cls;
   if(market!=="stocks"&&!calTouched&&all.length&&!all.some(t=>(t.date||"").startsWith(calMonth))){const last=all.map(t=>t.date||"").sort().pop();if(last)calMonth=last.slice(0,7)}
@@ -1381,7 +1397,7 @@ function renderLive(){
   for(let i=0;i<off;i++){cells+=`<div class="day empty" aria-hidden="true"></div>`;col++}
   for(let d=1;d<=dim;d++){const ds=`${calMonth}-${String(d).padStart(2,"0")}`,a=days[ds],we=col>=5;
     const tint=a?`background:color-mix(in srgb,var(${a.r>0?"--good":a.r<0?"--bad":"--be"}) ${a.r?Math.round(10+Math.abs(a.r)/maxAbs*28):22}%,var(--surface))`:"";
-    cells+=`<button type="button" class="day ${we?"we":""} ${we&&!a?"off":""} ${ds===today?"today":""}" data-day="${ds}" aria-pressed="${selDay===ds}" style="${tint}" aria-label="${d} ${MONTHS[m-1]}${a?`, ${fmtR(a.r)}, ${a.n} trades`:", no trades"}"><span class="dn">${d}</span>${a?`<span class="dr ${a.r>0?"pos":a.r<0?"neg":""}">${fmtR(a.r)}</span><span class="dpairs">${a.tr.slice(0,3).map(t=>`<span class="dp"><i style="background:var(${t.r>0?"--good":t.r<0?"--bad":"--be"})"></i><span>${esc(t.pair||"?")}</span></span>`).join("")}${a.tr.length>3?`<span class="dp more">+${a.tr.length-3}</span>`:""}</span>`:""}</button>`;
+    cells+=`<button type="button" class="day ${we?"we":""} ${we&&!a?"off":""} ${ds===today?"today":""}" data-day="${ds}" aria-pressed="${selDay===ds}" style="${tint}" aria-label="${d} ${MONTHS[m-1]}${a?`, ${fmtR(a.r)}, ${a.n} trades`:", no trades"}"><span class="dn">${d}</span>${a?`<span class="dr ${a.r>0?"pos":a.r<0?"neg":""}">${fmtR(a.r)}</span><span class="dpairs">${a.tr.slice(0,3).map(t=>`<span class="dp"><i style="background:var(${t.r>0?"--good":t.r<0?"--bad":"--be"})"></i><span>${esc(t.pair||"?")}</span></span>`).join("")}${a.tr.length>3?`<span class="dp more">+${a.tr.length-3}</span>`:""}</span>`:""}${newsCell(ds)}</button>`;
     if(a){wkR+=a.r;wkN+=a.n}col++;if(col===7)pushWeek()}
   if(col){while(col<7){cells+=`<div class="day empty" aria-hidden="true"></div>`;col++}pushWeek()}
   const P=jRange(),per=all.filter(t=>t.date&&(!P.from||t.date>=P.from)&&(!P.to||t.date<=P.to));
@@ -1454,12 +1470,13 @@ const nRemsOf=st=>Array.isArray(st.newsRems)?st.newsRems.map(Number).filter(m=>N
 function nSave(patch){const cur=docs.find(x=>x.id==="settings")||{id:"settings",kind:"settings"};saveDoc({...cur,...patch});newsLinks()}
 function newsLinks(){const st=getSet(),lvl=st.newsLvl||"news",rems=nRemsOf(st),uniq=[...new Set(rems)].sort((a,b)=>b-a),suf="-r"+(uniq.length?uniq.join("-"):"0");
   const https="https://"+NEWS_BASE+lvl+suf+".ics",webcal="webcal://"+NEWS_BASE+lvl+suf+".ics";
-  $("#nLvl").value=lvl;
+  $("#nLvl").value=lvl;$("#nInCal").checked=!!st.newsInCal;
   $("#nRems").innerHTML=rems.map((m,i)=>`<div class="nrem"><select data-nrv="${i}" aria-label="Reminder ${i+1}">${NSTEPS.map(v=>`<option value="${v}" ${v===m?"selected":""}>${nLab(v)} before</option>`).join("")}</select><button type="button" class="acx" data-nrx="${i}" aria-label="Remove reminder">✕</button></div>`).join("")||`<p class="hint" style="margin:0 0 6px">No reminders.</p>`;
   $("#nRemAdd").hidden=rems.length>=2;
   $("#nGoogle").href="https://calendar.google.com/calendar/r?cid="+encodeURIComponent(webcal);$("#nApple").href=webcal;
   $("#nOutlook").href=`https://outlook.live.com/calendar/0/addfromweb?url=${encodeURIComponent(https)}&name=${encodeURIComponent("Forex news")}`;$("#nCopy").dataset.url=https}
 $("#nLvl").onchange=()=>nSave({newsLvl:$("#nLvl").value});
+$("#nInCal").onchange=()=>{nSave({newsInCal:$("#nInCal").checked});if($("#nInCal").checked)newsLoad(true)};
 $("#nRemAdd").onclick=()=>{const r=nRemsOf(getSet());r.push(r.includes(15)?5:15);nSave({newsRems:r})};
 $("#nRems").addEventListener("change",e=>{const i=e.target.dataset.nrv;if(i==null)return;const r=nRemsOf(getSet());r[i]=Number(e.target.value);nSave({newsRems:r})});
 $("#nRems").addEventListener("click",e=>{const x=e.target.closest("[data-nrx]");if(!x)return;const r=nRemsOf(getSet());r.splice(Number(x.dataset.nrx),1);nSave({newsRems:r})});
