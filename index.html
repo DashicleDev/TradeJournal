@@ -123,6 +123,7 @@ a.btn{text-decoration:none}
 .setrow{display:grid;grid-template-columns:96px 1fr;gap:12px;align-items:center}
 .setl{font-size:14px;font-weight:600;display:grid;line-height:1.25}
 .setl small{font-size:11.5px;font-weight:400;color:var(--muted)}
+.swtab{display:grid;gap:4px;max-width:340px}.swh,.swr{display:grid;grid-template-columns:1fr 70px 70px;gap:8px;align-items:center}.swh span{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;text-align:center}.swg{font:600 12px var(--body);color:var(--muted);text-transform:uppercase;letter-spacing:.04em;margin-top:8px}.swr span{font-size:13px}.swr input{width:100%;font:14px var(--mono);padding:5px 6px;border:1px solid var(--line);border-radius:6px;background:var(--paper);color:var(--ink);text-align:center}.swna{text-align:center;color:var(--muted)}.swrow{align-items:start}
 .gcuts{display:flex;gap:14px;align-items:center;flex-wrap:wrap}
 @media (max-width:520px){.setrow{grid-template-columns:1fr;gap:6px}}
 .gcut{display:inline-flex!important;flex-direction:row!important;align-items:center;gap:6px;font-size:13px;color:var(--muted);white-space:nowrap}
@@ -146,6 +147,7 @@ a.btn{text-decoration:none}
 a.shotprev,a.tvwrap,a[id^="slp-"]{cursor:zoom-in}
 .rvzhelp{margin:0;padding:8px;text-align:center;color:#aab;font-size:12px}
 @media (max-width:640px){.rvzhelp{display:none}}
+.rvdone summary{list-style:none;cursor:pointer;color:var(--ink)}.rvdone,.rvdone h2,.rvdt td{color:var(--ink)!important}.rvdone summary::-webkit-details-marker{display:none}.rvdone summary h2::after{content:" ▾";color:var(--muted);font-size:14px}.rvdone[open] summary h2::after{content:" ▴"}.rvdt{width:100%;border-collapse:collapse;margin-top:10px;font-size:14px}.rvdt th{text-align:left;font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;padding:6px 8px;border-bottom:1px solid var(--line)}.rvdt td{padding:7px 8px;border-bottom:1px solid var(--line)}.rvdt tr[data-rvopen-t]{cursor:pointer}.rvdt tr[data-rvopen-t]:hover td{background:var(--soft)}
 .rvimg{position:relative;overflow:hidden;border-radius:10px;border:1px solid var(--line);background:var(--soft);margin:12px 0 16px}
 .rvimg img{display:block;width:100%;margin-top:-1.4%}
 .rvimg.none{padding:28px 16px;text-align:center;color:var(--muted);font-size:14px}
@@ -873,7 +875,7 @@ main>*,.panel,.grid2>*,.ov>*{min-width:0}
       <label class="f"><span>Result (R)</span><input type="number" step="any" inputmode="decimal" id="f2R" placeholder="e.g. 2.4 or -1"></label>
       <label class="f"><span>Max R reached <em class="opt">optional</em></span><input type="number" step="any" min="0" inputmode="decimal" id="f2MaxR" placeholder="Max floating profit"></label>
       <label class="f"><span>Exit</span><select id="f2Exit"><option value="">Choose…</option></select></label>
-      <div class="f wide"><span>According to plan?</span><div class="segs" id="seg-f2eval"></div></div>
+      <div class="f wide"><span>According to plan?</span><div class="segs" id="seg-f2eval"></div><small class="hint" id="f2RevNote" style="margin:6px 0 0" hidden></small></div>
     </div>
   </fieldset>
   <div class="formbar"><button type="submit" class="btn" id="f2Save">Save trade</button><button type="button" class="btn ghost" data-closesheet2>Cancel</button><span class="spacer"></span><button type="button" class="btn ghost" id="f2Dup" hidden>Duplicate</button><button type="button" class="btn ghost danger" id="f2Del" hidden>Delete</button></div>
@@ -890,6 +892,7 @@ main>*,.panel,.grid2>*,.ov>*{min-width:0}
 <section class="setsec" data-setpane="fx" hidden>
 <div class="setrow"><span class="setl">Journal opens on</span><div class="segs" id="seg-speriod"></div></div>
 <div class="setrow"><span class="setl">Setup grades<small>Score needed</small></span><div class="gcuts"><label class="gcut"><span class="grade gA">A</span><input type="number" id="sGA" step="1" inputmode="numeric" aria-label="Score for A">+</label><label class="gcut"><span class="grade gB">B</span><input type="number" id="sGB" step="1" inputmode="numeric" aria-label="Score for B">+</label><span class="gcut"><span class="grade gC">C</span><span id="sGC"></span></span></div></div>
+<div class="setrow swrow"><span class="setl">Scoring<small>Points per item</small></span><div><div id="sScore" class="swtab"></div><button type="button" class="btn small ghost" id="swReset" style="margin-top:8px">Reset to default</button></div></div>
 </section>
 <section class="setsec" data-setpane="news" hidden>
 <p class="hint" style="margin:0">Adds Forex Factory news to your own calendar, with reminders before each event. It stays up to date by itself.</p>
@@ -1025,8 +1028,10 @@ $("#signOut").onclick=async()=>{await SB.auth.signOut();ME=null;docs=[];try{loca
 
 /* ---------- plan logic ---------- */
 const DCRIT=[["fc","FC"],["dcc","Last CC"],["sd","S&D zone"]];let dSel={};
+const SW_DEF={ms:[2,-2],trend:[2,-2],fibc:[1,-1],fiba:[1,-1],ic:[1,-1],pattern:[1,-1],whl:[1,-1],sd:[1,-1],pz:[1,-1],lcc:[1,-1],dMs:[1,0],hMs:[1,0],"d:fc":[1,0],"d:dcc":[1,0],"d:sd":[1,0],outer:[1,0],inner:[0,0]};let SW={...SW_DEF};
+const swv=(k,v)=>{const w=SW[k]||[1,-1];return v==="for"?+w[0]||0:v==="against"?+w[1]||0:0};
 const msV=v=>v==="for"?1:v==="against"?-1:0;
-const tScore=t=>{const w=t.weekly||{},dp=dProsOf(t);if(!Object.keys(w).length&&!t.dMs&&!t.hMs&&!dp.length&&!t.wStruct)return null;return Object.entries(w).reduce((a,[k,v])=>a+msV(v)*(k==="ms"||k==="trend"?2:1),0)+msV(t.dMs)+msV(t.hMs)+dp.length+(t.wStruct==="outer"?1:0)};
+const tScore=t=>{const w=t.weekly||{},dp=dProsOf(t);if(!Object.keys(w).length&&!t.dMs&&!t.hMs&&!dp.length&&!t.wStruct)return null;const r=Object.entries(w).reduce((a,[k,v])=>a+swv(k,v),0)+swv("dMs",t.dMs)+swv("hMs",t.hMs)+dp.reduce((a,k)=>a+swv("d:"+k,"for"),0)+(t.wStruct?swv(t.wStruct,"for"):0);return Math.round(r*100)/100};
 let GRADE={a:4,b:2};
 const tGrade=t=>{const s=tScore(t);return s==null?null:s>=GRADE.a?"A":s>=GRADE.b?"B":"C"};
 const dProsOf=t=>Array.isArray(t.dPros)?t.dPros:t.dailyFib==="ja"?["fc"]:[];
@@ -1153,7 +1158,7 @@ function splitRowsN(lists,key){
   const keys=[...new Set(taken(lists.flat()).flatMap(vals))].sort((x,y)=>order&&order.includes(x)&&order.includes(y)?order.indexOf(x)-order.indexOf(y):String(x).localeCompare(y));
   return keys.map(k=>({k,st:lists.map(l=>stats(l.filter(t=>vals(t).includes(k))))}));
 }
-const blankSet=mode=>({mode,grade:"",wpat:"",project:"all",status:"",actype:"",fase:"",wstruct:"",wms:"",scale:"",align:"",dms:"",hms:"",pro:"",con:"",concept:"",sub:"",dfib:"",dpro:"",entry4h:"",struct:"",room:"",ectf:"",pair:"",dir:"",outcome:"",eval:"",exit:"",account:"",from:"",to:""});
+const blankSet=mode=>({mode,grade:"",wpat:"",project:"all",status:"",actype:"",fase:"",wstruct:"",wms:"",scale:"",align:"",dms:"",hms:"",pro:"",con:"",concept:"",sub:"",dfib:"",dpro:"",entry4h:"",struct:"",room:"",ectf:"",pair:"",dir:"",outcome:"",eval:"",rev:"",exit:"",account:"",from:"",to:""});
 let SPLITGROUPS=[["Weekly",["fase","wpat","wpatsub","wstruct","wms","align","wpro","wcon","wscore"]],["Daily",["dms","concept","sub","dpro"]],["4H",["hms","entry4h","struct","room","scale","ectf","rr","sl"]],["Context",["grade","score","pair","dir","status","weekday","month","account","actype","project","btmonth","btlag"]],["Result",["outcome","evaluation","exit","maxr","days"]]];
 const MAXSETS=8;
 function newSet(f){const used=new Set(sets.map(x=>x.c));let c=0;while(used.has(c))c++;return{id:uid(),c,f:{...blankSet("all"),...f}}}
@@ -1195,6 +1200,7 @@ let FDEF=[
   ["dir","Direction",()=>[["","Any"],["long","Long"],["short","Short"]],t=>t.dir],
   ["outcome","Outcome",()=>[["","Any"],["win","Win"],["be","BE"],["loss","Loss"]],t=>t.outcome||(t.r>0?"win":t.r<0?"loss":t.r===0?"be":"")],
   ["eval","According to plan",()=>[["","Any"],["plan","Yes"],["off","No"]],t=>t.evaluation==="plan"?"plan":t.evaluation?"off":""],
+  ["rev","Reviewed",()=>[["","Any"],["yes","Re-evaluated"],["no","Not yet"]],t=>t.reviews&&t.reviews.length?"yes":"no"],
   ["exit","Exit",()=>[["","Any"],...PLAN.exits.map(c=>[c,c])],t=>t.exitReason],
   ["account","Account",()=>[["","Any"],...[...new Set(trades().map(acKey).filter(Boolean))].sort((a,b)=>(a==="Removed account")-(b==="Removed account")||a.localeCompare(b)).map(c=>[c,c])],t=>acKey(t)],
   ["actype","Account type",()=>[["","Any"],...Object.entries(ACTYPE)],t=>(acOf(t.account)||{}).type||""],
@@ -1212,7 +1218,7 @@ function describe(f){const p=[];p.push(f.mode==="all"?"All trades":f.mode==="liv
   FDEF.forEach(([k,label,opts])=>{const vs=fvals(f[k]);if(!vs.length)return;const O=opts();const l=vs.map(v=>{const o=O.find(x=>x[0]===v);return o?o[1]:v}).join(k==="fase"?" & ":" / ");
     p.push(k==="pro"?"Pro: "+l:k==="dpro"?"Daily pro: "+l:k==="con"?"Con: "+l:["fase","pair","concept","sub","outcome","eval","status","sphase","swpat","sstate"].includes(k)?l:label+": "+l)});
   if(f.from||f.to)p.push((f.from||"…")+" → "+(f.to||"…"));return p.join(" · ")}
-let FGROUPS=[["Weekly",["fase","wpat","wstruct","wms","align","pro","con"]],["Daily",["dms","concept","sub","dpro"]],["4H",["hms","entry4h","struct","room","scale","ectf"]],["Context",["status","grade","pair","dir","account","actype","dates"]],["Result",["outcome","eval","exit"]]];
+let FGROUPS=[["Weekly",["fase","wpat","wstruct","wms","align","pro","con"]],["Daily",["dms","concept","sub","dpro"]],["4H",["hms","entry4h","struct","room","scale","ectf"]],["Context",["status","grade","pair","dir","account","actype","dates"]],["Result",["outcome","eval","rev","exit"]]];
 /* ---------- Analyze definitions per market ---------- */
 const FX_DEFS={FDEF,FGROUPS,SPLITS,SPLITGROUPS,PRESETS,split:"fase"};
 const MSO=()=>[["","Any"],["for","With"],["against","Against"]];
@@ -1454,7 +1460,7 @@ function rvRange(o){const a=new Date((o.anchor||isoD(new Date()))+"T12:00:00"),y
 function rvShift(o,d){const a=new Date((o.anchor||isoD(new Date()))+"T12:00:00");if(o.per==="week")a.setDate(a.getDate()+7*d);else if(o.per==="month")a.setMonth(a.getMonth()+d,1);else if(o.per==="quarter")a.setMonth(a.getMonth()+3*d,1);else if(o.per==="year")a.setFullYear(a.getFullYear()+d);o.anchor=isoD(a)}
 const RV_STEPS=["Weekly","Daily","4H"],RV_SLOT={Weekly:"weekly",Daily:"daily","4H":"h4"};
 const rvWkCrit=()=>WCRIT.filter(([k])=>k!=="pattern");
-function rvPool(o){return docs.filter(t=>!t.kind&&mktOf(t)==="fx"&&t.status!=="missed"&&t.r!=null&&(o.mode==="both"||t.mode===o.mode)
+function rvPool(o){return docs.filter(t=>!t.kind&&(!o.unrev||!(t.reviews&&t.reviews.length))&&mktOf(t)==="fx"&&t.status!=="missed"&&t.r!=null&&(o.mode==="both"||t.mode===o.mode)
   &&(o.mode!=="live"||!o.acct||t.account===o.acct)&&(o.mode!=="backtest"||!o.proj||t.project===o.proj)
   &&(()=>{const r=rvRange(o);return(!r.from||(t.date||"")>=r.from)&&(!r.to||(t.date||"")<=r.to)})()&&t.shotLinks&&(t.shotLinks.weekly||t.shotLinks.daily||t.shotLinks.h4))}
 function rvOrig(t){const w={...(t.weekly||{})},wms=w.ms||"";delete w.ms;delete w.pattern;
@@ -1490,6 +1496,9 @@ function rvLab(k,v){if(k==="wpros"||k==="wcons")return v.length?v.map(x=>WLAB(x)
   if(k==="fase")return"Phase "+v;return String(v)}
 const RV_ROWS=[["dir","Direction"],["fase","Weekly phase"],["wStruct","Inner / outer"],["wms","Weekly MS"],["wPat","Weekly pattern"],["wPatSub","Pattern variant"],["wpros","Weekly pros"],["wcons","Weekly cons"],["concept","Trade concept"],["sub","Daily variant"],["dMs","Daily MS"],["dPros","Daily pros"],["entry4h","4H entry"],["hMs","4H MS"],["struct","4H structure"],["room","Room"],["scaleIn","Scale-in"]];
 const rvEq=(a,b)=>JSON.stringify(a instanceof Array?[...a].sort():a&&typeof a==="object"?Object.fromEntries(Object.entries(a).filter(([,v])=>v).sort()):a)===JSON.stringify(b instanceof Array?[...b].sort():b&&typeof b==="object"?Object.fromEntries(Object.entries(b).filter(([,v])=>v).sort()):b);
+function rvDoneHTML(){const T=trades().filter(t=>t.reviews&&t.reviews.length&&mktOf(t)==="fx").map(t=>({t,n:t.reviews.length,last:t.reviews[t.reviews.length-1]})).sort((a,b)=>b.last.at.localeCompare(a.last.at));if(!T.length)return"";
+  const pl=v=>v==="plan"?"Yes":v?"No":"—";
+  return`<div class="panel"><details class="rvdone"><summary><span class="eyebrow">Progress</span><h2>Re-evaluated trades <small class="hint" style="margin:0;font-weight:400">${T.length}</small></h2></summary><div style="overflow-x:auto"><table class="rvdt"><thead><tr><th>Trade</th><th>Pair</th><th>Re-evaluated</th><th>Times</th><th>To plan now</th></tr></thead><tbody>${T.map(({t,n,last})=>`<tr data-rvopen-t="${t.id}"><td>${esc(fmtD(t.date))}</td><td>${esc(t.pair||"")}</td><td>${esc(fmtD(last.at.slice(0,10)))}</td><td>${n}×</td><td>${pl(last.plan)}</td></tr>`).join("")}</tbody></table></div></details></div>`}
 function rvRender(){const box=$("#rvBox"),S=rvState();
   if(market!=="fx"){box.innerHTML=`<div class="panel"><span class="eyebrow">Review</span><h2>Forex only for now</h2><p class="hint">Switch to Forex at the top to review trades.</p></div>`;return}
   if(!S||!S.queue||S.i>=S.queue.length){const o=rvOpts,R=rvRange(o),n=rvPool(o).length,acs=accounts("fx"),ps=projects(),L=rvSessions();
@@ -1501,10 +1510,11 @@ function rvRender(){const box=$("#rvBox"),S=rvState();
       <p class="hint">You see the weekly, daily and 4H chart one by one, without pair or result, and fill in your analysis. At the end it shows what you filled in back then.</p>
       <div class="fields">${rvF("Trades",`<div class="segs">${[["live","Live"],["backtest","Backtest"],["both","Both"]].map(([v,l])=>`<button type="button" class="rvb${o.mode===v?" on":""}" data-ro="mode" data-rv="${v}">${l}</button>`).join("")}</div>`)}
       ${o.mode==="live"?rvF("Account",`<select data-ros="acct"><option value="">All accounts</option>${acs.map(a=>`<option ${a.name===o.acct?"selected":""}>${esc(a.name)}</option>`).join("")}</select>`):""}
-      ${o.mode==="backtest"?rvF("Project",`<select data-ros="proj"><option value="">All projects</option>${ps.map(p=>`<option value="${p.id}" ${p.id===o.proj?"selected":""}>${esc(p.name)}</option>`).join("")}</select>`):""}</div>
+      ${o.mode==="backtest"?rvF("Project",`<select data-ros="proj"><option value="">All projects</option>${ps.map(p=>`<option value="${p.id}" ${p.id===o.proj?"selected":""}>${esc(p.name)}</option>`).join("")}</select>`):""}
+      ${rvF("Include",`<div class="segs">${[["","All"],["1","Not re-evaluated yet"]].map(([v,l])=>`<button type="button" class="rvb${(o.unrev||"")===v?" on":""}" data-ro="unrev" data-rv="${v}">${l}</button>`).join("")}</div>`)}</div>
       <div class="f" style="margin-top:12px"><span>Period</span><div class="segs">${per.map(([v,l])=>`<button type="button" class="rvb${o.per===v?" on":""}" data-ro="per" data-rv="${v}">${l}</button>`).join("")}</div></div>
       ${o.per==="custom"?`<div class="fields" style="margin-top:10px">${rvF("From",`<input type="date" data-ros="from" value="${esc(o.from||"")}">`)}${rvF("To",`<input type="date" data-ros="to" value="${esc(o.to||"")}">`)}</div>`:o.per==="all"?"":`<div class="rvper"><button type="button" class="btn small" data-rvshift="-1" aria-label="Previous">‹</button><b>${esc(R.label)}</b><button type="button" class="btn small" data-rvshift="1" aria-label="Next">›</button>${o.anchor&&o.anchor!==isoD(new Date())?`<button type="button" class="btn small ghost" data-rvshift="0">Today</button>`:""}</div>`}
-      <div class="row" style="gap:10px;align-items:center;margin-top:16px"><button type="button" class="btn primary" id="rvStart" ${n?"":"disabled"}>Start review</button><span class="hint" style="margin:0">${n} trade${n===1?"":"s"} with charts${R.from||R.to?" in "+esc(R.label):""}, in random order</span></div></div>${F.length?`<div class="panel"><span class="eyebrow">Finished</span><h2>Past sessions</h2><div class="rvlist">${F.map(x=>`<div class="rvsess"><div><b>${esc(x.name||"Review session")}</b><small class="hint" style="margin:0;display:block">${x.queue.length} reviewed · finished ${esc(fmtD(isoD(new Date(x.done||x.touched||Date.now()))))}</small></div><span></span><div class="row" style="gap:6px"><button type="button" class="btn small ghost" data-rvdel="${x.id}">Delete</button><button type="button" class="btn small" data-rvview="${x.id}">View result</button></div></div>`).join("")}</div></div>`:""}`;return}
+      <div class="row" style="gap:10px;align-items:center;margin-top:16px"><button type="button" class="btn primary" id="rvStart" ${n?"":"disabled"}>Start review</button><span class="hint" style="margin:0">${n} trade${n===1?"":"s"} with charts${R.from||R.to?" in "+esc(R.label):""}, in random order${(()=>{const all=rvPool({...o,unrev:""}),d=all.filter(t=>t.reviews&&t.reviews.length).length;return all.length?` · ${d} of ${all.length} already re-evaluated`:""})()}</span></div></div>${rvDoneHTML()}${F.length?`<div class="panel"><span class="eyebrow">Finished</span><h2>Past sessions</h2><div class="rvlist">${F.map(x=>`<div class="rvsess"><div><b>${esc(x.name||"Review session")}</b><small class="hint" style="margin:0;display:block">${x.queue.length} reviewed · finished ${esc(fmtD(isoD(new Date(x.done||x.touched||Date.now()))))}</small></div><span></span><div class="row" style="gap:6px"><button type="button" class="btn small ghost" data-rvdel="${x.id}">Delete</button><button type="button" class="btn small" data-rvview="${x.id}">View result</button></div></div>`).join("")}</div></div>`:""}`;return}
   const t=docs.find(d=>d.id===S.queue[S.i]);if(!t){S.i++;rvSave();return rvRender()}
   const a=S.cur||(S.cur=rvBlank()),step=S.step||0,prog=`Trade ${S.i+1} of ${S.queue.length}`;
   if(step<3){const st=RV_STEPS[step];
@@ -1533,6 +1543,7 @@ $("#rvBox").addEventListener("click",e=>{const S=rvState();
     else{const kind=key==="wp"?"for":"against",v=a.weekly[k];if(v&&v!==kind){}else if(v===kind||rem)delete a.weekly[k];else a.weekly[k]=kind}
     if(rem)rvOpen="";rvSave();return rvRender()}
   const op=e.target.closest("[data-rvopen]");if(op){rvOpen=rvOpen===op.dataset.rvopen?"":op.dataset.rvopen;return rvRender()}
+  const tr=e.target.closest("tr[data-rvopen-t]");if(tr){const t=docs.find(d=>d.id===tr.dataset.rvopenT);if(t)openSheet2(t);return}
   const b=e.target.closest("button");if(!b){if(rvOpen){rvOpen="";rvRender()}return}
   if(b.id==="rvStart"){const o={...rvOpts},ids=rvPool(o).map(t=>t.id);for(let i=ids.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[ids[i],ids[j]]=[ids[j],ids[i]]}
     const R=rvRange(o),who=o.mode==="live"?(o.acct||"Live"):o.mode==="backtest"?((projects().find(p=>p.id===o.proj)||{}).name||"Backtest"):"Live + backtest";
@@ -1634,7 +1645,7 @@ const ACCENTS2=[["orange","Orange","#d0601b","#f08c4c"],["amber","Amber","#a96f1
 const SKEY="tj-look";
 const getSet=()=>{const d=docs.find(x=>x.id==="settings");let l={};try{l=JSON.parse(localStorage.getItem(SKEY)||"{}")}catch{}return{theme:"system",accent:"blue",accent2:"orange",period:"month",periodSt:"year",gradeA:4,gradeB:2,...l,...(d||{})}};
 let _periodApplied=false;
-function applySettings(){const st=getSet(),r=document.documentElement;GRADE={a:Number(st.gradeA),b:Math.min(Number(st.gradeB),Number(st.gradeA))};
+function applySettings(){const st=getSet(),r=document.documentElement;GRADE={a:Number(st.gradeA),b:Math.min(Number(st.gradeB),Number(st.gradeA))};SW={...SW_DEF,...(st.scoreW||{})};
   if(st.theme==="system")delete r.dataset.theme;else r.dataset.theme=st.theme;
   const a=ACCENTS.find(x=>x[0]===st.accent)||ACCENTS[0];
   const dark=st.theme==="dark"||st.theme==="black"||(st.theme==="system"&&matchMedia("(prefers-color-scheme: dark)").matches);
@@ -1642,7 +1653,7 @@ function applySettings(){const st=getSet(),r=document.documentElement;GRADE={a:N
   const a2=ACCENTS2.find(x=>x[0]===st.accent2)||ACCENTS2[0];r.style.setProperty("--live",dark?a2[3]:a2[2]);
   const m=document.querySelector('meta[name="theme-color"]');if(m)m.content=st.theme==="black"?"#000000":dark?"#141a2e":"#f2f3f8";
   if(!_periodApplied){jPeriod=(market==="stocks"?st.periodSt:st.period)||"month";_periodApplied=true}
-  try{localStorage.setItem(SKEY,JSON.stringify({theme:st.theme,accent:st.accent,accent2:st.accent2,period:st.period,periodSt:st.periodSt,gradeA:st.gradeA,gradeB:st.gradeB}))}catch{}}
+  try{localStorage.setItem(SKEY,JSON.stringify({theme:st.theme,accent:st.accent,accent2:st.accent2,period:st.period,periodSt:st.periodSt,gradeA:st.gradeA,gradeB:st.gradeB,scoreW:st.scoreW}))}catch{}}
 function saveSetting(k,v){const cur=docs.find(x=>x.id==="settings")||{id:"settings",kind:"settings"};const nd={...cur,[k]:v};
   if((k==="period"&&market==="fx")||(k==="periodSt"&&market==="stocks"))jPeriod=v;saveDoc(nd);applySettings()}
 seg("seg-stheme","stheme",[["system","System"],["light","Light"],["dark","Dark"],["black","Black"]]);
@@ -1650,6 +1661,12 @@ seg("seg-speriod","speriod",[["week","Week"],["month","Month"],["quarter","Quart
 seg("seg-speriod2","speriod2",[["week","Week"],["month","Month"],["quarter","Quarter"],["year","Year"],["all","All time"]]);
 $("#sAccent").innerHTML=ACCENTS.map(([k,l,c])=>`<label title="${l}"><input type="radio" name="saccent" value="${k}" aria-label="${l}"><span style="background:${c}"></span></label>`).join("");
 $("#sAccent2").innerHTML=ACCENTS2.map(([k,l,c])=>`<label title="${l}"><input type="radio" name="saccent2" value="${k}" aria-label="${l}"><span style="background:${c}"></span></label>`).join("");
+const SW_ROWS=[["Weekly"],["ms","Weekly MS","With","Against"],["trend","Market trend"],["fibc","FC"],["fiba","Fib active"],["ic","IC"],["pattern","Pattern"],["whl","High / Low"],["sd","S&D zone"],["pz","Proven zone"],["lcc","Last CC"],["Daily"],["dMs","Daily MS","With","Against"],["d:fc","FC",1],["d:dcc","Last CC",1],["d:sd","S&D zone",1],["4H"],["hMs","4H MS","With","Against"],["Structure"],["outer","Outer",1],["inner","Inner",1]];
+function swRender(){const inp=(k,i)=>`<input type="number" step="0.5" inputmode="decimal" data-sw="${k}" data-i="${i}" value="${SW[k][i]}" aria-label="${k} ${i?"con":"pro"}">`;
+  $("#sScore").innerHTML=`<div class="swh"><span></span><span>Pro</span><span>Con</span></div>`+SW_ROWS.map(r=>r.length===1?`<div class="swg">${r[0]}</div>`:`<div class="swr"><span>${esc(r[1])}</span>${inp(r[0],0)}${r[2]===1?"<span class=\"swna\">—</span>":inp(r[0],1)}</div>`).join("")}
+function swSave(w){const cur=docs.find(x=>x.id==="settings")||{id:"settings",kind:"settings"};saveDoc({...cur,scoreW:w});applySettings();render()}
+document.addEventListener("change",e=>{const el=e.target.closest("[data-sw]");if(!el)return;const k=el.dataset.sw,i=+el.dataset.i;let v=Number(el.value);if(!isFinite(v))v=SW_DEF[k][i];const w={...SW};w[k]=[...w[k]];w[k][i]=v;swSave(w)});
+document.addEventListener("click",e=>{if(e.target.id!=="swReset")return;swSave(null);setTimeout(swRender,0)});
 function gcHint(){const a=Number($("#sGA").value),b=Number($("#sGB").value);$("#sGC").textContent=isFinite(a)&&isFinite(b)?`${b-1} or less`:""}
 let setTab="look";function showSetTab(k){setTab=k;document.querySelectorAll("[data-settab]").forEach(b=>b.setAttribute("aria-selected",b.dataset.settab===k));document.querySelectorAll("[data-setpane]").forEach(p=>p.hidden=p.dataset.setpane!==k)}
 document.querySelectorAll("[data-settab]").forEach(b=>b.addEventListener("click",()=>showSetTab(b.dataset.settab)));
@@ -1681,7 +1698,7 @@ $("#nRemAdd").onclick=()=>{const r=nRemsOf(getSet());r.push(r.includes(15)?5:15)
 $("#nRems").addEventListener("change",e=>{const i=e.target.dataset.nrv;if(i==null)return;const r=nRemsOf(getSet());r[i]=Number(e.target.value);nSave({newsRems:r})});
 $("#nRems").addEventListener("click",e=>{const x=e.target.closest("[data-nrx]");if(!x)return;const r=nRemsOf(getSet());r.splice(Number(x.dataset.nrx),1);nSave({newsRems:r})});
 $("#nCopy").onclick=async()=>{try{await navigator.clipboard.writeText($("#nCopy").dataset.url);toast("Link copied")}catch{$("#nMsg").textContent=$("#nCopy").dataset.url}};
-function openSettings(){showSetTab(setTab);newsLinks();$("#wipeBox").hidden=true;$("#wipeOpen").hidden=false;$("#setIo").textContent="";$("#csvMk").textContent=(market==="stocks"?"Stocks":"Forex")+" trades only";const st=getSet();setRadio("stheme",st.theme);setRadio("saccent",st.accent);setRadio("saccent2",st.accent2);setRadio("speriod",st.period);setRadio("speriod2",st.periodSt);$("#sGA").value=st.gradeA;$("#sGB").value=st.gradeB;gcHint();$("#setSheet").hidden=false}
+function openSettings(){showSetTab(setTab);newsLinks();$("#wipeBox").hidden=true;$("#wipeOpen").hidden=false;$("#setIo").textContent="";$("#csvMk").textContent=(market==="stocks"?"Stocks":"Forex")+" trades only";const st=getSet();setRadio("stheme",st.theme);setRadio("saccent",st.accent);setRadio("saccent2",st.accent2);setRadio("speriod",st.period);setRadio("speriod2",st.periodSt);$("#sGA").value=st.gradeA;$("#sGB").value=st.gradeB;gcHint();swRender();$("#setSheet").hidden=false}
 $("#openSettings").onclick=openSettings;
 document.querySelectorAll("[data-closeset]").forEach(b=>b.onclick=()=>{$("#setSheet").hidden=true});
 $("#setForm").addEventListener("change",e=>{const n=e.target.name;if(n==="stheme")saveSetting("theme",e.target.value);else if(n==="saccent")saveSetting("accent",e.target.value);else if(n==="saccent2")saveSetting("accent2",e.target.value);else if(n==="speriod")saveSetting("period",e.target.value);else if(n==="speriod2")saveSetting("periodSt",e.target.value);else if(e.target.id==="sGA"||e.target.id==="sGB"){let a=Math.round(Number($("#sGA").value)),b=Math.round(Number($("#sGB").value));if(!isFinite(a))a=4;if(!isFinite(b))b=2;if(b>a){b=a;$("#sGB").value=b}const cur=docs.find(x=>x.id==="settings")||{id:"settings",kind:"settings"};saveDoc({...cur,gradeA:a,gradeB:b});applySettings();gcHint()}});
@@ -2204,7 +2221,7 @@ let f2Mode=null,f2Market="fx";
 /* date the backtest was done: today for new trades, else saved value, else when it was logged */
 const todayISO=()=>{const d=new Date();return isoD(d)};
 const btDefault=(t,dup)=>!t||dup?todayISO():(t.btDate||todayISO());
-function openSheet2(t,dup){const live=(t?t.mode:formMode())==="live",f=$("#tradeForm2");f.reset();editingId=t?t.id:null;f2Mode=t?t.mode:null;f2Market=t?mktOf(t):market;
+function openSheet2(t,dup){const live=(t?t.mode:formMode())==="live",f=$("#tradeForm2");f.reset();$("#f2RevNote").hidden=true;editingId=t?t.id:null;f2Mode=t?t.mode:null;f2Market=t?mktOf(t):market;
   f.classList.toggle("mode-live",live);$("#f2ProjField").hidden=live;$("#f2BtField").hidden=true;$("#f2BtDate").value=btDefault(t,dup);
   $("#f2Chip").className="chip "+(live?"live":"bt");$("#f2Chip").textContent=live?"Live":"Backtest";
   $("#f2Title").textContent=(t?"Edit ":"New ")+(live?"live trade":"backtest trade");$("#f2Save").textContent=t?"Save changes":"Save trade";
@@ -2224,7 +2241,7 @@ function f2Fill(t){const ch=(el)=>el.dispatchEvent(new Event("change",{bubbles:t
   $("#f2Entry").value=t.entry4h||"";ch($("#f2Entry"));setRadio("f2ectf",t.ecTf||"");
   setRadio("f2struct",t.struct||(t.bos==="ja"?"bos":t.bos==="nee"?"som":""));$("#f2Room").checked=t.room==="ja";$("#f2Scale").checked=!!t.scaleIn;
   $("#f2PlanEntry").value=t.planEntry??"";$("#f2SlPips").value=t.slPips??"";$("#f2TpPips").value=t.tpPips??"";
-  setRadio("f2out",t.outcome||(t.r>0?"win":t.r<0?"loss":t.r===0?"be":""));$("#f2R").value=t.r??"";$("#f2MaxR").value=t.maxR??"";$("#f2Exit").value=t.exitReason||"";setRadio("f2eval",t.evaluation==="plan"?"plan":t.evaluation?"off":"");
+  setRadio("f2out",t.outcome||(t.r>0?"win":t.r<0?"loss":t.r===0?"be":""));$("#f2R").value=t.r??"";$("#f2MaxR").value=t.maxR??"";$("#f2Exit").value=t.exitReason||"";setRadio("f2eval",t.evaluation==="plan"?"plan":t.evaluation?"off":"");{const rv=editingId?(t.reviews||[]):[],n=$("#f2RevNote");n.hidden=!rv.length;if(rv.length)n.textContent=`Re-evaluated ${rv.length}× · last ${fmtD(rv[rv.length-1].at.slice(0,10))}`}
   f2Shots={...(t.shots||{})};f2Links={...(t.shotLinks||{})};renderF2Shots();f2Check();f2RR();f2Summaries()}
 function dupTrade(id){const t=docs.find(x=>x.id===id);if(!t)return;
   if(mktOf(t)==="stocks"){if(tab!=="analyze")show(t.mode==="live"?"live":"backtest");openStock(t,true);return}
