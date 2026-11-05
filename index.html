@@ -829,7 +829,7 @@ main>*,.panel,.grid2>*,.ov>*{min-width:0}
     <details class="subsec">
       <summary><span>4H</span><span class="sumval" id="f2SumH"></span></summary>
       <div class="fields">
-        <label class="f"><span>4H entry</span><select id="f2Entry"><option value="">Choose…</option><option>Reversal</option><option>Continuation</option><option>Deceleration</option><option>Engulfing Candle</option></select></label>
+        <label class="f"><span>4H entry</span><select id="f2Entry"><option value="">Choose…</option><option>Reversal</option><option>Continuation</option><option>Pattern in Pattern</option><option>Deceleration</option><option>Engulfing Candle</option></select></label>
         <div class="f"><span>Market structure</span><div class="mstf" role="radiogroup" aria-label="4H market structure"><label class="seg msok"><input type="radio" name="f2hms" value="for"><span>✓ With</span></label><label class="seg msno"><input type="radio" name="f2hms" value="against"><span>✗ Against</span></label></div></div>
       </div>
       <div class="f" id="f2StructF" style="margin-top:12px" hidden><span>4H structure</span><div class="segs" id="seg-f2struct"></div></div>
@@ -936,7 +936,7 @@ const PLAN={
     2:["Reversal","Continuation","Pattern in Pattern","Push IC Push","Weekly - 4H","Daily Retrace"],
     3:["Reversal","Continuation","Pattern in Pattern","Push IC Push","Weekly - 4H","Daily Retrace"],
     4:["Continuation","Pattern in Pattern","Push IC Push"]},
-  entries:["Reversal","Continuation","Deceleration","Engulfing Candle"],
+  entries:["Reversal","Continuation","Pattern in Pattern","Deceleration","Engulfing Candle"],
   exits:["Take profit","Stop loss","Break-even","Trailing stop","Closed for news","Closed manually","Invalid, cancelled"]
 };
 const METHOD={blind:"Bar replay, blind",replay:"Bar replay",scroll:"Chart scroll"};
@@ -1428,7 +1428,7 @@ function rvPool(o){return docs.filter(t=>!t.kind&&mktOf(t)==="fx"&&t.status!=="m
   &&(o.mode!=="live"||!o.acct||t.account===o.acct)&&(o.mode!=="backtest"||!o.proj||t.project===o.proj)
   &&(()=>{const r=rvRange(o);return(!r.from||(t.date||"")>=r.from)&&(!r.to||(t.date||"")<=r.to)})()&&t.shotLinks&&(t.shotLinks.weekly||t.shotLinks.daily||t.shotLinks.h4))}
 function rvOrig(t){const w={...(t.weekly||{})},wms=w.ms||"";delete w.ms;delete w.pattern;
-  return{dir:t.dir||"",fase:t.fase?String(t.fase):"",wStruct:t.wStruct||"",wms,wPat:t.wPat||"",wPatSub:t.wPatSub||"",weekly:w,concept:t.concept||"",sub:t.sub&&t.sub!=="—"?t.sub:"",dMs:t.dMs||"",dPros:dProsOf(t),
+  return{dir:t.dir||"",fase:t.fase?String(t.fase):"",wStruct:t.wStruct||"",wms,wPat:t.wPat||"",wPatSub:t.wPatSub||"",weekly:w,concept:t.concept||"",sub:t.sub&&t.sub!=="—"&&t.concept!=="Weekly - 4H"?t.sub:"",dMs:t.dMs||"",dPros:dProsOf(t),
     entry4h:t.entry4h||"",hMs:t.hMs||"",struct:t.struct||(t.bos==="ja"?"bos":t.bos==="nee"?"som":""),room:t.room==="ja",scaleIn:!!t.scaleIn}}
 const rvAsTrade=a=>({weekly:{...a.weekly,...(a.wms?{ms:a.wms}:{}),...(a.wPat?{pattern:"for"}:{})},dMs:a.dMs,hMs:a.hMs,dPros:a.dPros,wStruct:a.wStruct});
 const rvBlank=()=>({dir:"",fase:"",wStruct:"",wms:"",wPat:"",wPatSub:"",weekly:{},concept:"",sub:"",dMs:"",dPros:[],entry4h:"",hMs:"",struct:"",room:false,scaleIn:false});
@@ -1448,7 +1448,7 @@ function rvStepHTML(a,step){
   if(step==="Weekly")return`<div class="fields">${rvF("Weekly phase",rvSeg("fase",[["1","1"],["2","2"],["3","3"],["4","4"]],a.fase))}${rvF("Inner / outer",rvSeg("wStruct",[["inner","Inner"],["outer","Outer"]],a.wStruct))}${rvF("Market structure",rvMs("wms",a.wms))}
     ${rvF("Weekly pattern",rvSel("wPat",["Continuation","Reversal","Pattern in Pattern"],a.wPat,"No pattern"))}${a.wPat&&a.wPat!=="Reversal"?rvF("Pattern variant <em class=\"opt\">optional</em>",rvSel("wPatSub",(PLAN.concepts[a.wPat]||[]),a.wPatSub,"Not set")):""}${rvF("Direction",rvSeg("dir",[["long","↑ Long"],["short","↓ Short"]],a.dir))}</div>
     <div class="fields rv2" style="margin-top:14px">${rvMsBox("wp","Pros","for",rvWkCrit(),k=>a.weekly[k])}${rvMsBox("wc","Cons","against",rvWkCrit(),k=>a.weekly[k])}</div>`;
-  if(step==="Daily")return`<div class="fields">${rvF("Trade concept",rvSel("concept",Object.keys(PLAN.concepts),a.concept,"Choose…"))}${(PLAN.concepts[a.concept]||[]).filter(x=>x!=="—").length?rvF("Daily variant <em class=\"opt\">optional</em>",rvSel("sub",PLAN.concepts[a.concept].filter(x=>x!=="—"),a.sub,"Not set")):""}${rvF("Market structure",rvMs("dMs",a.dMs))}</div>
+  if(step==="Daily")return`<div class="fields">${rvF("Trade concept",rvSel("concept",Object.keys(PLAN.concepts),a.concept,"Choose…"))}${a.concept!=="Weekly - 4H"&&(PLAN.concepts[a.concept]||[]).filter(x=>x!=="—").length?rvF("Daily variant <em class=\"opt\">optional</em>",rvSel("sub",PLAN.concepts[a.concept].filter(x=>x!=="—"),a.sub,"Not set")):""}${rvF("Market structure",rvMs("dMs",a.dMs))}</div>
     <div class="fields" style="margin-top:12px"><div class="f wide">${rvMsBox("dp","Pros","for",DCRIT,k=>a.dPros.includes(k)?"for":"").replace(/^<div class="f">/,"").replace(/<\/div>$/,"")}</div></div>`;
   return`<div class="fields">${rvF("4H entry",rvSel("entry4h",PLAN.entries,a.entry4h,"Choose…"))}${rvF("Market structure",rvMs("hMs",a.hMs))}${a.entry4h==="Reversal"||a.entry4h==="Continuation"?rvF("4H structure",rvSeg("struct",[["bos","BoS"],["som","SoM"]],a.struct)):""}</div>
     <div class="row" style="gap:16px;margin-top:12px"><label class="checkline"><input type="checkbox" data-rc="room" ${a.room?"checked":""}><span>Room</span></label><label class="checkline"><input type="checkbox" data-rc="scaleIn" ${a.scaleIn?"checked":""}><span>Scale-in</span></label></div>`}
