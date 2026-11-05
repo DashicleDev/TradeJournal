@@ -45,7 +45,7 @@ def ics(events, name):
         L += ["BEGIN:VEVENT", f"UID:{uid}", f"DTSTAMP:{now}", f"DTSTART:{s:%Y%m%dT%H%M%SZ}", f"DTEND:{en:%Y%m%dT%H%M%SZ}",
               f"SUMMARY:{esc(('⚠ ' if e['level'] == 'Heavy' else '') + '[' + e['cur'] + '] ' + e['title'])}",
               f"DESCRIPTION:{esc('Impact: ' + ('Heavy news (' + e['imp'] + ')' if e['level'] == 'Heavy' else e['imp']) + chr(10) + 'Source: Forex Factory')}",
-              "TRANSP:TRANSPARENT", "END:VEVENT"]
+              "TRANSP:TRANSPARENT", "BEGIN:VALARM", "ACTION:DISPLAY", "DESCRIPTION:" + esc(e["cur"] + " " + e["title"]), "TRIGGER:-PT15M", "END:VALARM", "END:VEVENT"]
     L.append("END:VCALENDAR")
     return "\r\n".join(L) + "\r\n"
 
