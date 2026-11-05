@@ -132,6 +132,18 @@ a.btn{text-decoration:none}
 .rvbar{height:6px;border-radius:3px;background:var(--soft);overflow:hidden}.rvbar i{display:block;height:100%;background:var(--accent)}
 .rvper{display:flex;align-items:center;gap:8px;margin-top:10px}.rvper b{min-width:150px;text-align:center}
 @media (max-width:640px){.rvsess{grid-template-columns:1fr auto}.rvsess .rvbar{grid-column:1/-1;order:3}}
+.rvtiles{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin:12px 0}.rvtiles .tile{background:var(--paper)}
+@media (max-width:640px){.rvtiles{grid-template-columns:1fr 1fr}}
+.rvtop{margin:6px 0;font-size:14px}.rvlog td.chg{color:var(--be);font-weight:600}
+.rvlog{table-layout:auto;width:100%}.rvlog td{white-space:normal;vertical-align:top}.rvlog td:nth-child(1),.rvlog td:nth-child(4),.rvlog td:nth-child(5){white-space:nowrap}
+.rvimg[data-rvzoom]{cursor:zoom-in}.rvzhint{position:absolute;right:10px;bottom:10px;font:600 12px var(--body);padding:4px 9px;border-radius:999px;background:rgba(0,0,0,.6);color:#fff;pointer-events:none}
+#rvZoom{position:fixed;inset:0;z-index:60;background:#05070e;display:flex;flex-direction:column}
+#rvZoom[hidden]{display:none!important}
+.rvzbar{display:flex;gap:6px;align-items:center;justify-content:center;padding:10px;flex-wrap:wrap}.rvzbar span{min-width:54px;text-align:center;color:#fff;font:600 13px var(--mono)}
+.rvzstage{position:relative;flex:1;overflow:hidden;touch-action:none;cursor:grab}.rvzstage:active{cursor:grabbing}
+.rvzinner{position:absolute;left:0;top:0;transform-origin:0 0;overflow:hidden;border-radius:6px}.rvzinner img{display:block;width:100%;margin-top:-1.4%;user-select:none;-webkit-user-drag:none;pointer-events:none}
+.rvzhelp{margin:0;padding:8px;text-align:center;color:#aab;font-size:12px}
+@media (max-width:640px){.rvzhelp{display:none}}
 .rvimg{position:relative;overflow:hidden;border-radius:10px;border:1px solid var(--line);background:var(--soft);margin:12px 0 16px}
 .rvimg img{display:block;width:100%;margin-top:-1.4%}
 .rvimg.none{padding:28px 16px;text-align:center;color:var(--muted);font-size:14px}
@@ -150,6 +162,7 @@ a.btn{text-decoration:none}
 .rvtab td:first-child{color:var(--muted);font-size:13px;white-space:nowrap}
 .rvsum{margin:12px 0;font-size:14px;color:var(--muted);display:flex;flex-wrap:wrap;gap:6px;align-items:center}
 .rvdone{font-weight:600;color:var(--good)}
+#rvSaveNext:disabled{opacity:.4;cursor:not-allowed;filter:grayscale(.6)}.rvneed{margin-left:auto!important;margin-right:10px!important;align-self:center}
 .rvtab tr.rvplan td{border-top:2px solid var(--line);font-weight:600}
 .rvplanchg{margin:10px 0 0;padding:8px 12px;border-radius:8px;background:color-mix(in srgb,var(--be) 14%,transparent);font-size:14px}
 .rvstep h2{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
@@ -671,6 +684,7 @@ main>*,.panel,.grid2>*,.ov>*{min-width:0}
 
 <main id="view-analyze" hidden></main>
 <main id="view-review" hidden><div id="rvBox"></div></main>
+<div id="rvZoom" hidden><div class="rvzbar"><button type="button" class="btn small" data-z="out" aria-label="Zoom out">−</button><span id="rvzPct">100%</span><button type="button" class="btn small" data-z="in" aria-label="Zoom in">+</button><button type="button" class="btn small ghost" data-z="reset">Fit</button><button type="button" class="btn small" data-z="close" aria-label="Close">✕ Close</button></div><div class="rvzstage" id="rvzStage"><div class="rvzinner" id="rvzInner"><img alt="Chart" referrerpolicy="no-referrer"><span class="rvmask tl"></span></div></div><p class="rvzhelp">Scroll or pinch to zoom · drag to move · double-click to zoom in · Esc to close</p></div>
 <main id="view-accounts" hidden>
   <div class="panel"><span class="eyebrow">Trading accounts</span><h2 id="acHead">Accounts</h2>
     <div class="acadd">
@@ -1412,6 +1426,19 @@ function jvCtx(){if(tab!=="backtest")return{key:"live",list:liveTrades(),cls:"li
 /* ---------- Review: blind re-analysis of old forex trades ---------- */
 let rvActive=null,rvLocal=null,rvOpts={mode:"live",acct:"",proj:"",per:"month",anchor:"",from:"",to:""};
 const rvSessions=()=>docs.filter(d=>d.kind==="review"&&Array.isArray(d.queue)&&d.queue.length&&d.i<d.queue.length).sort((a,b)=>(b.touched||0)-(a.touched||0));
+const rvFinished=()=>docs.filter(d=>d.kind==="review"&&Array.isArray(d.queue)&&d.queue.length&&d.i>=d.queue.length).sort((a,b)=>(b.done||b.touched||0)-(a.done||a.touched||0));
+let rvShow=null;
+function rvResultHTML(x){const L=x.log||[],n=L.length;if(!n)return`<div class="panel"><span class="eyebrow">Result</span><h2>${esc(x.name||"Review")}</h2><p class="hint">No details were saved for this session.</p></div>`;
+  const same=L.filter(l=>!l.diffs.length).length,avgD=L.reduce((s,l)=>s+l.diffs.length,0)/n,pc=L.filter(l=>l.planThen&&l.planThen!==l.planNow),toNo=pc.filter(l=>l.planNow==="off").length,toYes=pc.filter(l=>l.planNow==="plan").length;
+  const rep=L.filter(l=>l.repl).length,gUp=L.filter(l=>l.gThen&&l.gNow&&l.gNow<l.gThen).length,gDn=L.filter(l=>l.gThen&&l.gNow&&l.gNow>l.gThen).length;
+  const cnt={};L.forEach(l=>l.diffs.forEach(d=>cnt[d]=(cnt[d]||0)+1));const top=Object.entries(cnt).sort((a,b)=>b[1]-a[1]).slice(0,4);
+  const notPlan=L.filter(l=>l.planNow==="off"),sumR=a=>a.reduce((s,l)=>s+(l.r||0),0);
+  const tile=(l,v,sub)=>`<div class="tile"><span class="eyebrow">${l}</span><b>${v}</b>${sub?`<small class="hint" style="margin:0">${sub}</small>`:""}</div>`;
+  return`<div class="panel rvres"><div class="row spread"><div><span class="eyebrow">Result</span><h2>${esc(x.name||"Review")}</h2></div><button type="button" class="btn small ghost" data-rvclose="1">Close</button></div>
+    <div class="rvtiles">${tile("Reviewed",n,`${rep} analysis${rep===1?"":"es"} replaced`)}${tile("Same as back then",`${same} of ${n}`,`${avgD.toFixed(1)} differences per trade on average`)}${tile("Plan verdict changed",pc.length,pc.length?`${toNo} now not to plan · ${toYes} now to plan`:"you judged every trade the same")}${tile("Grade changed",gUp+gDn,gUp+gDn?`${gUp} better · ${gDn} worse`:"")}</div>
+    ${top.length?`<p class="rvtop"><b>Most different:</b> ${top.map(([k,v])=>`${esc(k)} (${v})`).join(" · ")}</p>`:""}
+    ${notPlan.length?`<p class="rvtop"><b>Not to plan, according to you now:</b> ${notPlan.length} trade${notPlan.length>1?"s":""}, together ${fmtR(sumR(notPlan))}. The rest made ${fmtR(sumR(L.filter(l=>l.planNow==="plan")))}.</p>`:""}
+    <div class="tbl"><table class="rvtab rvlog"><thead><tr><th>Trade</th><th class="r">R</th><th class="r">Differences</th><th>Plan then → now</th><th>Grade</th></tr></thead><tbody>${L.map(l=>`<tr><td><button type="button" class="dlink" data-edit="${l.id}">${esc(l.pair||"?")}</button> <span class="hint" style="margin:0">${esc(fmtD(l.date))}</span></td><td class="r num ${l.r>0?"pos":l.r<0?"neg":""}">${fmtR(l.r)}</td><td class="r num">${l.diffs.length||"—"}</td><td class="${l.planThen&&l.planThen!==l.planNow?"chg":""}">${l.planThen==="plan"?"Yes":l.planThen?"No":"—"} → ${l.planNow==="plan"?"Yes":"No"}</td><td>${l.gThen?`<span class="grade g${l.gThen}">${l.gThen}</span>`:"—"} → ${l.gNow?`<span class="grade g${l.gNow}">${l.gNow}</span>`:"—"}</td></tr>`).join("")}</tbody></table></div></div>`}
 function rvState(){if(!rvActive)return null;if(!rvLocal||rvLocal.id!==rvActive){const d=docs.find(x=>x.id===rvActive);rvLocal=d?JSON.parse(JSON.stringify(d)):null}return rvLocal}
 function rvSave(){if(!rvLocal)return;rvLocal.touched=Date.now();saveDoc({...rvLocal,kind:"review"})}
 function rvRange(o){const a=new Date((o.anchor||isoD(new Date()))+"T12:00:00"),y=a.getFullYear(),m=a.getMonth();
@@ -1439,7 +1466,7 @@ const rvF=(l,h)=>`<div class="f"><span>${l}</span>${h}</div>`;
 function rvChart(t,step){const ln=(t.shotLinks||{})[RV_SLOT[step]],img=tvImg(ln);
   if(!ln)return`<div class="rvimg none">No ${step.toLowerCase()} chart saved for this trade.</div>`;
   if(!img)return`<div class="rvimg none">This chart link can't be shown as a picture.</div>`;
-  return`<div class="rvimg"><img src="${esc(img)}" alt="${step} chart" referrerpolicy="no-referrer" onerror="this.parentNode.classList.add('none');this.parentNode.textContent='Chart could not load here. It works in the GitHub app.'"><span class="rvmask tl"></span></div>`}
+  return`<div class="rvimg" data-rvzoom="${esc(img)}" title="Click to zoom"><img src="${esc(img)}" alt="${step} chart" referrerpolicy="no-referrer" onerror="this.parentNode.classList.add('none');this.parentNode.removeAttribute('data-rvzoom');this.parentNode.textContent='Chart could not load here. It works in the GitHub app.'"><span class="rvmask tl"></span><span class="rvzhint">⤢ Zoom</span></div>`}
 let rvOpen="";
 function rvMsBox(key,label,kind,CR,get){const open=rvOpen===key,mine=CR.filter(([k])=>get(k)===kind);
   return `<div class="f"><span>${label}</span><div class="ms rvms${open?" open":""}" data-rvbox="${key}"><button type="button" class="ms-field" data-rvopen="${key}">${mine.length?mine.map(([k,l])=>`<span class="chip-sel ${kind}">${esc(l)}<span class="x" data-rvx="${key}:${k}">×</span></span>`).join(""):'<span class="ph">Choose criteria…</span>'}<span class="caret">▾</span></button>
@@ -1452,19 +1479,20 @@ function rvStepHTML(a,step){
     <div class="fields" style="margin-top:12px"><div class="f wide">${rvMsBox("dp","Pros","for",DCRIT,k=>a.dPros.includes(k)?"for":"").replace(/^<div class="f">/,"").replace(/<\/div>$/,"")}</div></div>`;
   return`<div class="fields">${rvF("4H entry",rvSel("entry4h",PLAN.entries,a.entry4h,"Choose…"))}${rvF("Market structure",rvMs("hMs",a.hMs))}${a.entry4h==="Reversal"||a.entry4h==="Continuation"?rvF("4H structure",rvSeg("struct",[["bos","BoS"],["som","SoM"]],a.struct)):""}</div>
     <div class="row" style="gap:16px;margin-top:12px"><label class="checkline"><input type="checkbox" data-rc="room" ${a.room?"checked":""}><span>Room</span></label><label class="checkline"><input type="checkbox" data-rc="scaleIn" ${a.scaleIn?"checked":""}><span>Scale-in</span></label></div>`}
-function rvLab(k,v){if(v==null||v===""||(Array.isArray(v)&&!v.length))return"—";
+const rvPick=(o,k)=>k==="wpros"||k==="wcons"?WCRIT.map(c=>c[0]).filter(x=>(o.weekly||{})[x]===(k==="wpros"?"for":"against")):k==="dPros"?DCRIT.map(c=>c[0]).filter(x=>(o.dPros||[]).includes(x)):o[k];
+function rvLab(k,v){if(k==="wpros"||k==="wcons")return v.length?v.map(x=>WLAB(x)).join(", "):"—";if(v==null||v===""||(Array.isArray(v)&&!v.length))return"—";
   if(k==="dir")return v==="long"?"↑ Long":"↓ Short";if(k==="wms"||k==="dMs"||k==="hMs")return v==="for"?"✓ With":"✗ Against";if(k==="wStruct")return v==="inner"?"Inner":"Outer";
   if(k==="struct")return v==="bos"?"BoS":"SoM";if(k==="room"||k==="scaleIn")return v?"Yes":"No";if(k==="dPros")return v.map(x=>(DCRIT.find(c=>c[0]===x)||[,x])[1]).join(", ");
   if(k==="weekly"){const e=Object.entries(v).filter(([,x])=>x);if(!e.length)return"—";return e.map(([x,y])=>(y==="for"?"✓ ":"✗ ")+WLAB(x)).join(", ")}
   if(k==="fase")return"Phase "+v;return String(v)}
-const RV_ROWS=[["dir","Direction"],["fase","Weekly phase"],["wStruct","Inner / outer"],["wms","Weekly MS"],["wPat","Weekly pattern"],["wPatSub","Pattern variant"],["weekly","Weekly pros / cons"],["concept","Trade concept"],["sub","Daily variant"],["dMs","Daily MS"],["dPros","Daily pros"],["entry4h","4H entry"],["hMs","4H MS"],["struct","4H structure"],["room","Room"],["scaleIn","Scale-in"]];
+const RV_ROWS=[["dir","Direction"],["fase","Weekly phase"],["wStruct","Inner / outer"],["wms","Weekly MS"],["wPat","Weekly pattern"],["wPatSub","Pattern variant"],["wpros","Weekly pros"],["wcons","Weekly cons"],["concept","Trade concept"],["sub","Daily variant"],["dMs","Daily MS"],["dPros","Daily pros"],["entry4h","4H entry"],["hMs","4H MS"],["struct","4H structure"],["room","Room"],["scaleIn","Scale-in"]];
 const rvEq=(a,b)=>JSON.stringify(a instanceof Array?[...a].sort():a&&typeof a==="object"?Object.fromEntries(Object.entries(a).filter(([,v])=>v).sort()):a)===JSON.stringify(b instanceof Array?[...b].sort():b&&typeof b==="object"?Object.fromEntries(Object.entries(b).filter(([,v])=>v).sort()):b);
 function rvRender(){const box=$("#rvBox"),S=rvState();
   if(market!=="fx"){box.innerHTML=`<div class="panel"><span class="eyebrow">Review</span><h2>Forex only for now</h2><p class="hint">Switch to Forex at the top to review trades.</p></div>`;return}
   if(!S||!S.queue||S.i>=S.queue.length){const o=rvOpts,R=rvRange(o),n=rvPool(o).length,acs=accounts("fx"),ps=projects(),L=rvSessions();
-    const fin=S&&S.queue&&S.i>=S.queue.length;if(fin){rvActive=null;rvLocal=null}
+    const fin=S&&S.queue&&S.i>=S.queue.length;if(fin){rvShow=S.id;rvActive=null;rvLocal=null}const shown=rvShow&&docs.find(d=>d.id===rvShow),F=rvFinished();
     const per=[["week","Week"],["month","Month"],["quarter","Quarter"],["year","Year"],["all","All time"],["custom","Custom"]];
-    box.innerHTML=`${fin?`<div class="panel"><p class="rvdone" style="margin:0">Session finished: ${S.queue.length} trade${S.queue.length>1?"s":""} reviewed.</p></div>`:""}
+    box.innerHTML=`${shown?rvResultHTML(shown):""}
       ${L.length?`<div class="panel"><span class="eyebrow">Ongoing</span><h2>Your review sessions</h2><div class="rvlist">${L.map(x=>`<div class="rvsess"><div><b>${esc(x.name||"Review session")}</b><small class="hint" style="margin:0;display:block">${x.i} of ${x.queue.length} reviewed · last used ${esc(fmtD(isoD(new Date(x.touched||x.started||Date.now()))))}</small></div><div class="rvbar"><i style="width:${Math.round(x.i/x.queue.length*100)}%"></i></div><div class="row" style="gap:6px"><button type="button" class="btn small ghost" data-rvdel="${x.id}">Delete</button><button type="button" class="btn small primary" data-rvres="${x.id}">Resume</button></div></div>`).join("")}</div></div>`:""}
       <div class="panel rvsetup"><span class="eyebrow">New session</span><h2>Re-analyse old trades blind</h2>
       <p class="hint">You see the weekly, daily and 4H chart one by one, without pair or result, and fill in your analysis. At the end it shows what you filled in back then.</p>
@@ -1473,7 +1501,7 @@ function rvRender(){const box=$("#rvBox"),S=rvState();
       ${o.mode==="backtest"?rvF("Project",`<select data-ros="proj"><option value="">All projects</option>${ps.map(p=>`<option value="${p.id}" ${p.id===o.proj?"selected":""}>${esc(p.name)}</option>`).join("")}</select>`):""}</div>
       <div class="f" style="margin-top:12px"><span>Period</span><div class="segs">${per.map(([v,l])=>`<button type="button" class="rvb${o.per===v?" on":""}" data-ro="per" data-rv="${v}">${l}</button>`).join("")}</div></div>
       ${o.per==="custom"?`<div class="fields" style="margin-top:10px">${rvF("From",`<input type="date" data-ros="from" value="${esc(o.from||"")}">`)}${rvF("To",`<input type="date" data-ros="to" value="${esc(o.to||"")}">`)}</div>`:o.per==="all"?"":`<div class="rvper"><button type="button" class="btn small" data-rvshift="-1" aria-label="Previous">‹</button><b>${esc(R.label)}</b><button type="button" class="btn small" data-rvshift="1" aria-label="Next">›</button>${o.anchor&&o.anchor!==isoD(new Date())?`<button type="button" class="btn small ghost" data-rvshift="0">Today</button>`:""}</div>`}
-      <div class="row" style="gap:10px;align-items:center;margin-top:16px"><button type="button" class="btn primary" id="rvStart" ${n?"":"disabled"}>Start review</button><span class="hint" style="margin:0">${n} trade${n===1?"":"s"} with charts${R.from||R.to?" in "+esc(R.label):""}, in random order</span></div></div>`;return}
+      <div class="row" style="gap:10px;align-items:center;margin-top:16px"><button type="button" class="btn primary" id="rvStart" ${n?"":"disabled"}>Start review</button><span class="hint" style="margin:0">${n} trade${n===1?"":"s"} with charts${R.from||R.to?" in "+esc(R.label):""}, in random order</span></div></div>${F.length?`<div class="panel"><span class="eyebrow">Finished</span><h2>Past sessions</h2><div class="rvlist">${F.map(x=>`<div class="rvsess"><div><b>${esc(x.name||"Review session")}</b><small class="hint" style="margin:0;display:block">${x.queue.length} reviewed · finished ${esc(fmtD(isoD(new Date(x.done||x.touched||Date.now()))))}</small></div><span></span><div class="row" style="gap:6px"><button type="button" class="btn small ghost" data-rvdel="${x.id}">Delete</button><button type="button" class="btn small" data-rvview="${x.id}">View result</button></div></div>`).join("")}</div></div>`:""}`;return}
   const t=docs.find(d=>d.id===S.queue[S.i]);if(!t){S.i++;rvSave();return rvRender()}
   const a=S.cur||(S.cur=rvBlank()),step=S.step||0,prog=`Trade ${S.i+1} of ${S.queue.length}`;
   if(step<3){const st=RV_STEPS[step];
@@ -1482,16 +1510,16 @@ function rvRender(){const box=$("#rvBox"),S=rvState();
       ${rvChart(t,st)}${rvStepHTML(a,st)}
       <div class="row spread" style="margin-top:16px"><button type="button" class="btn" id="rvBack" ${step?"":"disabled"}>← Back</button><button type="button" class="btn primary" id="rvNext">${step<2?"Next: "+RV_STEPS[step+1]+" →":"Reveal →"}</button></div></div>`;return}
   const o=rvOrig(t),so=tScore(rvAsTrade(o)),sn=tScore(rvAsTrade(a)),go=tGrade(rvAsTrade(o)),gn=tGrade(rvAsTrade(a));
-  const rows=RV_ROWS.map(([k,l])=>{const same=rvEq(o[k],a[k]);return`<tr class="${same?"":"diff"}"><td>${l}</td><td>${esc(rvLab(k,o[k]))}</td><td>${esc(rvLab(k,a[k]))}</td></tr>`}).join("");
+  const rows=RV_ROWS.map(([k,l])=>{const ov=rvPick(o,k),nv=rvPick(a,k),same=rvEq(ov,nv);return`<tr class="${same?"":"diff"}"><td>${l}</td><td>${esc(rvLab(k,ov))}</td><td>${esc(rvLab(k,nv))}</td></tr>`}).join("");
   const op=t.evaluation==="plan"?"plan":t.evaluation?"off":"",opL=op==="plan"?"Yes":op==="off"?"No":"—",npL=S.plan==="plan"?"Yes":S.plan==="off"?"No":"—";
-  const nd=RV_ROWS.filter(([k])=>!rvEq(o[k],a[k])).length,oc=t.outcome||(t.r>0?"win":t.r<0?"loss":"be");
+  const nd=RV_ROWS.filter(([k])=>!rvEq(rvPick(o,k),rvPick(a,k))).length,oc=t.outcome||(t.r>0?"win":t.r<0?"loss":"be");
   box.innerHTML=`<div class="panel rvstep"><div class="row spread"><div><span class="eyebrow">${prog} · reveal</span><h2>${esc(t.pair||"?")} <span class="dirar ${t.dir}">${t.dir==="long"?"↑":t.dir==="short"?"↓":""}</span> <span class="restag ${oc}">${({win:"Win",loss:"Loss",be:"BE"})[oc]}<b class="num">${fmtR(t.r)}</b></span></h2>
       <p class="hint" style="margin:2px 0 0">${esc(fmtD(t.date))} · ${t.mode==="backtest"?"Backtest":esc(t.account||"Live")}</p></div><button type="button" class="btn small ghost" id="rvPause">Pause</button></div>
     <p class="rvsum">${nd?`${nd} difference${nd>1?"s":""} with what you filled in back then`:"Exactly the same as back then"} · score ${so==null?"—":(so>0?"+":"")+so} ${go?`<span class="grade g${go}">${go}</span>`:""} → ${sn==null?"—":(sn>0?"+":"")+sn} ${gn?`<span class="grade g${gn}">${gn}</span>`:""}</p>
     <div class="tbl"><table class="rvtab"><thead><tr><th></th><th>Back then</th><th>Now</th></tr></thead><tbody>${rows}<tr class="rvplan ${S.plan&&op&&S.plan!==op?"diff":""}"><td>According to plan</td><td>${opL}</td><td>${S.plan?npL:`<span class="hint" style="margin:0">answer below</span>`}</td></tr></tbody></table></div>
     ${S.plan&&op&&S.plan!==op?`<p class="rvplanchg">You now think this trade was <b>${S.plan==="plan"?"according to plan":"not according to plan"}</b>; back then you said <b>${op==="plan"?"according to plan":"not according to plan"}</b>.</p>`:""}
     <div class="fields" style="margin-top:14px">${rvF(`Was this trade according to plan? <small class="hint" style="margin:0;display:inline">· back then: ${opL}</small>`,rvSeg("plan",[["plan","Yes"],["off","No"]],S.plan||""))}${rvF("Save your new analysis on the trade?",rvSeg("repl",[["yes","Yes, replace"],["no","Keep the old one"]],S.repl||""))}</div>
-    <div class="row spread" style="margin-top:16px"><button type="button" class="btn" id="rvBack">← Back</button><button type="button" class="btn primary" id="rvSaveNext" ${S.plan&&S.repl?"":"disabled"}>${S.i+1<S.queue.length?"Save & next trade →":"Save & finish"}</button></div></div>`}
+    <div class="row spread" style="margin-top:16px"><button type="button" class="btn" id="rvBack">← Back</button>${S.plan&&S.repl?"":`<span class="hint rvneed" style="margin:0">Answer ${!S.plan&&!S.repl?"both questions":!S.plan?"“According to plan?”":"“Save your new analysis?”"} to continue</span>`}<button type="button" class="btn primary" id="rvSaveNext" ${S.plan&&S.repl?"":"disabled"}>${S.i+1<S.queue.length?"Save & next trade →":"Save & finish"}</button></div></div>`}
 function rvApply(t,a,plan,repl){const n={...t,evaluation:plan,onPlan:plan==="plan",reviews:[...(t.reviews||[]),{at:new Date().toISOString(),plan,replaced:repl==="yes",a}]};
   if(repl==="yes")Object.assign(n,{dir:a.dir||t.dir,fase:a.fase?Number(a.fase):null,wStruct:a.wStruct,weekly:rvAsTrade(a).weekly,wPat:a.wPat,wPatSub:a.wPat&&a.wPat!=="Reversal"?a.wPatSub:"",concept:a.concept,sub:a.sub,dMs:a.dMs,dPros:a.dPros,dailyFib:a.dPros.includes("fc")?"ja":"nee",
     entry4h:a.entry4h,hMs:a.hMs,struct:a.entry4h==="Reversal"||a.entry4h==="Continuation"?a.struct:"",room:a.room?"ja":"nee",scaleIn:a.scaleIn});
@@ -1508,6 +1536,8 @@ $("#rvBox").addEventListener("click",e=>{const S=rvState();
     rvActive="rv_"+Date.now().toString(36);rvLocal={id:rvActive,name:`${who} · ${R.label}`,opts:o,queue:ids,i:0,step:0,cur:rvBlank(),plan:"",repl:"",started:Date.now()};rvSave();return rvRender()}
   if(b.dataset.ro){const k=b.dataset.ro;rvOpts[k]=b.dataset.rv;if(k==="mode"){rvOpts.acct="";rvOpts.proj=""}return rvRender()}
   if(b.dataset.rvshift){const d=Number(b.dataset.rvshift);if(d)rvShift(rvOpts,d);else rvOpts.anchor=isoD(new Date());return rvRender()}
+  if(b.dataset.rvview){rvShow=b.dataset.rvview;window.scrollTo({top:0,behavior:"smooth"});return rvRender()}
+  if(b.dataset.rvclose){rvShow=null;return rvRender()}
   if(b.dataset.rvres){rvActive=b.dataset.rvres;rvLocal=null;rvOpen="";return rvRender()}
   if(b.dataset.rvdel){if(b.dataset.sure){deleteDoc(b.dataset.rvdel);return}b.dataset.sure="1";b.textContent="Sure?";setTimeout(()=>{if(b.isConnected){delete b.dataset.sure;b.textContent="Delete"}},3000);return}
   if(!S)return;
@@ -1515,9 +1545,10 @@ $("#rvBox").addEventListener("click",e=>{const S=rvState();
   if(b.id==="rvPause"){rvSave();rvActive=null;rvLocal=null;rvOpen="";toast("Saved — resume it any time from Review");return rvRender()}
   if(b.id==="rvNext"){rvOpen="";S.step=(S.step||0)+1;rvSave();window.scrollTo({top:0,behavior:"smooth"});return rvRender()}
   if(b.id==="rvBack"){S.step=Math.max(0,(S.step||0)-1);rvSave();return rvRender()}
-  if(b.id==="rvSaveNext"){const t=docs.find(d=>d.id===S.queue[S.i]);if(t)rvApply(t,S.cur,S.plan,S.repl);S.i++;S.step=0;S.cur=rvBlank();S.plan="";S.repl="";rvSave();window.scrollTo({top:0,behavior:"smooth"});if(S.i>=S.queue.length)toast("Review finished");return rvRender()}
+  if(b.id==="rvSaveNext"){if(!S.plan||!S.repl)return;const t=docs.find(d=>d.id===S.queue[S.i]);
+    if(t){const o=rvOrig(t),a=S.cur;S.log=[...(S.log||[]),{id:t.id,pair:t.pair,dir:t.dir,date:t.date,r:t.r,diffs:RV_ROWS.filter(([k])=>!rvEq(rvPick(o,k),rvPick(a,k))).map(([,l])=>l),planThen:t.evaluation==="plan"?"plan":t.evaluation?"off":"",planNow:S.plan,gThen:tGrade(rvAsTrade(o)),gNow:tGrade(rvAsTrade(a)),repl:S.repl==="yes"}];rvApply(t,S.cur,S.plan,S.repl)}S.i++;S.step=0;S.cur=rvBlank();S.plan="";S.repl="";rvSave();window.scrollTo({top:0,behavior:"smooth"});if(S.i>=S.queue.length){S.done=Date.now();rvSave();rvShow=S.id;rvActive=null;rvLocal=null;toast("Review finished")}return rvRender()}
   const a=S.cur;
-  if(b.dataset.rk){const k=b.dataset.rk,v=b.dataset.rv;if(k==="plan"||k==="repl")S[k]=S[k]===v?"":v;else a[k]=a[k]===v?"":v;rvSave();return rvRender()}
+  if(b.dataset.rk){const k=b.dataset.rk,v=b.dataset.rv;if(k==="plan"||k==="repl")S[k]=v;else a[k]=a[k]===v?"":v;rvSave();return rvRender()}
   if(b.dataset.rw){const k=b.dataset.rw,v=a.weekly[k]||"";if(!v)a.weekly[k]="for";else if(v==="for")a.weekly[k]="against";else delete a.weekly[k];rvSave();return rvRender()}
   if(b.dataset.rd){const k=b.dataset.rd;a.dPros=a.dPros.includes(k)?a.dPros.filter(x=>x!==k):[...a.dPros,k];rvSave();return rvRender()}});
 $("#rvBox").addEventListener("change",e=>{const el=e.target,S=rvState();
@@ -1525,6 +1556,27 @@ $("#rvBox").addEventListener("change",e=>{const el=e.target,S=rvState();
   if(!S||!S.cur)return;
   if(el.dataset.rks){const k=el.dataset.rks;S.cur[k]=el.value;if(k==="wPat")S.cur.wPatSub="";if(k==="concept")S.cur.sub="";if(k==="entry4h"&&!(el.value==="Reversal"||el.value==="Continuation"))S.cur.struct="";rvSave();return rvRender()}
   if(el.dataset.rc){S.cur[el.dataset.rc]=el.checked;rvSave()}});
+
+/* ---------- chart zoom (review) ---------- */
+const Z={s:1,x:0,y:0,pts:new Map(),pinch:null,drag:null};
+function zApply(){const el=$("#rvzInner");el.style.transform=`translate(${Z.x}px,${Z.y}px) scale(${Z.s})`;$("#rvzPct").textContent=Math.round(Z.s*100)+"%"}
+function zFit(){const st=$("#rvzStage"),el=$("#rvzInner");el.style.width=Math.min(st.clientWidth,(st.clientHeight)*1.62)+"px";Z.s=1;Z.x=(st.clientWidth-el.offsetWidth)/2;Z.y=Math.max(0,(st.clientHeight-el.offsetHeight)/2);zApply()}
+function zAt(ns,cx,cy){ns=Math.min(8,Math.max(1,ns));const r=$("#rvzStage").getBoundingClientRect(),px=cx-r.left,py=cy-r.top;Z.x=px-(px-Z.x)*ns/Z.s;Z.y=py-(py-Z.y)*ns/Z.s;Z.s=ns;if(ns===1)return zFit();zApply()}
+function zOpen(src){const o=$("#rvZoom");o.querySelector("img").src=src;o.hidden=false;document.body.style.overflow="hidden";const img=o.querySelector("img");if(img.complete)zFit();else img.onload=zFit}
+function zClose(){$("#rvZoom").hidden=true;document.body.style.overflow=""}
+document.addEventListener("click",e=>{const im=e.target.closest("[data-rvzoom]");if(im){zOpen(im.dataset.rvzoom);return}const z=e.target.closest("#rvZoom [data-z]");if(!z)return;const r=$("#rvzStage").getBoundingClientRect(),cx=r.left+r.width/2,cy=r.top+r.height/2;
+  if(z.dataset.z==="in")zAt(Z.s*1.5,cx,cy);else if(z.dataset.z==="out")zAt(Z.s/1.5,cx,cy);else if(z.dataset.z==="reset")zFit();else zClose()});
+document.addEventListener("keydown",e=>{if($("#rvZoom").hidden)return;if(e.key==="Escape")zClose();else if(e.key==="+"||e.key==="=")$("#rvZoom [data-z=in]").click();else if(e.key==="-")$("#rvZoom [data-z=out]").click()});
+{const st=$("#rvzStage");
+  st.addEventListener("wheel",e=>{e.preventDefault();zAt(Z.s*Math.exp(-e.deltaY*0.0015),e.clientX,e.clientY)},{passive:false});
+  st.addEventListener("dblclick",e=>zAt(Z.s<2?2.5:1,e.clientX,e.clientY));
+  st.addEventListener("pointerdown",e=>{st.setPointerCapture(e.pointerId);Z.pts.set(e.pointerId,{x:e.clientX,y:e.clientY});if(Z.pts.size===2){const [a,b]=[...Z.pts.values()];Z.pinch={d:Math.hypot(a.x-b.x,a.y-b.y),s:Z.s}}else Z.drag={x:e.clientX,y:e.clientY,ox:Z.x,oy:Z.y}});
+  st.addEventListener("pointermove",e=>{if(!Z.pts.has(e.pointerId))return;Z.pts.set(e.pointerId,{x:e.clientX,y:e.clientY});
+    if(Z.pts.size===2&&Z.pinch){const [a,b]=[...Z.pts.values()],d=Math.hypot(a.x-b.x,a.y-b.y);zAt(Z.pinch.s*d/Z.pinch.d,(a.x+b.x)/2,(a.y+b.y)/2)}
+    else if(Z.drag&&Z.s>1){Z.x=Z.drag.ox+e.clientX-Z.drag.x;Z.y=Z.drag.oy+e.clientY-Z.drag.y;zApply()}});
+  const up=e=>{Z.pts.delete(e.pointerId);if(Z.pts.size<2)Z.pinch=null;if(!Z.pts.size)Z.drag=null;else{const p=[...Z.pts.values()][0];Z.drag={x:p.x,y:p.y,ox:Z.x,oy:Z.y}}};
+  st.addEventListener("pointerup",up);st.addEventListener("pointercancel",up);
+  addEventListener("resize",()=>{if(!$("#rvZoom").hidden)zFit()})}
 function renderLive(){
   const C=jvCtx();jvSwap(C.key);const all=C.list;$("#liveHead").className="desk "+C.cls;
   if(market!=="stocks"&&!calTouched&&all.length&&!all.some(t=>(t.date||"").startsWith(calMonth))){const last=all.map(t=>t.date||"").sort().pop();if(last)calMonth=last.slice(0,7)}
