@@ -828,7 +828,7 @@ main>*,.panel,.grid2>*,.ov>*{min-width:0}
       <label class="f"><span>Result (R)</span><input type="number" step="0.01" inputmode="decimal" id="f2R" placeholder="e.g. 2.4 or -1"></label>
       <label class="f"><span>Max R reached <em class="opt">optional</em></span><input type="number" step="0.1" min="0" inputmode="decimal" id="f2MaxR" placeholder="Max floating profit"></label>
       <label class="f"><span>Exit</span><select id="f2Exit"><option value="">Choose…</option></select></label>
-      <div class="f wide"><span>Evaluation</span><div class="segs" id="seg-f2eval"></div></div>
+      <div class="f wide"><span>According to plan?</span><div class="segs" id="seg-f2eval"></div></div>
     </div>
   </fieldset>
   <div class="formbar"><button type="submit" class="btn" id="f2Save">Save trade</button><button type="button" class="btn ghost" data-closesheet2>Cancel</button><span class="spacer"></span><button type="button" class="btn ghost" id="f2Dup" hidden>Duplicate</button><button type="button" class="btn ghost danger" id="f2Del" hidden>Delete</button></div>
@@ -1046,7 +1046,7 @@ function findings(bt,lv,S,T){
   if(S.avgLoss&&T.avgLoss&&T.avgLoss<S.avgLoss*1.15)f.push(["bad","Losers bigger than in backtest",`Average loss ${fmtR(T.avgLoss)} versus ${fmtR(S.avgLoss)}. Check slippage and whether you ever widen your SL.`]);
   const tk=taken(lv),on=tk.filter(t=>t.onPlan),off=tk.filter(t=>!t.onPlan);
   if(off.length){const a=on.length?on.reduce((s,t)=>s+t.r,0)/on.length:null,b=off.reduce((s,t)=>s+t.r,0)/off.length;
-    f.push([b<(a??0)?"bad":"warn",`${off.length} live trades with an error`,`Average ${fmtR(b)} on trades with a technical or emotional error${a!=null?`, ${fmtR(a)} on trades according to plan`:""}.`]);}
+    f.push([b<(a??0)?"bad":"warn",`${off.length} live trades not according to plan`,`Average ${fmtR(b)} on trades not according to plan${a!=null?`, ${fmtR(a)} on trades according to plan`:""}.`]);}
   const bad=tk.filter(t=>t.fase&&t.concept&&!PLAN.faseConcepts[t.fase].includes(t.concept));
   if(bad.length)f.push(["warn",`${bad.length} trades with a concept outside the phase`,`Combined ${fmtR(bad.reduce((s,t)=>s+t.r,0))}.`]);
   if(T.slip!=null&&T.slip>0.5)f.push(["warn",`Average ${T.slip.toFixed(1)} pips slippage live`,"With a 10 to 20 pip SL, that eats a big part of your R. Include it in your backtest."]);
@@ -1091,7 +1091,7 @@ let SPLITS={
   dir:["Direction",t=>t.dir?(t.dir==="long"?"Long":"Short"):null],
   status:["Status",t=>({taken:"Taken",missed:"Missed"})[t.status]||null,["Taken","Missed"]],
   outcome:["Outcome",t=>({win:"Win",be:"BE",loss:"Loss"})[t.outcome]||(t.r>0?"Win":t.r<0?"Loss":t.r===0?"BE":null),["Win","BE","Loss"]],
-  evaluation:["Evaluation",t=>({plan:"According to plan",technical:"Technical error",emotional:"Emotional error"})[t.evaluation]||null],
+  evaluation:["According to plan",t=>t.evaluation==="plan"?"Yes":t.evaluation?"No":null,["Yes","No"]],
   exit:["Exit reason",t=>t.exitReason||null,PLAN.exits],
   days:["Days in trade",t=>bucket(daysOpen(t),[1,2,4,8],["Same day","1 day","2 – 3 days","4 – 7 days","8 + days"]),["Same day","1 day","2 – 3 days","4 – 7 days","8 + days"]],
   weekday:["Entry weekday",t=>t.date?["Sun","Mon","Tue","Wed","Thu","Fri","Sat"][new Date(t.date+"T12:00:00").getDay()]:null,["Mon","Tue","Wed","Thu","Fri","Sat","Sun"]],
@@ -1121,7 +1121,7 @@ let PRESETS=[
   ["A vs B vs C setups",{mode:"live",grade:"A"},{mode:"live",grade:"B"},{mode:"live",grade:"C"}],
   ["With vs against weekly structure",{mode:"live",wms:"for"},{mode:"live",wms:"against"}],
   ["All timeframes with vs mixed",{mode:"live",align:"all"},{mode:"live",align:["mixed","none"]}],
-  ["To plan vs errors",{mode:"live",eval:"plan"},{mode:"live",eval:["technical","emotional"]}],
+  ["To plan vs not",{mode:"live",eval:"plan"},{mode:"live",eval:"off"}],
   ["Taken vs missed",{mode:"live",status:"taken"},{mode:"live",status:"missed"}],
   ["4H reversal vs continuation",{mode:"live",entry4h:"Reversal"},{mode:"live",entry4h:"Continuation"}],
 ];
@@ -1148,7 +1148,7 @@ let FDEF=[
   ["pair","Pair",()=>[["","Any"],...[...new Set(trades().map(t=>t.pair).filter(Boolean))].sort().map(c=>[c,c])],t=>t.pair],
   ["dir","Direction",()=>[["","Any"],["long","Long"],["short","Short"]],t=>t.dir],
   ["outcome","Outcome",()=>[["","Any"],["win","Win"],["be","BE"],["loss","Loss"]],t=>t.outcome||(t.r>0?"win":t.r<0?"loss":t.r===0?"be":"")],
-  ["eval","Evaluation",()=>[["","Any"],["plan","According to plan"],["technical","Technical error"],["emotional","Emotional error"]],t=>t.evaluation],
+  ["eval","According to plan",()=>[["","Any"],["plan","Yes"],["off","No"]],t=>t.evaluation==="plan"?"plan":t.evaluation?"off":""],
   ["exit","Exit",()=>[["","Any"],...PLAN.exits.map(c=>[c,c])],t=>t.exitReason],
   ["account","Account",()=>[["","Any"],...[...new Set(trades().map(acKey).filter(Boolean))].sort((a,b)=>(a==="Removed account")-(b==="Removed account")||a.localeCompare(b)).map(c=>[c,c])],t=>acKey(t)],
   ["actype","Account type",()=>[["","Any"],...Object.entries(ACTYPE)],t=>(acOf(t.account)||{}).type||""],
@@ -1762,8 +1762,8 @@ function tableHTML(list,title,showMode){if(market==="stocks")return stockTableHT
   return `<div class="panel"><div class="row spread"><div><span class="eyebrow">${list.length} trades</span><h2>${title}</h2></div>
     <div class="row tblacts"></div></div>
     <p class="hint ioMsg"></p>
-    ${list.length?`<div class="tbl"><table class="trades"><thead><tr><th>Date</th><th>Pair</th><th>Phase</th><th>Concept</th><th>4H entry</th><th>Grade</th><th>Result</th><th>Evaluation</th><th></th></tr></thead><tbody>
-    ${list.map(t=>{const oc=t.outcome||(t.r>0?"win":t.r<0?"loss":t.r===0?"be":""),err=t.evaluation&&t.evaluation!=="plan";return `<tr class="clickrow${err?" errrow":""}${t.status==="missed"?" missrow":""}" data-edit="${t.id}" tabindex="0" title="Open trade"><td class="num c-date">${esc(t.date)}</td><td class="c-pair">${esc(t.pair)} ${t.dir?`<span class="dirar ${t.dir}" title="${t.dir==="long"?"Long":"Short"}"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round">${t.dir==="long"?'<path d="M12 19V5M6 11l6-6 6 6"/>':'<path d="M12 5v14M6 13l6 6 6-6"/>'}</svg></span>`:""}${t.status==="missed"?`<span class="misstag">Missed</span>`:""}</td><td class="num c-phase">${t.fase||"—"}</td><td class="c-concept">${esc(t.concept||"—")}${t.sub&&t.sub!=="—"?`<br><span class="hint" style="margin:0">${esc(t.sub)}</span>`:""}<span class="monly">${t.fase?" · Phase "+t.fase:""}${t.entry4h?" · "+esc(t.entry4h):""}${tGrade(t)?`<span class="grade g${tGrade(t)}">${tGrade(t)}</span>`:""}</span></td><td class="c-entry">${esc(t.entry4h||"—")}</td><td class="c-score">${tGrade(t)?`<span class="grade g${tGrade(t)}" title="Setup score ${tScore(t)>0?"+":""}${tScore(t)}">${tGrade(t)}</span>`:""}</td><td class="c-res">${oc?`<span class="restag ${oc}${t.status==="missed"?" hollow":""}">${({win:"Win",loss:"Loss",be:"BE"})[oc]}<b class="num">${fmtR(t.r)}</b></span>`:"—"}</td><td class="c-eval">${err?`<span class="errtag">${({technical:"Technical",emotional:"Emotional"})[t.evaluation]}</span>`:""}</td><td class="c-charts">${shotCount(t)?`<button class="camb chico" data-view="${t.id}" title="View charts"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 3v18h18"/><path d="M7 15l4-4 3 3 5-6"/></svg>${shotCount(t)}</button>`:""}</td>
+    ${list.length?`<div class="tbl"><table class="trades"><thead><tr><th>Date</th><th>Pair</th><th>Phase</th><th>Concept</th><th>4H entry</th><th>Grade</th><th>Result</th><th>Plan</th><th></th></tr></thead><tbody>
+    ${list.map(t=>{const oc=t.outcome||(t.r>0?"win":t.r<0?"loss":t.r===0?"be":""),err=t.evaluation&&t.evaluation!=="plan";return `<tr class="clickrow${err?" errrow":""}${t.status==="missed"?" missrow":""}" data-edit="${t.id}" tabindex="0" title="Open trade"><td class="num c-date">${esc(t.date)}</td><td class="c-pair">${esc(t.pair)} ${t.dir?`<span class="dirar ${t.dir}" title="${t.dir==="long"?"Long":"Short"}"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round">${t.dir==="long"?'<path d="M12 19V5M6 11l6-6 6 6"/>':'<path d="M12 5v14M6 13l6 6 6-6"/>'}</svg></span>`:""}${t.status==="missed"?`<span class="misstag">Missed</span>`:""}</td><td class="num c-phase">${t.fase||"—"}</td><td class="c-concept">${esc(t.concept||"—")}${t.sub&&t.sub!=="—"?`<br><span class="hint" style="margin:0">${esc(t.sub)}</span>`:""}<span class="monly">${t.fase?" · Phase "+t.fase:""}${t.entry4h?" · "+esc(t.entry4h):""}${tGrade(t)?`<span class="grade g${tGrade(t)}">${tGrade(t)}</span>`:""}</span></td><td class="c-entry">${esc(t.entry4h||"—")}</td><td class="c-score">${tGrade(t)?`<span class="grade g${tGrade(t)}" title="Setup score ${tScore(t)>0?"+":""}${tScore(t)}">${tGrade(t)}</span>`:""}</td><td class="c-res">${oc?`<span class="restag ${oc}${t.status==="missed"?" hollow":""}">${({win:"Win",loss:"Loss",be:"BE"})[oc]}<b class="num">${fmtR(t.r)}</b></span>`:"—"}</td><td class="c-eval">${err?`<span class="errtag">Not to plan</span>`:""}</td><td class="c-charts">${shotCount(t)?`<button class="camb chico" data-view="${t.id}" title="View charts"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 3v18h18"/><path d="M7 15l4-4 3 3 5-6"/></svg>${shotCount(t)}</button>`:""}</td>
 </tr>`}).join("")}
     </tbody></table></div>`:`<p class="hint">No trades here yet. Tap + to log one.</p>`}</div>`;
 }
@@ -1917,7 +1917,7 @@ function f2FillVariant(){const c=$("#f2Concept").value,v=PLAN.concepts[c],sel=$(
   sel.innerHTML='<option value="">None</option>'+v.map(x=>`<option>${esc(x)}</option>`).join("")}
 $("#f2Concept").addEventListener("change",f2FillVariant);
 $("#f2WPat").addEventListener("change",()=>{const v=$("#f2WPat").value;if(v&&v!=="?")wcSel.pattern="for";else if(!v)delete wcSel.pattern;wpFill();msRender();f2Summaries()});$("#f2WPatSub").addEventListener("change",()=>f2Summaries());
-seg("seg-f2eval","f2eval",[["plan","According to plan"],["technical","Technical error"],["emotional","Emotional error"]]);
+seg("seg-f2eval","f2eval",[["plan","Yes"],["off","No"]]);
 seg("seg-f2out","f2out",[["win","Win"],["be","BE"],["loss","Loss"]]);
 $("#f2Exit").innerHTML+=PLAN.exits.filter(x=>x!=="Invalid, cancelled").map(x=>`<option value="${x}">${x==="Break-even"?"Out on BE":x}</option>`).join("");
 $("#seg-f2out").addEventListener("change",()=>{const o=radio("f2out"),r=$("#f2R");
@@ -2022,7 +2022,7 @@ function f2Fill(t){const ch=(el)=>el.dispatchEvent(new Event("change",{bubbles:t
   $("#f2Entry").value=t.entry4h||"";ch($("#f2Entry"));setRadio("f2ectf",t.ecTf||"");
   setRadio("f2struct",t.struct||(t.bos==="ja"?"bos":t.bos==="nee"?"som":""));$("#f2Room").checked=t.room==="ja";$("#f2Scale").checked=!!t.scaleIn;
   $("#f2PlanEntry").value=t.planEntry??"";$("#f2SlPips").value=t.slPips??"";$("#f2TpPips").value=t.tpPips??"";
-  setRadio("f2out",t.outcome||(t.r>0?"win":t.r<0?"loss":t.r===0?"be":""));$("#f2R").value=t.r??"";$("#f2MaxR").value=t.maxR??"";$("#f2Exit").value=t.exitReason||"";setRadio("f2eval",t.evaluation||"");
+  setRadio("f2out",t.outcome||(t.r>0?"win":t.r<0?"loss":t.r===0?"be":""));$("#f2R").value=t.r??"";$("#f2MaxR").value=t.maxR??"";$("#f2Exit").value=t.exitReason||"";setRadio("f2eval",t.evaluation==="plan"?"plan":t.evaluation?"off":"");
   f2Shots={...(t.shots||{})};f2Links={...(t.shotLinks||{})};renderF2Shots();f2Check();f2RR();f2Summaries()}
 function dupTrade(id){const t=docs.find(x=>x.id===id);if(!t)return;
   if(mktOf(t)==="stocks"){if(tab!=="analyze")show(t.mode==="live"?"live":"backtest");openStock(t,true);return}
