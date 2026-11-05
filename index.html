@@ -937,6 +937,12 @@ $("#signOut").onclick=async()=>{await SB.auth.signOut();ME=null;docs=[];try{loca
 })();
 
 /* ---------- plan logic ---------- */
+const DCRIT=[["fc","FC"],["dcc","Last CC"],["sd","S&D zone"]];let dSel={};
+const msV=v=>v==="for"?1:v==="against"?-1:0;
+const tScore=t=>{const w=t.weekly||{},dp=dProsOf(t);if(!Object.keys(w).length&&!t.dMs&&!t.hMs&&!dp.length)return null;return Object.values(w).reduce((a,v)=>a+msV(v),0)+msV(t.dMs)+msV(t.hMs)+dp.length};
+let GRADE={a:4,b:2};
+const tGrade=t=>{const s=tScore(t);return s==null?null:s>=GRADE.a?"A":s>=GRADE.b?"B":"C"};
+const dProsOf=t=>Array.isArray(t.dPros)?t.dPros:t.dailyFib==="ja"?["fc"]:[];
 function verdict(t){
   if(!t.entry4h||!t.bos)return{v:"open",txt:"Answer the questions"};
   const rev=t.entry4h==="Reversal";
