@@ -11,13 +11,14 @@ VARIANTS = {  # file -> impact levels included
     "news-high.ics": {"Heavy", "High"},
     "news-heavy.ics": {"Heavy"},
 }
-REMINDERS = {  # file suffix -> reminders before each event
-    "": ("-PT1H", "-PT15M"),
-    "-r60": ("-PT1H",),
-    "-r30": ("-PT30M",),
-    "-r15": ("-PT15M",),
-    "-r0": (),
-}
+from itertools import combinations
+STEPS = [1440, 240, 180, 120, 60, 45, 30, 15, 10, 5]  # minutes; up to two reminders per calendar
+def _trig(m):
+    return f"-P{m // 1440}D" if m % 1440 == 0 else f"-PT{m}M"
+REMINDERS = {"": (_trig(60), _trig(15)), "-r0": ()}
+for k in (1, 2):
+    for combo in combinations(STEPS, k):
+        REMINDERS["-r" + "-".join(map(str, combo))] = tuple(_trig(m) for m in combo)
 NAMES = {"news.ics": "Forex news (heavy, high, medium)", "news-high.ics": "Forex news (heavy + high)", "news-heavy.ics": "Forex news (heavy only)"}
 
 def fetch():
