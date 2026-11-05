@@ -95,6 +95,12 @@ td.acts{width:1%}
 .setsec{display:grid;gap:12px;padding:14px 0}
 .setsec:first-of-type{border-top:0;padding-top:4px}
 .setsec h4{margin:0;font:700 11px var(--body);letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.setrow.danger{border-top:1px solid var(--line);padding-top:14px;margin-top:4px;align-items:start}
+.dangerb{color:var(--bad);border-color:color-mix(in srgb,var(--bad) 45%,var(--line))}
+.dangerb.solid{background:var(--bad);color:#fff;border-color:var(--bad)}
+.dangerb:disabled{opacity:.45;cursor:not-allowed}
+.wipebox{display:grid;gap:10px;margin-top:10px;padding:12px;border:1px solid color-mix(in srgb,var(--bad) 40%,var(--line));border-radius:10px;background:color-mix(in srgb,var(--bad) 6%,transparent)}
+.linkish{all:unset;cursor:pointer;color:var(--accent);font-weight:600;margin-left:6px;text-decoration:underline;text-underline-offset:2px}
 .settabs{display:flex;gap:4px;border-bottom:1px solid var(--line);margin:4px 0 6px}
 .settabs button{all:unset;cursor:pointer;padding:8px 12px;font:600 14px var(--body);color:var(--muted);border-bottom:2px solid transparent;margin-bottom:-1px}
 .settabs button[aria-selected="true"]{color:var(--ink);border-bottom-color:var(--accent)}
@@ -814,7 +820,7 @@ main>*,.panel,.grid2>*,.ov>*{min-width:0}
 </div></div>
 <div class="sheet" id="setSheet" hidden><div class="scrim" data-closeset></div><div class="sheet-inner np-inner" role="dialog" aria-modal="true" aria-labelledby="setTitle">
 <form id="setForm" autocomplete="off"><h3 id="setTitle">Settings</h3>
-<div class="setbody"><div class="settabs" role="tablist" aria-orientation="vertical"><button type="button" role="tab" data-settab="look">Look</button><button type="button" role="tab" data-settab="fx">Forex</button><button type="button" role="tab" data-settab="st">Stocks</button></div>
+<div class="setbody"><div class="settabs" role="tablist" aria-orientation="vertical"><button type="button" role="tab" data-settab="look">Look</button><button type="button" role="tab" data-settab="fx">Forex</button><button type="button" role="tab" data-settab="st">Stocks</button><button type="button" role="tab" data-settab="data">Data</button></div>
 <div class="setpanes"><section class="setsec" data-setpane="look">
 <div class="setrow"><span class="setl">Theme</span><div class="segs" id="seg-stheme"></div></div>
 <div class="setrow"><span class="setl">Primary<small>Buttons, tabs, backtest</small></span><div class="swatches" id="sAccent" role="radiogroup" aria-label="Primary colour"></div></div>
@@ -823,6 +829,19 @@ main>*,.panel,.grid2>*,.ov>*{min-width:0}
 <section class="setsec" data-setpane="fx" hidden>
 <div class="setrow"><span class="setl">Journal opens on</span><div class="segs" id="seg-speriod"></div></div>
 <div class="setrow"><span class="setl">Setup grades<small>Score needed</small></span><div class="gcuts"><label class="gcut"><span class="grade gA">A</span><input type="number" id="sGA" step="1" inputmode="numeric" aria-label="Score for A">+</label><label class="gcut"><span class="grade gB">B</span><input type="number" id="sGB" step="1" inputmode="numeric" aria-label="Score for B">+</label><span class="gcut"><span class="grade gC">C</span><span id="sGC"></span></span></div></div>
+</section>
+<section class="setsec" data-setpane="data" hidden>
+<div class="setrow"><span class="setl">Backup<small>All markets, accounts, settings</small></span><div class="row" style="gap:6px"><button type="button" class="btn small" data-backup>Back up everything</button><label class="btn small" for="restoreIn">Restore backup</label></div></div>
+<div class="setrow"><span class="setl">CSV<small id="csvMk">Trades of the market you are viewing</small></span><div class="row" style="gap:6px"><button type="button" class="btn small" data-export>Export CSV</button><label class="btn small" for="imp">Import CSV</label></div></div>
+<p class="hint ioMsg" id="setIo" style="margin:0"></p>
+<div class="setrow danger"><span class="setl">Delete data<small>Cannot be undone</small></span><div><button type="button" class="btn small dangerb" id="wipeOpen">Delete…</button>
+<div class="wipebox" id="wipeBox" hidden>
+<label class="f"><span>What to delete</span><select id="wipeWhat"><option value="fx">All forex trades and projects</option><option value="stocks">All stocks trades and projects</option><option value="all">Everything (trades, projects, accounts)</option></select></label>
+<p class="hint" id="wipeCount" style="margin:0"></p>
+<label class="checkline"><input type="checkbox" id="wipeBk"><span>I made a backup first <button type="button" class="linkish" data-backup>Back up now</button></span></label>
+<label class="f"><span>Type <b>DELETE</b> to confirm</span><input type="text" id="wipeTxt" autocomplete="off" spellcheck="false"></label>
+<div class="row" style="gap:6px"><button type="button" class="btn small" id="wipeCancel">Cancel</button><button type="button" class="btn small dangerb solid" id="wipeGo" disabled>Delete permanently</button></div>
+</div></div></div>
 </section>
 <section class="setsec" data-setpane="st" hidden>
 <div class="setrow"><span class="setl">Journal opens on</span><div class="segs" id="seg-speriod2"></div></div>
@@ -1377,7 +1396,7 @@ function renderLive(){
   renderNotes(C);
   const list=selDay?all.filter(t=>t.date===selDay):per;
   const dd2=selDay?new Date(selDay+"T12:00:00"):null;
-  $("#liveTable").innerHTML=tableHTML(list,selDay?`Trades on ${dd2.getDate()} ${MONTHS[dd2.getMonth()]}`:`Trades · ${P.label}`,false).replace('<div class="row"><button class="btn small" data-export>',`<div class="row">${selDay?'<button class="btn small" data-day="">Back to period</button>':""}<button class="btn small" data-export>`);
+  $("#liveTable").innerHTML=tableHTML(list,selDay?`Trades on ${dd2.getDate()} ${MONTHS[dd2.getMonth()]}`:`Trades · ${P.label}`,false).replace('<div class="row tblacts">',`<div class="row tblacts">${selDay?'<button class="btn small" data-day="">Back to period</button>':""}`);
 }
 let jPeriod="month",jFrom="",jTo="";
 /* ---------- settings (look) ---------- */
@@ -1405,7 +1424,17 @@ $("#sAccent2").innerHTML=ACCENTS2.map(([k,l,c])=>`<label title="${l}"><input typ
 function gcHint(){const a=Number($("#sGA").value),b=Number($("#sGB").value);$("#sGC").textContent=isFinite(a)&&isFinite(b)?`${b-1} or less`:""}
 let setTab="look";function showSetTab(k){setTab=k;document.querySelectorAll("[data-settab]").forEach(b=>b.setAttribute("aria-selected",b.dataset.settab===k));document.querySelectorAll("[data-setpane]").forEach(p=>p.hidden=p.dataset.setpane!==k)}
 document.querySelectorAll("[data-settab]").forEach(b=>b.addEventListener("click",()=>showSetTab(b.dataset.settab)));
-function openSettings(){showSetTab(setTab);const st=getSet();setRadio("stheme",st.theme);setRadio("saccent",st.accent);setRadio("saccent2",st.accent2);setRadio("speriod",st.period);setRadio("speriod2",st.periodSt);$("#sGA").value=st.gradeA;$("#sGB").value=st.gradeB;gcHint();$("#setSheet").hidden=false}
+
+const wipeSel=()=>{const w=$("#wipeWhat").value;return docs.filter(d=>d.id!=="settings"&&d.kind!=="settings"&&(w==="all"||(d.kind!=="account"&&mktOf(d)===w)))};
+function wipeCheck(){const n=wipeSel(),t=n.filter(d=>!d.kind).length,o=n.length-t;$("#wipeCount").textContent=`This deletes ${t} trade${t===1?"":"s"}${o?` and ${o} other item${o===1?"":"s"} (projects${$("#wipeWhat").value==="all"?", accounts":""})`:""}.`;
+  $("#wipeGo").disabled=!($("#wipeTxt").value.trim()==="DELETE"&&$("#wipeBk").checked&&n.length)}
+$("#wipeOpen").onclick=()=>{$("#wipeBox").hidden=false;$("#wipeOpen").hidden=true;$("#wipeTxt").value="";$("#wipeBk").checked=false;$("#wipeWhat").value=market;wipeCheck()};
+$("#wipeCancel").onclick=()=>{$("#wipeBox").hidden=true;$("#wipeOpen").hidden=false};
+["#wipeWhat","#wipeTxt","#wipeBk"].forEach(id=>{$(id).addEventListener("input",wipeCheck);$(id).addEventListener("change",wipeCheck)});
+$("#wipeGo").onclick=async()=>{const list=wipeSel();if(!list.length||$("#wipeTxt").value.trim()!=="DELETE"||!$("#wipeBk").checked)return;$("#wipeGo").disabled=true;$("#setIo").textContent=`Deleting ${list.length} items…`;
+  holdRender=true;try{for(const d of list)await deleteDoc(d.id)}finally{holdRender=false}activeProject=null;render();
+  $("#setIo").textContent=`Deleted ${list.length} items.`;$("#wipeBox").hidden=true;$("#wipeOpen").hidden=false;toast("Data deleted")};
+function openSettings(){showSetTab(setTab);$("#wipeBox").hidden=true;$("#wipeOpen").hidden=false;$("#setIo").textContent="";$("#csvMk").textContent=(market==="stocks"?"Stocks":"Forex")+" trades only";const st=getSet();setRadio("stheme",st.theme);setRadio("saccent",st.accent);setRadio("saccent2",st.accent2);setRadio("speriod",st.period);setRadio("speriod2",st.periodSt);$("#sGA").value=st.gradeA;$("#sGB").value=st.gradeB;gcHint();$("#setSheet").hidden=false}
 $("#openSettings").onclick=openSettings;
 document.querySelectorAll("[data-closeset]").forEach(b=>b.onclick=()=>{$("#setSheet").hidden=true});
 $("#setForm").addEventListener("change",e=>{const n=e.target.name;if(n==="stheme")saveSetting("theme",e.target.value);else if(n==="saccent")saveSetting("accent",e.target.value);else if(n==="saccent2")saveSetting("accent2",e.target.value);else if(n==="speriod")saveSetting("period",e.target.value);else if(n==="speriod2")saveSetting("periodSt",e.target.value);else if(e.target.id==="sGA"||e.target.id==="sGB"){let a=Math.round(Number($("#sGA").value)),b=Math.round(Number($("#sGB").value));if(!isFinite(a))a=4;if(!isFinite(b))b=2;if(b>a){b=a;$("#sGB").value=b}const cur=docs.find(x=>x.id==="settings")||{id:"settings",kind:"settings"};saveDoc({...cur,gradeA:a,gradeB:b});applySettings();gcHint()}});
@@ -1672,7 +1701,7 @@ function stockTableHTML(list,title){
     const oc=t.outcome||(t.pnl>0?"win":t.pnl<0?"loss":"be");
     return`<span class="restag ${oc}${hol}">${({win:"Win",loss:"Loss",be:"BE"})[oc]}${t.retPct!=null?`<b class="num">${t.retPct>0?"+":""}${t.retPct.toFixed(1)}%</b>`:""}</span>`};
   return `<div class="panel"><div class="row spread"><div><span class="eyebrow">${list.length} trades</span><h2>${title}</h2></div>
-    <div class="row"><button class="btn small" data-export>Export CSV</button><button class="btn small" data-backup>Back up everything</button><label class="btn small" for="restoreIn">Restore backup</label></div></div>
+    <div class="row tblacts"></div></div>
     <p class="hint ioMsg"></p>
     ${list.length?`<div class="tbl"><table class="trades"><thead><tr><th>Date</th><th>Ticker</th><th>Setup</th><th>Result</th><th class="r">P&amp;L</th><th class="r">ROI</th><th class="r">Of capital</th><th></th></tr></thead><tbody>
     ${list.map(t=>{const cur=stCur(t),setup=[t.sPhase?"Phase "+t.sPhase:"",t.swPat||""].filter(Boolean).join(" · "),ex=t.sExits||[],
@@ -1685,7 +1714,7 @@ function tableHTML(list,title,showMode){if(market==="stocks")return stockTableHT
   list=list.slice().sort((a,b)=>(b.date||"").localeCompare(a.date||"")||(b.created||0)-(a.created||0));
   const statusTxt={taken:"Taken",missed:"Missed",skipped:"Skipped"};
   return `<div class="panel"><div class="row spread"><div><span class="eyebrow">${list.length} trades</span><h2>${title}</h2></div>
-    <div class="row"><button class="btn small" data-export>Export CSV</button><label class="btn small" for="imp">Import CSV</label><button class="btn small" data-backup>Back up everything</button><label class="btn small" for="restoreIn">Restore backup</label></div></div>
+    <div class="row tblacts"></div></div>
     <p class="hint ioMsg"></p>
     ${list.length?`<div class="tbl"><table class="trades"><thead><tr><th>Date</th><th>Pair</th><th>Phase</th><th>Concept</th><th>4H entry</th><th>Grade</th><th>Result</th><th>Evaluation</th><th></th></tr></thead><tbody>
     ${list.map(t=>{const oc=t.outcome||(t.r>0?"win":t.r<0?"loss":t.r===0?"be":""),err=t.evaluation&&t.evaluation!=="plan";return `<tr class="clickrow${err?" errrow":""}${t.status==="missed"?" missrow":""}" data-edit="${t.id}" tabindex="0" title="Open trade"><td class="num c-date">${esc(t.date)}</td><td class="c-pair">${esc(t.pair)} ${t.dir?`<span class="dirar ${t.dir}" title="${t.dir==="long"?"Long":"Short"}"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round">${t.dir==="long"?'<path d="M12 19V5M6 11l6-6 6 6"/>':'<path d="M12 5v14M6 13l6 6 6-6"/>'}</svg></span>`:""}${t.status==="missed"?`<span class="misstag">Missed</span>`:""}</td><td class="num c-phase">${t.fase||"—"}</td><td class="c-concept">${esc(t.concept||"—")}${t.sub&&t.sub!=="—"?`<br><span class="hint" style="margin:0">${esc(t.sub)}</span>`:""}</td><td class="c-entry">${esc(t.entry4h||"—")}</td><td class="c-score">${tGrade(t)?`<span class="grade g${tGrade(t)}" title="Setup score ${tScore(t)>0?"+":""}${tScore(t)}">${tGrade(t)}</span>`:""}</td><td class="c-res">${oc?`<span class="restag ${oc}${t.status==="missed"?" hollow":""}">${({win:"Win",loss:"Loss",be:"BE"})[oc]}<b class="num">${fmtR(t.r)}</b></span>`:"—"}</td><td class="c-eval">${err?`<span class="errtag">${({technical:"Technical",emotional:"Emotional"})[t.evaluation]}</span>`:""}</td><td class="c-charts">${shotCount(t)?`<button class="camb chico" data-view="${t.id}" title="View charts"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 3v18h18"/><path d="M7 15l4-4 3 3 5-6"/></svg>${shotCount(t)}</button>`:""}</td>
@@ -2024,7 +2053,7 @@ function toCSV(list){const q=v=>{v=v==null?"":String(v);return /[",\n]/.test(v)?
   const pn=id=>projName(id)||"";
   return [[...COLS,"projectName"].join(","),...list.filter(t=>!t.demo).map(t=>[...COLS.map(c=>q(t[c])),q(pn(t.project))].join(","))].join("\n")}
 function saveFile(name,data,type){const b=data instanceof Blob?data:new Blob([data],{type:type||"application/octet-stream"});const a=document.createElement("a");a.href=URL.createObjectURL(b);a.download=name;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},1500)}
-async function backupAll(btn){const msg=btn.closest(".panel").querySelector(".ioMsg");
+async function backupAll(btn){const msg=(btn.closest(".panel,.setsec")||document).querySelector(".ioMsg");
   const list=docs.filter(d=>!d.demo),ids=[...new Set(list.flatMap(d=>Object.values(d.shots||{}).filter(v=>v&&v!=="uploading")))];
   const images={};let i=0,miss=0;btn.disabled=true;
   for(const id of ids){i++;msg.textContent=`Packing screenshots ${i}/${ids.length}…`;
@@ -2044,7 +2073,7 @@ async function restoreBackup(file,msg){if(!ME){toast("Sign in first.");return}
   const list=j.docs.filter(d=>d&&d.id);list.forEach(upsertLocal);await dbPutMany(list);await ensureShotUrls(list);render();
   msg.textContent=`Restored ${list.length} items and ${imgs.length-fail} screenshots${fail?` (${fail} screenshots failed)`:""}.`;toast("Backup restored")}
 async function exportCSV(btn){
-  const csv=toCSV(trades()),msg=btn.closest(".panel").querySelector(".ioMsg");
+  const csv=toCSV(trades()),msg=(btn.closest(".panel,.setsec")||document).querySelector(".ioMsg");
   saveFile("trade-journal.csv",csv,"text/csv");msg.textContent="CSV downloaded."
 }
 function parseCSV(s){const rows=[];let r=[],v="",q=false;for(let i=0;i<s.length;i++){const c=s[i];
@@ -2052,14 +2081,14 @@ function parseCSV(s){const rows=[];let r=[],v="",q=false;for(let i=0;i<s.length;
   else if(c==='"')q=true;else if(c===","){r.push(v);v=""}else if(c==="\n"||c==="\r"){if(c==="\r"&&s[i+1]==="\n")i++;r.push(v);rows.push(r);r=[];v=""}else v+=c}
   if(v||r.length){r.push(v);rows.push(r)}return rows.filter(x=>x.some(Boolean))}
 const rIn=document.createElement("input");rIn.type="file";rIn.id="restoreIn";rIn.accept=".json,application/json";rIn.hidden=true;document.body.appendChild(rIn);
-rIn.onchange=e=>{const f=e.target.files[0];e.target.value="";if(!f)return;const msg=document.querySelector(".ioMsg")||{set textContent(v){toast(v)}};restoreBackup(f,msg)};
+rIn.onchange=e=>{const f=e.target.files[0];e.target.value="";if(!f)return;const msg=$("#setIo")||{set textContent(v){toast(v)}};restoreBackup(f,msg)};
 const imp=document.createElement("input");imp.type="file";imp.id="imp";imp.accept=".csv,text/csv";imp.hidden=true;document.body.appendChild(imp);
 imp.onchange=e=>{const f=e.target.files[0];if(!f)return;const rd=new FileReader();rd.onload=()=>{
   const rows=parseCSV(rd.result),head=rows.shift()||[];let n=0;
   rows.forEach(row=>{const t={};head.forEach((h,i)=>{if(COLS.includes(h))t[h]=row[i]});
     ["fase","planEntry","planSL","planTP","slip","r"].forEach(k=>t[k]=t[k]===""||t[k]==null?null:Number(t[k]));
     t.onPlan=t.onPlan==="true";t.project=t.project||null;t.id=t.id||uid();t.created=Date.now();if(t.mode){saveDoc(t);n++}});
-  document.querySelectorAll(".ioMsg").forEach(m=>m.textContent=`${n} trades imported.`)};rd.readAsText(f);e.target.value=""};
+  $("#setIo").textContent=`${n} trades imported into ${market==="stocks"?"Stocks":"Forex"}.`};rd.readAsText(f);e.target.value=""};
 
 /* ---------- demo ---------- */
 function loadDemo(){let s=7;const rnd=()=>(s=(s*16807)%2147483647)/2147483647;
@@ -2121,7 +2150,8 @@ function btSeed(){if(btSeeding)return;const st=docs.find(d=>d.id==="settings");i
   docs.filter(d=>!d.kind&&d.mode==="backtest"&&!d.btDate).forEach(d=>saveDoc({...d,btDate:td}));
   saveDoc({...(docs.find(d=>d.id==="settings")||{id:"settings",kind:"settings"}),btSeeded:true});btSeeding=false}
 let subFixing=false;function subFix(){if(subFixing)return;const l=docs.filter(d=>!d.kind&&d.sub==="100% Niveau");if(!l.length)return;subFixing=true;l.forEach(d=>saveDoc({...d,sub:"100 level"}));subFixing=false}
-function render(){applySettings();if(docsReady){acSeed();btSeed();subFix();if(market==="stocks")setTimeout(fxBackfill,0)}
+let holdRender=false;
+function render(){if(holdRender)return;applySettings();if(docsReady){acSeed();btSeed();subFix();if(market==="stocks")setTimeout(fxBackfill,0)}
   $("#cLive").textContent=liveTrades().length||"";$("#cBt").textContent=btTrades().length||"";
   if(tab==="analyze")renderAnalyze();else if(tab==="live")renderLive();else if(tab==="accounts")acRender();else renderBacktest();
 }
