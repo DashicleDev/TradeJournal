@@ -150,6 +150,8 @@ a.btn{text-decoration:none}
 .rvtab td:first-child{color:var(--muted);font-size:13px;white-space:nowrap}
 .rvsum{margin:12px 0;font-size:14px;color:var(--muted);display:flex;flex-wrap:wrap;gap:6px;align-items:center}
 .rvdone{font-weight:600;color:var(--good)}
+.rvtab tr.rvplan td{border-top:2px solid var(--line);font-weight:600}
+.rvplanchg{margin:10px 0 0;padding:8px 12px;border-radius:8px;background:color-mix(in srgb,var(--be) 14%,transparent);font-size:14px}
 .rvstep h2{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
 #view-review select,#view-review input[type=date]{font:14px var(--body);padding:7px 9px;border:1px solid var(--line);border-radius:7px;background:var(--paper);color:var(--ink)}
 .scoreline{margin:0 0 12px;font-size:13px;color:var(--muted);display:flex;align-items:center;gap:8px}
@@ -1437,7 +1439,7 @@ const rvF=(l,h)=>`<div class="f"><span>${l}</span>${h}</div>`;
 function rvChart(t,step){const ln=(t.shotLinks||{})[RV_SLOT[step]],img=tvImg(ln);
   if(!ln)return`<div class="rvimg none">No ${step.toLowerCase()} chart saved for this trade.</div>`;
   if(!img)return`<div class="rvimg none">This chart link can't be shown as a picture.</div>`;
-  return`<div class="rvimg"><img src="${esc(img)}" alt="${step} chart" referrerpolicy="no-referrer" onerror="this.parentNode.classList.add('none');this.parentNode.textContent='Chart could not load here. It works in the GitHub app.'"><span class="rvmask tl"></span><span class="rvmask ax"></span></div>`}
+  return`<div class="rvimg"><img src="${esc(img)}" alt="${step} chart" referrerpolicy="no-referrer" onerror="this.parentNode.classList.add('none');this.parentNode.textContent='Chart could not load here. It works in the GitHub app.'"><span class="rvmask tl"></span></div>`}
 let rvOpen="";
 function rvMsBox(key,label,kind,CR,get){const open=rvOpen===key,mine=CR.filter(([k])=>get(k)===kind);
   return `<div class="f"><span>${label}</span><div class="ms rvms${open?" open":""}" data-rvbox="${key}"><button type="button" class="ms-field" data-rvopen="${key}">${mine.length?mine.map(([k,l])=>`<span class="chip-sel ${kind}">${esc(l)}<span class="x" data-rvx="${key}:${k}">×</span></span>`).join(""):'<span class="ph">Choose criteria…</span>'}<span class="caret">▾</span></button>
@@ -1481,12 +1483,14 @@ function rvRender(){const box=$("#rvBox"),S=rvState();
       <div class="row spread" style="margin-top:16px"><button type="button" class="btn" id="rvBack" ${step?"":"disabled"}>← Back</button><button type="button" class="btn primary" id="rvNext">${step<2?"Next: "+RV_STEPS[step+1]+" →":"Reveal →"}</button></div></div>`;return}
   const o=rvOrig(t),so=tScore(rvAsTrade(o)),sn=tScore(rvAsTrade(a)),go=tGrade(rvAsTrade(o)),gn=tGrade(rvAsTrade(a));
   const rows=RV_ROWS.map(([k,l])=>{const same=rvEq(o[k],a[k]);return`<tr class="${same?"":"diff"}"><td>${l}</td><td>${esc(rvLab(k,o[k]))}</td><td>${esc(rvLab(k,a[k]))}</td></tr>`}).join("");
+  const op=t.evaluation==="plan"?"plan":t.evaluation?"off":"",opL=op==="plan"?"Yes":op==="off"?"No":"—",npL=S.plan==="plan"?"Yes":S.plan==="off"?"No":"—";
   const nd=RV_ROWS.filter(([k])=>!rvEq(o[k],a[k])).length,oc=t.outcome||(t.r>0?"win":t.r<0?"loss":"be");
   box.innerHTML=`<div class="panel rvstep"><div class="row spread"><div><span class="eyebrow">${prog} · reveal</span><h2>${esc(t.pair||"?")} <span class="dirar ${t.dir}">${t.dir==="long"?"↑":t.dir==="short"?"↓":""}</span> <span class="restag ${oc}">${({win:"Win",loss:"Loss",be:"BE"})[oc]}<b class="num">${fmtR(t.r)}</b></span></h2>
       <p class="hint" style="margin:2px 0 0">${esc(fmtD(t.date))} · ${t.mode==="backtest"?"Backtest":esc(t.account||"Live")}</p></div><button type="button" class="btn small ghost" id="rvPause">Pause</button></div>
     <p class="rvsum">${nd?`${nd} difference${nd>1?"s":""} with what you filled in back then`:"Exactly the same as back then"} · score ${so==null?"—":(so>0?"+":"")+so} ${go?`<span class="grade g${go}">${go}</span>`:""} → ${sn==null?"—":(sn>0?"+":"")+sn} ${gn?`<span class="grade g${gn}">${gn}</span>`:""}</p>
-    <div class="tbl"><table class="rvtab"><thead><tr><th></th><th>Back then</th><th>Now</th></tr></thead><tbody>${rows}</tbody></table></div>
-    <div class="fields" style="margin-top:14px">${rvF("Was this trade according to plan?",rvSeg("plan",[["plan","Yes"],["off","No"]],S.plan||""))}${rvF("Save your new analysis on the trade?",rvSeg("repl",[["yes","Yes, replace"],["no","Keep the old one"]],S.repl||""))}</div>
+    <div class="tbl"><table class="rvtab"><thead><tr><th></th><th>Back then</th><th>Now</th></tr></thead><tbody>${rows}<tr class="rvplan ${S.plan&&op&&S.plan!==op?"diff":""}"><td>According to plan</td><td>${opL}</td><td>${S.plan?npL:`<span class="hint" style="margin:0">answer below</span>`}</td></tr></tbody></table></div>
+    ${S.plan&&op&&S.plan!==op?`<p class="rvplanchg">You now think this trade was <b>${S.plan==="plan"?"according to plan":"not according to plan"}</b>; back then you said <b>${op==="plan"?"according to plan":"not according to plan"}</b>.</p>`:""}
+    <div class="fields" style="margin-top:14px">${rvF(`Was this trade according to plan? <small class="hint" style="margin:0;display:inline">· back then: ${opL}</small>`,rvSeg("plan",[["plan","Yes"],["off","No"]],S.plan||""))}${rvF("Save your new analysis on the trade?",rvSeg("repl",[["yes","Yes, replace"],["no","Keep the old one"]],S.repl||""))}</div>
     <div class="row spread" style="margin-top:16px"><button type="button" class="btn" id="rvBack">← Back</button><button type="button" class="btn primary" id="rvSaveNext" ${S.plan&&S.repl?"":"disabled"}>${S.i+1<S.queue.length?"Save & next trade →":"Save & finish"}</button></div></div>`}
 function rvApply(t,a,plan,repl){const n={...t,evaluation:plan,onPlan:plan==="plan",reviews:[...(t.reviews||[]),{at:new Date().toISOString(),plan,replaced:repl==="yes",a}]};
   if(repl==="yes")Object.assign(n,{dir:a.dir||t.dir,fase:a.fase?Number(a.fase):null,wStruct:a.wStruct,weekly:rvAsTrade(a).weekly,wPat:a.wPat,wPatSub:a.wPat&&a.wPat!=="Reversal"?a.wPatSub:"",concept:a.concept,sub:a.sub,dMs:a.dMs,dPros:a.dPros,dailyFib:a.dPros.includes("fc")?"ja":"nee",
