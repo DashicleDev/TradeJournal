@@ -1449,7 +1449,7 @@ $("#wipeGo").onclick=async()=>{const list=wipeSel();if(!list.length||$("#wipeTxt
   $("#setIo").textContent=`Deleted ${list.length} items.`;$("#wipeBox").hidden=true;$("#wipeOpen").hidden=false;toast("Data deleted")};
 
 /* ---------- news → Google Calendar (per user, Google Identity Services in the browser) ---------- */
-const NCUR=["USD","EUR","GBP","JPY","CAD","AUD","CHF","NZD"],NIMP=["Heavy","High","Medium","Low"],HEAVY=/\bCPI y\/y\b|Non-Farm Employment Change|\bFOMC\b|Federal Funds Rate|Interest Rate|Rate Decision|Rate Statement|Monetary Policy|Main Refinancing Rate|Official Bank Rate|Cash Rate|Overnight Rate|Policy Rate|Fed Chair|Powell/i,FF_URL="https://nfs.faireconomy.media/ff_calendar_thisweek.xml",FF_TAG="Source: Forex Factory";
+const NCUR=["USD","EUR","GBP","JPY","CAD","AUD","CHF","NZD"],NIMP=["Heavy","High","Medium","Low"],HEAVY=/^(?:(?:FOMC|Fed|ECB|BOE|BOJ|SNB|RBA|RBNZ|BOC|MPC) )?(?:CPI y\/y|Non-Farm Employment Change|Federal Funds Rate|FOMC Statement|FOMC Press Conference|Main Refinancing Rate|Official Bank Rate|Cash Rate|Overnight Rate|Policy Rate|Rate Statement|Monetary Policy Statement|Monetary Policy Summary|Press Conference)$/,FF_URL="https://nfs.faireconomy.media/ff_calendar_thisweek.xml",FF_TAG="Source: Forex Factory";
 let gTok=null,gTokExp=0,gClient=null;
 const gId=()=>(window.TJ_CONFIG||{}).googleClientId||"";
 function newsPrefs(){const st=getSet();return{cal:st.newsCal||"primary",cur:st.newsCur||NCUR,imp:st.newsImp||["Heavy","High","Medium"]}}

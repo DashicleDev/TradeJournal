@@ -5,8 +5,7 @@ from datetime import datetime, timedelta, timezone
 
 URL = "https://nfs.faireconomy.media/ff_calendar_thisweek.xml"
 CURRENCIES = {"USD", "EUR", "GBP", "JPY", "CAD", "AUD", "CHF", "NZD"}
-HEAVY = re.compile(r"\bCPI y/y\b|Non-Farm Employment Change|\bFOMC\b|Federal Funds Rate|Interest Rate|Rate Decision|"
-                   r"Rate Statement|Monetary Policy|Main Refinancing Rate|Official Bank Rate|Cash Rate|Overnight Rate|Policy Rate|Fed Chair|Powell", re.I)
+HEAVY = re.compile(r"^(?:(?:FOMC|Fed|ECB|BOE|BOJ|SNB|RBA|RBNZ|BOC|MPC) )?(?:CPI y/y|Non-Farm Employment Change|Federal Funds Rate|FOMC Statement|FOMC Press Conference|Main Refinancing Rate|Official Bank Rate|Cash Rate|Overnight Rate|Policy Rate|Rate Statement|Monetary Policy Statement|Monetary Policy Summary|Press Conference)$")
 VARIANTS = {  # file -> impact levels included
     "news.ics": {"Heavy", "High", "Medium"},
     "news-high.ics": {"Heavy", "High"},
