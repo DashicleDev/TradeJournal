@@ -469,6 +469,10 @@ fieldset.subs-closed .legend-toggle .chev{transform:none}
 .calnav b{font-family:var(--display);font-stretch:85%;font-size:18px;min-width:9em;text-align:center}
 .calwrap{overflow-x:auto}
 .cal{display:grid;grid-template-columns:repeat(5,minmax(44px,1fr)) repeat(2,minmax(26px,.32fr)) minmax(56px,.9fr);gap:4px;min-width:420px}
+.monly{display:none}.mshow{display:none}
+@media (max-width:640px){.mtab:not(.all) tr.mx{display:none}.mshow{display:inline-flex;margin-top:8px}
+  .ptab th:nth-child(2),.ptab td:nth-child(2){display:none}.ptab th,.ptab td{padding:8px 6px;font-size:13px}}
+@media (max-width:400px){nav button .count{display:none}}
 .cal .day.we .dpairs{display:none}.cal .day.we .dr{font-size:11px}
 .cal .dow{font-size:11px;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);font-weight:600;padding:2px 6px}
 .day{border:1px solid var(--line);border-radius:8px;min-height:74px;padding:6px 7px;display:grid;align-content:space-between;background:var(--surface);font:inherit;color:inherit;text-align:left;cursor:pointer}
@@ -537,7 +541,10 @@ main>*,.panel,.grid2>*,.ov>*{min-width:0}
   main{gap:14px;padding-top:14px}
   .panel{padding:14px}
   .brand h1{font-size:24px}
-  nav button{padding:10px 12px}
+  nav{gap:0;overflow:hidden}
+  nav button{padding:10px 8px;font-size:14px;flex:1 1 auto;justify-content:center;gap:5px}
+  nav button .count{font-size:11px}
+  main{padding-bottom:96px}
   #liveHead>.row.spread{display:grid;gap:10px}
   .segs.period{flex-wrap:nowrap;overflow-x:auto;margin-inline:-14px;padding-inline:14px;scrollbar-width:none}
   .segs.period::-webkit-scrollbar{display:none}
@@ -545,7 +552,7 @@ main>*,.panel,.grid2>*,.ov>*{min-width:0}
   .tbl:has(.trades){overflow:visible}
   .trades,.trades tbody{display:block}
   .trades thead{display:none}
-  .trades tr{display:grid;grid-template-columns:minmax(0,1fr) auto;grid-template-areas:"pair r" "meta meta" "concept concept" "tags charts";column-gap:10px;row-gap:4px;padding:12px 0;border-bottom:1px solid var(--line)}
+  .trades tr{display:grid;grid-template-columns:minmax(0,1fr) auto;grid-template-areas:"pair r" "meta charts" "concept concept" "tags tags";column-gap:10px;row-gap:4px;padding:12px 0;border-bottom:1px solid var(--line)}
   .trades td{padding:0;border:0;display:block}
   .trades .c-pair{grid-area:pair;font-weight:700;font-size:16px}
   .trades .c-r{grid-area:r;font-size:16px;font-weight:700;text-align:right}
@@ -560,6 +567,8 @@ main>*,.panel,.grid2>*,.ov>*{min-width:0}
   .trades .c-concept .hint::before{content:" · "}
   .trades .retinl{display:inline;color:var(--muted)}
   .trades .c-score{display:none}
+  .trades .monly{display:inline;color:var(--muted)}
+  .trades .monly .grade{margin-left:6px;vertical-align:1px}
   .trades .c-eval{grid-area:tags;display:flex;gap:6px;flex-wrap:wrap;align-items:center}
   .trades .c-eval:empty{display:none}
   .trades .acts{grid-area:acts;display:flex;justify-content:space-between;align-items:center;gap:6px;flex-wrap:wrap}
@@ -1328,7 +1337,7 @@ function matchHTML(bt,lv,sb,sl){if(!bt.length)return "";
   return `<div class="panel"><span class="eyebrow">Same trades</span><h2>Which backtest trades you took live</h2>
   <p class="hint">Matched on pair and direction, with entries no more than 3 days apart. Live trades are limited to the backtest's dates (${esc(fmtD(from))} – ${esc(fmtD(to))}).</p>
   <div class="kpis mk">${tile("Taken in both",pairs.length,`Backtest ${fmtR(pb)} · live ${fmtR(pl)}`)}${tile("Backtest only",sk.length,`Skipped live · ${fmtR(sum(sk))} missed`)}${tile("Live only",xo.length,`Not in backtest · ${fmtR(sum(xo))}`)}</div>
-  ${pairs.length?`<div class="tbl"><table class="mtab"><thead><tr><th>Pair</th><th>Backtest</th><th class="r">R</th><th>Live</th><th class="r">R</th><th class="r">Gap</th><th>Note</th></tr></thead><tbody>${pairs.map(c=>`<tr><td class="m-p">${esc(c.b.pair)} ${c.b.dir?`<span class="pill">${c.b.dir==="long"?"L":"S"}</span>`:""}</td><td class="num m-bd" data-l="Backtest"><button type="button" class="dlink" data-edit="${c.b.id}" title="Open backtest trade">${esc(c.b.date)}</button></td><td class="r num m-br ${cls(c.b.r)}">${fmtR(c.b.r)}</td><td class="num m-ld" data-l="Live"><button type="button" class="dlink" data-edit="${c.l.id}" title="Open live trade">${esc(c.l.date)}</button></td><td class="r num m-lr ${cls(c.l.r)}">${fmtR(c.l.r)}</td><td class="r num m-g ${cls(c.l.r-c.b.r)}">${fmtR(c.l.r-c.b.r)}</td><td class="hint m-n" style="margin:0">${note(c)}</td></tr>`).join("")}</tbody></table></div>`:`<p class="hint">None of the backtest trades match a live trade.</p>`}
+  ${pairs.length?`<div class="tbl"><table class="mtab"><thead><tr><th>Pair</th><th>Backtest</th><th class="r">R</th><th>Live</th><th class="r">R</th><th class="r">Gap</th><th>Note</th></tr></thead><tbody>${pairs.map((c,i)=>`<tr class="${i>=5?"mx":""}"><td class="m-p">${esc(c.b.pair)}${c.b.dir?`<span class="dirar ${c.b.dir}"><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round">${c.b.dir==="long"?'<path d="M12 19V5M6 11l6-6 6 6"/>':'<path d="M12 5v14M6 13l6 6 6-6"/>'}</svg></span>`:""}</td><td class="num m-bd" data-l="Backtest"><button type="button" class="dlink" data-edit="${c.b.id}" title="Open backtest trade">${esc(c.b.date)}</button></td><td class="r num m-br ${cls(c.b.r)}">${fmtR(c.b.r)}</td><td class="num m-ld" data-l="Live"><button type="button" class="dlink" data-edit="${c.l.id}" title="Open live trade">${esc(c.l.date)}</button></td><td class="r num m-lr ${cls(c.l.r)}">${fmtR(c.l.r)}</td><td class="r num m-g ${cls(c.l.r-c.b.r)}">${fmtR(c.l.r-c.b.r)}</td><td class="hint m-n" style="margin:0">${note(c)}</td></tr>`).join("")}</tbody></table></div>${pairs.length>5?`<button type="button" class="btn small ghost mshow" onclick="const t=this.previousElementSibling.querySelector('table');t.classList.toggle('all');this.textContent=t.classList.contains('all')?'Show fewer':'Show all ${pairs.length}'">Show all ${pairs.length}</button>`:""}`:`<p class="hint">None of the backtest trades match a live trade.</p>`}
   ${list(sk,"Backtest trades you didn't take live")}${list(xo,"Live trades with no backtest match")}</div>`}
 function projectsVsLive(lv){
   const L=stats(lv);const ps=projects();
@@ -1338,7 +1347,7 @@ function projectsVsLive(lv){
   const rows=groups.map(([n,m,l])=>{const s=stats(l);const d=s.avg!=null&&L.avg!=null?s.avg-L.avg:null;
     return `<tr><td>${esc(n)}</td><td>${m?`<span class="pill ${m==="Chart scroll"?"warn":""}">${m}</span>`:""}</td><td class="r num">${s.n}</td><td class="r num">${fmtP(s.wr)}</td><td class="r num">${fmtR(s.avg)}</td><td class="r num">${d==null?"—":(d>0?"+":"")+d.toFixed(2)+"R"}</td></tr>`}).join("");
   return `<div class="panel"><span class="eyebrow">Projects</span><h2>Which backtest matches live?</h2><p class="hint">The smaller the gap to live, the more you can trust that way of testing.</p>
-  <div class="tbl"><table><thead><tr><th>Project</th><th>Method</th><th class="r">n</th><th class="r">Win</th><th class="r">Avg R</th><th class="r">Gap to live</th></tr></thead><tbody>${rows}<tr><td class="live"><b>Live</b></td><td></td><td class="r num">${L.n}</td><td class="r num">${fmtP(L.wr)}</td><td class="r num">${fmtR(L.avg)}</td><td></td></tr></tbody></table></div></div>`;
+  <div class="tbl"><table class="ptab"><thead><tr><th>Project</th><th>Method</th><th class="r">n</th><th class="r">Win</th><th class="r">Avg R</th><th class="r">Gap to live</th></tr></thead><tbody>${rows}<tr><td class="live"><b>Live</b></td><td></td><td class="r num">${L.n}</td><td class="r num">${fmtP(L.wr)}</td><td class="r num">${fmtR(L.avg)}</td><td></td></tr></tbody></table></div></div>`;
 }
 document.addEventListener("change",e=>{const el=e.target;if(!el.dataset||!el.dataset.set)return;const st=sets.find(x=>x.id===el.dataset.set);if(!st)return;
   st.f[el.dataset.key]=el.value;
@@ -1749,7 +1758,7 @@ function tableHTML(list,title,showMode){if(market==="stocks")return stockTableHT
     <div class="row tblacts"></div></div>
     <p class="hint ioMsg"></p>
     ${list.length?`<div class="tbl"><table class="trades"><thead><tr><th>Date</th><th>Pair</th><th>Phase</th><th>Concept</th><th>4H entry</th><th>Grade</th><th>Result</th><th>Evaluation</th><th></th></tr></thead><tbody>
-    ${list.map(t=>{const oc=t.outcome||(t.r>0?"win":t.r<0?"loss":t.r===0?"be":""),err=t.evaluation&&t.evaluation!=="plan";return `<tr class="clickrow${err?" errrow":""}${t.status==="missed"?" missrow":""}" data-edit="${t.id}" tabindex="0" title="Open trade"><td class="num c-date">${esc(t.date)}</td><td class="c-pair">${esc(t.pair)} ${t.dir?`<span class="dirar ${t.dir}" title="${t.dir==="long"?"Long":"Short"}"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round">${t.dir==="long"?'<path d="M12 19V5M6 11l6-6 6 6"/>':'<path d="M12 5v14M6 13l6 6 6-6"/>'}</svg></span>`:""}${t.status==="missed"?`<span class="misstag">Missed</span>`:""}</td><td class="num c-phase">${t.fase||"—"}</td><td class="c-concept">${esc(t.concept||"—")}${t.sub&&t.sub!=="—"?`<br><span class="hint" style="margin:0">${esc(t.sub)}</span>`:""}</td><td class="c-entry">${esc(t.entry4h||"—")}</td><td class="c-score">${tGrade(t)?`<span class="grade g${tGrade(t)}" title="Setup score ${tScore(t)>0?"+":""}${tScore(t)}">${tGrade(t)}</span>`:""}</td><td class="c-res">${oc?`<span class="restag ${oc}${t.status==="missed"?" hollow":""}">${({win:"Win",loss:"Loss",be:"BE"})[oc]}<b class="num">${fmtR(t.r)}</b></span>`:"—"}</td><td class="c-eval">${err?`<span class="errtag">${({technical:"Technical",emotional:"Emotional"})[t.evaluation]}</span>`:""}</td><td class="c-charts">${shotCount(t)?`<button class="camb chico" data-view="${t.id}" title="View charts"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 3v18h18"/><path d="M7 15l4-4 3 3 5-6"/></svg>${shotCount(t)}</button>`:""}</td>
+    ${list.map(t=>{const oc=t.outcome||(t.r>0?"win":t.r<0?"loss":t.r===0?"be":""),err=t.evaluation&&t.evaluation!=="plan";return `<tr class="clickrow${err?" errrow":""}${t.status==="missed"?" missrow":""}" data-edit="${t.id}" tabindex="0" title="Open trade"><td class="num c-date">${esc(t.date)}</td><td class="c-pair">${esc(t.pair)} ${t.dir?`<span class="dirar ${t.dir}" title="${t.dir==="long"?"Long":"Short"}"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round">${t.dir==="long"?'<path d="M12 19V5M6 11l6-6 6 6"/>':'<path d="M12 5v14M6 13l6 6 6-6"/>'}</svg></span>`:""}${t.status==="missed"?`<span class="misstag">Missed</span>`:""}</td><td class="num c-phase">${t.fase||"—"}</td><td class="c-concept">${esc(t.concept||"—")}${t.sub&&t.sub!=="—"?`<br><span class="hint" style="margin:0">${esc(t.sub)}</span>`:""}<span class="monly">${t.fase?" · Phase "+t.fase:""}${t.entry4h?" · "+esc(t.entry4h):""}${tGrade(t)?`<span class="grade g${tGrade(t)}">${tGrade(t)}</span>`:""}</span></td><td class="c-entry">${esc(t.entry4h||"—")}</td><td class="c-score">${tGrade(t)?`<span class="grade g${tGrade(t)}" title="Setup score ${tScore(t)>0?"+":""}${tScore(t)}">${tGrade(t)}</span>`:""}</td><td class="c-res">${oc?`<span class="restag ${oc}${t.status==="missed"?" hollow":""}">${({win:"Win",loss:"Loss",be:"BE"})[oc]}<b class="num">${fmtR(t.r)}</b></span>`:"—"}</td><td class="c-eval">${err?`<span class="errtag">${({technical:"Technical",emotional:"Emotional"})[t.evaluation]}</span>`:""}</td><td class="c-charts">${shotCount(t)?`<button class="camb chico" data-view="${t.id}" title="View charts"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 3v18h18"/><path d="M7 15l4-4 3 3 5-6"/></svg>${shotCount(t)}</button>`:""}</td>
 </tr>`}).join("")}
     </tbody></table></div>`:`<p class="hint">No trades here yet. Tap + to log one.</p>`}</div>`;
 }
