@@ -939,7 +939,7 @@ $("#signOut").onclick=async()=>{await SB.auth.signOut();ME=null;docs=[];try{loca
 /* ---------- plan logic ---------- */
 const DCRIT=[["fc","FC"],["dcc","Last CC"],["sd","S&D zone"]];let dSel={};
 const msV=v=>v==="for"?1:v==="against"?-1:0;
-const tScore=t=>{const w=t.weekly||{},dp=dProsOf(t);if(!Object.keys(w).length&&!t.dMs&&!t.hMs&&!dp.length)return null;return Object.values(w).reduce((a,v)=>a+msV(v),0)+msV(t.dMs)+msV(t.hMs)+dp.length};
+const tScore=t=>{const w=t.weekly||{},dp=dProsOf(t);if(!Object.keys(w).length&&!t.dMs&&!t.hMs&&!dp.length&&!t.wStruct)return null;return Object.entries(w).reduce((a,[k,v])=>a+msV(v)*(k==="ms"||k==="trend"?2:1),0)+msV(t.dMs)+msV(t.hMs)+dp.length+(t.wStruct==="outer"?1:0)};
 let GRADE={a:4,b:2};
 const tGrade=t=>{const s=tScore(t);return s==null?null:s>=GRADE.a?"A":s>=GRADE.b?"B":"C"};
 const dProsOf=t=>Array.isArray(t.dPros)?t.dPros:t.dailyFib==="ja"?["fc"]:[];
@@ -1884,7 +1884,7 @@ const n=k=>(f2Shots[k]&&f2Shots[k]!=="uploading")||f2Links[k]?" · chart ✓":""
   const msl=n=>radio(n)?(radio(n)==="for"?"MS ✓":"MS ✗"):"";
   $("#f2SumD").textContent=[msl("f2dms"),$("#f2Variant").value,...DCRIT.filter(([k])=>dSel[k]).map(([,l])=>l)].filter(Boolean).join(" · ")+n("daily");
   const e=$("#f2Entry").value,tf=radio("f2ectf");$("#f2SumH").textContent=(radio("f2hms")?msl("f2hms")+(e?" · ":""):"")+(e?e+(e==="Engulfing Candle"&&tf?" · "+tf.toUpperCase():""):"")+(radio("f2struct")&&!$("#f2StructF").hidden?" · "+radio("f2struct").replace("bos","BoS").replace("som","SoM"):"")+[["#f2Room","Room"],["#f2Scale","Scale-in"]].filter(([id])=>$(id).checked&&!$(id).closest("[hidden]")).map(([,l])=>" · "+l).join("")+n("h4")+(e==="Engulfing Candle"?n("ltf").replace("chart","LTF chart"):"")}
-{const _f2s=f2Summaries;f2Summaries=function(){_f2s();{const tt={weekly:wcVals(),dMs:radio("f2dms")||"",hMs:radio("f2hms")||"",dPros:Object.keys(dSel)},sc=tScore(tt),g=tGrade(tt);$("#f2Score").innerHTML=sc==null?"Setup score: pick your pros, cons and market structure":`Setup score <b class="num">${sc>0?"+":""}${sc}</b> <span class="grade g${g}">${g}</span>`}["#f2SumW","#f2SumD","#f2SumH"].forEach(id=>{const e=$(id);if(e)e.textContent=e.textContent.replace(/^ · /,"")})}}
+{const _f2s=f2Summaries;f2Summaries=function(){_f2s();{const tt={weekly:wcVals(),dMs:radio("f2dms")||"",hMs:radio("f2hms")||"",dPros:Object.keys(dSel),wStruct:radio("f2wstruct")||""},sc=tScore(tt),g=tGrade(tt);$("#f2Score").innerHTML=sc==null?"Setup score: pick your pros, cons and market structure":`Setup score <b class="num">${sc>0?"+":""}${sc}</b> <span class="grade g${g}">${g}</span>`}["#f2SumW","#f2SumD","#f2SumH"].forEach(id=>{const e=$(id);if(e)e.textContent=e.textContent.replace(/^ · /,"")})}}
 $("#tradeForm2").addEventListener("change",f2Summaries);
 const f2Subs=()=>[...document.querySelectorAll("#f2Analysis details.subsec")];
 function f2SyncChev(){const open=f2Subs().some(d=>d.open);$("#f2Analysis").classList.toggle("subs-closed",!open);$("#f2Analysis .legend-toggle").setAttribute("aria-expanded",String(open))}
