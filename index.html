@@ -103,7 +103,8 @@ td.acts{width:1%}
 .wipebox{display:grid;gap:10px;margin-top:10px;padding:12px;border:1px solid color-mix(in srgb,var(--bad) 40%,var(--line));border-radius:10px;background:color-mix(in srgb,var(--bad) 6%,transparent)}
 .linkish{all:unset;cursor:pointer;color:var(--accent);font-weight:600;margin-left:6px;text-decoration:underline;text-underline-offset:2px}
 a.btn{text-decoration:none}
-#nLvl,#nRem{font:14px var(--body);padding:7px 9px;border:1px solid var(--line);border-radius:7px;background:var(--paper);color:var(--ink);max-width:100%}
+.nrems{display:grid;gap:6px;margin-bottom:6px}.nrem{display:flex;gap:6px;align-items:center}.nrem select{width:auto!important;flex:none}.nrem input{width:70px!important;flex:none;font:14px var(--mono);padding:6px 8px;border:1px solid var(--line);border-radius:6px;background:var(--paper);color:var(--ink)}
+.nrem select,#nLvl{font:14px var(--body);padding:7px 9px;border:1px solid var(--line);border-radius:7px;background:var(--paper);color:var(--ink);max-width:100%}
 .settabs{display:flex;gap:4px;border-bottom:1px solid var(--line);margin:4px 0 6px}
 .settabs button{all:unset;cursor:pointer;padding:8px 12px;font:600 14px var(--body);color:var(--muted);border-bottom:2px solid transparent;margin-bottom:-1px}
 .settabs button[aria-selected="true"]{color:var(--ink);border-bottom-color:var(--accent)}
@@ -837,7 +838,7 @@ main>*,.panel,.grid2>*,.ov>*{min-width:0}
 <section class="setsec" data-setpane="news" hidden>
 <p class="hint" style="margin:0">Adds Forex Factory news to your own calendar, with reminders before each event. It stays up to date by itself.</p>
 <div class="setrow"><span class="setl">Which news</span><select id="nLvl"><option value="news">Heavy, high and medium</option><option value="news-high">Heavy and high</option><option value="news-heavy">Heavy only (CPI, NFP, rates)</option></select></div>
-<div class="setrow"><span class="setl">Reminders</span><select id="nRem"><option value="">1 hour and 15 min before</option><option value="-r60">1 hour before</option><option value="-r30">30 min before</option><option value="-r15">15 min before</option><option value="-r0">No reminders</option></select></div>
+<div class="setrow" style="align-items:start"><span class="setl">Reminders<small>Before each event</small></span><div><div id="nRems" class="nrems"></div><button type="button" class="addf" id="nRemAdd">+ Add reminder</button></div></div>
 <div class="setrow"><span class="setl">Add to</span><div class="row" style="gap:6px;flex-wrap:wrap"><a class="btn small" id="nGoogle" target="_blank" rel="noopener">Google Calendar</a><a class="btn small" id="nApple">Apple Calendar</a><a class="btn small" id="nOutlook" target="_blank" rel="noopener">Outlook</a><button type="button" class="btn small ghost" id="nCopy">Copy link</button></div></div>
 <p class="hint" style="margin:0" id="nMsg">Apple and Outlook use these reminders. Google may not: if you get none there, set a notification in that calendar's settings. To change reminders later, remove the calendar and add it again.</p>
 </section>
@@ -1447,11 +1448,21 @@ $("#wipeGo").onclick=async()=>{const list=wipeSel();if(!list.length||$("#wipeTxt
   $("#setIo").textContent=`Deleted ${list.length} items.`;$("#wipeBox").hidden=true;$("#wipeOpen").hidden=false;toast("Data deleted")};
 
 /* ---------- news calendar: subscribe links to the feed built by GitHub Actions ---------- */
-const NEWS_BASE="willemdriessen.github.io/TradeJournal/news/";
-function newsLinks(){const st=getSet(),lvl=st.newsLvl||"news",rem=st.newsRem||"",https="https://"+NEWS_BASE+lvl+rem+".ics",webcal="webcal://"+NEWS_BASE+lvl+rem+".ics",name=encodeURIComponent("Forex news");
-  $("#nLvl").value=lvl;$("#nRem").value=rem;$("#nGoogle").href="https://calendar.google.com/calendar/r?cid="+encodeURIComponent(webcal);$("#nApple").href=webcal;
-  $("#nOutlook").href=`https://outlook.live.com/calendar/0/addfromweb?url=${encodeURIComponent(https)}&name=${name}`;$("#nCopy").dataset.url=https}
-["#nLvl","#nRem"].forEach(id=>$(id).onchange=()=>{const cur=docs.find(x=>x.id==="settings")||{id:"settings",kind:"settings"};saveDoc({...cur,newsLvl:$("#nLvl").value,newsRem:$("#nRem").value});newsLinks()});
+const NEWS_FN="https://hmkikstwphyiwxtjlejt.supabase.co/functions/v1/news";
+const nRemsOf=st=>Array.isArray(st.newsRems)?st.newsRems:[{n:1,u:"h"},{n:15,u:"m"}];
+function nSave(patch){const cur=docs.find(x=>x.id==="settings")||{id:"settings",kind:"settings"};saveDoc({...cur,...patch});newsLinks()}
+function newsLinks(){const st=getSet(),lvl=st.newsLvl||"news",rems=nRemsOf(st),mins=[...new Set(rems.map(r=>Math.round(Number(r.n)*(r.u==="h"?60:1))).filter(m=>m>=0))].sort((a,b)=>b-a);
+  const q=`?lvl=${lvl}&r=${mins.join(",")}`,https=NEWS_FN+q,webcal=https.replace(/^https:/,"webcal:");
+  $("#nLvl").value=lvl;
+  $("#nRems").innerHTML=rems.map((r,i)=>`<div class="nrem"><input type="number" min="1" step="1" inputmode="numeric" value="${esc(String(r.n))}" data-nri="${i}" aria-label="Amount"><select data-nru="${i}" aria-label="Unit"><option value="m" ${r.u!=="h"?"selected":""}>minutes</option><option value="h" ${r.u==="h"?"selected":""}>hours</option></select><button type="button" class="acx" data-nrx="${i}" aria-label="Remove reminder">✕</button></div>`).join("")||`<p class="hint" style="margin:0 0 6px">No reminders.</p>`;
+  $("#nRemAdd").hidden=rems.length>=5;
+  $("#nGoogle").href="https://calendar.google.com/calendar/r?cid="+encodeURIComponent(webcal);$("#nApple").href=webcal;
+  $("#nOutlook").href=`https://outlook.live.com/calendar/0/addfromweb?url=${encodeURIComponent(https)}&name=${encodeURIComponent("Forex news")}`;$("#nCopy").dataset.url=https}
+$("#nLvl").onchange=()=>nSave({newsLvl:$("#nLvl").value});
+$("#nRemAdd").onclick=()=>{const r=nRemsOf(getSet()).slice();r.push({n:30,u:"m"});nSave({newsRems:r})};
+$("#nRems").addEventListener("change",e=>{const r=nRemsOf(getSet()).map(x=>({...x})),i=e.target.dataset.nri??e.target.dataset.nru;if(i==null)return;
+  if(e.target.dataset.nri!=null){const v=Math.max(1,Math.round(Number(e.target.value)||1));r[i].n=v}else r[i].u=e.target.value;nSave({newsRems:r})});
+$("#nRems").addEventListener("click",e=>{const x=e.target.closest("[data-nrx]");if(!x)return;const r=nRemsOf(getSet()).slice();r.splice(Number(x.dataset.nrx),1);nSave({newsRems:r})});
 $("#nCopy").onclick=async()=>{try{await navigator.clipboard.writeText($("#nCopy").dataset.url);toast("Link copied")}catch{$("#nMsg").textContent=$("#nCopy").dataset.url}};
 function openSettings(){showSetTab(setTab);newsLinks();$("#wipeBox").hidden=true;$("#wipeOpen").hidden=false;$("#setIo").textContent="";$("#csvMk").textContent=(market==="stocks"?"Stocks":"Forex")+" trades only";const st=getSet();setRadio("stheme",st.theme);setRadio("saccent",st.accent);setRadio("saccent2",st.accent2);setRadio("speriod",st.period);setRadio("speriod2",st.periodSt);$("#sGA").value=st.gradeA;$("#sGB").value=st.gradeB;gcHint();$("#setSheet").hidden=false}
 $("#openSettings").onclick=openSettings;
