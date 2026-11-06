@@ -116,7 +116,7 @@ a.btn{text-decoration:none}
 .setbody .settabs button:hover:not([aria-selected="true"]){background:var(--soft)}
 .setpanes .setsec{padding-top:2px!important}
 #setSheet .sheet-inner{width:min(100%,640px)!important;max-width:640px!important}
-@media (max-width:560px){.setbody{grid-template-columns:1fr;gap:8px}.setbody .settabs{flex-direction:row;border-right:0;border-bottom:1px solid var(--line);padding:0 0 6px}}
+@media (max-width:560px){.setbody{grid-template-columns:1fr;gap:8px}.setbody .settabs{flex-direction:row;border-right:0;border-bottom:1px solid var(--line);padding:0 0 6px;overflow-x:auto}}
 .setsec{border-top:0!important;padding-top:8px!important;min-height:150px;align-content:start}
 #setSheet .sheet-inner{width:min(100%,540px);max-width:540px}
 .setsec .segs{flex-wrap:wrap;gap:4px}.setsec label.seg span{padding:5px 10px;font-size:13px}
@@ -148,6 +148,18 @@ a.shotprev,a.tvwrap,a[id^="slp-"]{cursor:zoom-in}
 .rvzhelp{margin:0;padding:8px;text-align:center;color:#aab;font-size:12px}
 @media (max-width:640px){.rvzhelp{display:none}}
 .rvdone summary{list-style:none;cursor:pointer;color:var(--ink)}.rvdone,.rvdone h2,.rvdt td{color:var(--ink)!important}.rvdone summary::-webkit-details-marker{display:none}.rvdone summary h2::after{content:" ▾";color:var(--muted);font-size:14px}.rvdone[open] summary h2::after{content:" ▴"}.rvdt{width:100%;border-collapse:collapse;margin-top:10px;font-size:14px}.rvdt th{text-align:left;font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;padding:6px 8px;border-bottom:1px solid var(--line)}.rvdt td{padding:7px 8px;border-bottom:1px solid var(--line)}.rvdt tr[data-rvopen-t]{cursor:pointer}.rvdt tr[data-rvopen-t]:hover td{background:var(--soft)}
+.rvmodes{margin:0 0 16px}.prhead{display:grid;gap:14px}.prsecs{display:flex;flex-wrap:wrap;gap:20px;margin:20px 0}#prBox .prsecs>.panel.prsec{margin:0}.prsec{display:grid;gap:10px;align-content:start}.prsec.full{flex:1 1 100%}.prsec.half{flex:1 1 260px;min-width:0}.prsec h3{margin:0;font-size:16px}.prsec textarea{width:100%;resize:vertical;font:15px/1.6 var(--body)}
+.prtl{display:grid;gap:8px}.prtrow{display:grid;grid-template-columns:250px minmax(0,1fr);gap:10px;align-items:center}.prtrow .prtr{justify-self:stretch}.prtrow .prtr>.restag,.prtrow .prtr>.hint{margin-left:auto!important}textarea.prgrow{resize:none;overflow:hidden;min-height:0;font:15px/1.45 var(--body);padding:7px 9px;width:100%}.prtrow{align-items:start}.prwr{align-items:start}@media(max-width:600px){.prtrow{grid-template-columns:1fr}.prtrow .prtr{justify-self:start}}.prtr{display:inline-flex;align-items:center;gap:7px;border:1px solid var(--line);background:var(--paper);color:var(--ink);border-radius:8px;padding:6px 9px;font:14px var(--body);cursor:pointer}.prtr:hover{border-color:var(--accent)}.prtr .grade{margin:0}
+.prwl{display:grid;gap:8px}.prsec>.btn{justify-self:start}.prwr{display:grid;grid-template-columns:110px auto minmax(0,1fr) 30px;gap:8px;align-items:center}.prwr input{font:15px var(--body);padding:7px 9px}.prwr input[data-f="pair"]{font-family:var(--mono);text-transform:uppercase}.prdir .rvb{padding:6px 10px}.prdir .rvb.long.on{background:color-mix(in srgb,#3b82f6 22%,transparent);border-color:#3b82f6;color:var(--ink)}.prdir .rvb.short.on{background:color-mix(in srgb,var(--bad) 22%,transparent);border-color:var(--bad);color:var(--ink)}.prx{border:0;background:none;color:var(--muted);font-size:18px;cursor:pointer}.prx:hover{color:var(--bad)}
+@media(max-width:600px){.prwr{grid-template-columns:1fr auto 26px}.prwr input[data-f="note"]{grid-column:1/3;grid-row:2}}
+#prDel.armed{background:var(--bad);color:#fff;border-color:var(--bad)}.prall summary{cursor:pointer;list-style:none}.prall summary::-webkit-details-marker{display:none}
+.tpll{display:grid;gap:8px}.tplr{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,1fr) minmax(0,1.3fr) auto;gap:6px;align-items:center}.tplr input,.tplr select{font:14px var(--body);padding:6px 8px}.tplbt{display:flex;gap:2px}.tplbt button{border:1px solid var(--line);background:var(--paper);color:var(--ink);border-radius:6px;width:28px;height:30px;cursor:pointer}.tplbt button:disabled{opacity:.35;cursor:default}
+@media(max-width:600px){.tplr{grid-template-columns:1fr 1fr}.tplr input[data-tplf="hint"]{grid-column:1/-1}.tplbt{grid-column:1/-1;justify-content:flex-end}}
+.prtitle{display:flex;align-items:center;gap:14px}.prtitle h2{margin:2px 0 0}.prtitle>div{flex:1}
+.prtiles{display:flex;flex-wrap:wrap;gap:10px 36px;padding-top:14px;border-top:1px solid var(--line)}.prst{display:grid;gap:2px}.prst span{font:600 11px var(--body);text-transform:uppercase;letter-spacing:.05em;color:var(--muted)}.prst b{font-size:24px;font-weight:600;line-height:1.15}.prst small{font-size:12px;color:var(--muted)}
+#prStats .bstack{margin:14px 0 6px}.prbar{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}.prgrades{display:flex;gap:16px;flex-wrap:wrap;font-size:13px}
+#prBox .panel+.panel{margin-top:20px}.prnotes{display:grid;gap:16px}.prnotes textarea{width:100%;resize:vertical;font:15px/1.6 var(--body)}.prq3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}@media(max-width:760px){.prq3{grid-template-columns:1fr}}
+.prlist tr,.prtt tr[data-propen]{cursor:pointer}.prlist tr:hover td,.prtt tr[data-propen]:hover td{background:var(--soft)}.prtype{display:inline-block;font:600 10px var(--body);text-transform:uppercase;letter-spacing:.05em;color:var(--muted);border:1px solid var(--line);border-radius:5px;padding:1px 5px;margin-right:6px}@media(max-width:600px){.prtt td:last-child,.prtt th:last-child{display:none}.prtt td,.prtt th{padding:7px 5px}.prtt td:nth-child(5),.prtt th:nth-child(5){display:none}.prlist td:nth-child(4),.prlist th:nth-child(4){display:none}}
 .rvimg{position:relative;overflow:hidden;border-radius:10px;border:1px solid var(--line);background:var(--soft);margin:12px 0 16px}
 .rvimg img{display:block;width:100%;margin-top:-1.4%}
 .rvimg.none{padding:28px 16px;text-align:center;color:var(--muted);font-size:14px}
@@ -234,6 +246,7 @@ svg text{fill:var(--muted);font-family:var(--mono);font-size:11px}
 .fpi.on{font-weight:600;color:var(--accent)}.fpi.on span{color:var(--accent)}
 .fpback{all:unset;cursor:pointer;font-size:13px;font-weight:700;padding:6px 8px;display:block;color:var(--muted)}
 .fpopts{display:grid;gap:1px}
+.viewnotes{padding:12px 4px 0}.viewnotes p{margin:4px 0 0;white-space:pre-wrap;font-size:14px;line-height:1.55}
 .tvwrap{display:block}.tvwrap img{display:block;max-width:100%;margin:0 auto}
 .shotbox img.tvimg{display:block;width:100%;height:auto}
 .fpopts .fpi{justify-content:flex-start;gap:10px}
@@ -687,7 +700,7 @@ main>*,.panel,.grid2>*,.ov>*{min-width:0}
 </main>
 
 <main id="view-analyze" hidden></main>
-<main id="view-review" hidden><div id="rvBox"></div></main>
+<main id="view-review" hidden><div id="rvTop"></div><div id="prBox" hidden></div><div id="rvBox"></div></main>
 <div id="rvZoom" hidden><div class="rvzbar"><button type="button" class="btn small" data-z="out" aria-label="Zoom out">−</button><span id="rvzPct">100%</span><button type="button" class="btn small" data-z="in" aria-label="Zoom in">+</button><button type="button" class="btn small ghost" data-z="reset">Fit</button><button type="button" class="btn small" data-z="close" aria-label="Close">✕ Close</button></div><div class="rvzstage" id="rvzStage"><div class="rvzinner" id="rvzInner"><img alt="Chart" referrerpolicy="no-referrer"><span class="rvmask tl"></span></div></div><p class="rvzhelp">Scroll or pinch to zoom · drag to move · double-click to zoom in · Esc to close</p></div>
 <main id="view-accounts" hidden>
   <div class="panel"><span class="eyebrow">Trading accounts</span><h2 id="acHead">Accounts</h2>
@@ -728,6 +741,7 @@ main>*,.panel,.grid2>*,.ov>*{min-width:0}
 <div class="sheet" id="viewer" hidden><div class="scrim" data-closeviewer></div><div class="sheet-inner viewer-inner" role="dialog" aria-modal="true" aria-label="Chart screenshots">
   <div class="formhead"><h3 id="viewerTitle">Charts</h3><div class="segs" id="viewerTabs"></div><button type="button" class="btn small ghost closex" data-closeviewer>Close</button></div>
   <div class="viewimg" id="viewerImg"></div>
+  <div class="viewnotes" id="viewerNotes" hidden></div>
   <p class="hint" style="margin:10px 0 0">Click the image to open it full size in a new tab.</p>
 </div></div>
 <div class="sheet" id="sheetS" hidden><div class="scrim" data-closesheets></div><div class="sheet-inner" role="dialog" aria-modal="true" aria-labelledby="sTitle">
@@ -738,7 +752,7 @@ main>*,.panel,.grid2>*,.ov>*{min-width:0}
     <div class="fields">
       <label class="f" id="sProjField"><span>Project</span><select id="sProject"></select></label>
       <label class="f" id="sBtField"><span>Backtested on</span><input type="date" id="sBtDate"></label>
-      <label class="f"><span>Ticker</span><input type="text" id="sTicker" list="sTickers" placeholder="e.g. NVDA" required maxlength="12" autocapitalize="characters" spellcheck="false"></label>
+      <label class="f"><span>Ticker</span><input type="text" id="sTicker" list="sTickers" required maxlength="12" autocapitalize="characters" spellcheck="false"></label>
       <label class="f"><span>Entry date</span><input type="date" id="sDate" required></label>
       <label class="f"><span>Close date <em class="opt">empty = open</em></span><input type="date" id="sClose"></label>
       <label class="checkline f-missed"><input type="checkbox" id="sMissed"><span>Missed trade</span></label>
@@ -781,11 +795,11 @@ main>*,.panel,.grid2>*,.ov>*{min-width:0}
   <fieldset>
     <legend>Execution</legend>
     <div class="fields">
-        <label class="f" id="sFxF" hidden><span id="sFxL">Rate</span><input type="number" id="sFx" min="0" step="any" inputmode="decimal" placeholder="e.g. 0.92"></label>
+        <label class="f" id="sFxF" hidden><span id="sFxL">Rate</span><input type="number" id="sFx" min="0" step="any" inputmode="decimal"></label>
         <label class="f"><span>Currency</span><select id="sCur"><option>USD</option><option>EUR</option><option>GBP</option><option>CAD</option><option>CHF</option></select></label>
-        <label class="f"><span>Shares bought</span><input type="number" id="sShares" min="0" step="any" inputmode="decimal" placeholder="e.g. 50"></label>
-        <label class="f"><span id="sEntryL">Entry</span><input type="number" id="sEntry" step="any" inputmode="decimal" placeholder="Rounded up"></label>
-        <label class="f"><span id="sStopL">Initial stop</span><input type="number" id="sStop" step="any" inputmode="decimal" placeholder="Weekly close below"></label>
+        <label class="f"><span>Shares bought</span><input type="number" id="sShares" min="0" step="any" inputmode="decimal"></label>
+        <label class="f"><span id="sEntryL">Entry</span><input type="number" id="sEntry" step="any" inputmode="decimal"></label>
+        <label class="f"><span id="sStopL">Initial stop</span><input type="number" id="sStop" step="any" inputmode="decimal"></label>
       </div>
       <p class="hint" id="sWHint" style="margin:6px 0 0"></p>
       <div class="exits">
@@ -794,6 +808,10 @@ main>*,.panel,.grid2>*,.ov>*{min-width:0}
         <button type="button" class="btn small" id="sAddExit">+ Add exit</button>
       </div>
       <div class="exsum" id="sExSum"></div>
+  </fieldset>
+  <fieldset>
+    <legend>Notes</legend>
+    <div class="fields"><label class="f wide"><textarea id="sNotes" rows="4" aria-label="Notes" style="resize:vertical;font:15px/1.5 var(--body)"></textarea></label></div>
   </fieldset>
   <div class="formbar"><button type="submit" class="btn" id="sSave">Save trade</button><button type="button" class="btn ghost" data-closesheets>Cancel</button><span class="spacer"></span><button type="button" class="btn ghost" id="sDup" hidden>Duplicate</button><button type="button" class="btn ghost danger" id="sDel" hidden>Delete</button></div>
 </form></div></div>
@@ -806,7 +824,7 @@ main>*,.panel,.grid2>*,.ov>*{min-width:0}
     <div class="fields">
       <label class="f" id="f2ProjField"><span>Project</span><select id="f2Project"></select></label>
       <label class="f" id="f2BtField"><span>Backtested on</span><input type="date" id="f2BtDate"></label>
-      <div class="f"><span id="f2PairLbl">Pair</span><div class="combo-wrap"><input type="text" id="f2Pair" role="combobox" aria-labelledby="f2PairLbl" aria-controls="f2PairList" aria-expanded="false" aria-autocomplete="list" placeholder="Type or scroll" autocomplete="off" spellcheck="false" required><button type="button" class="combo-btn" id="f2PairBtn" tabindex="-1" aria-label="Show all pairs">▾</button><ul class="combo-list" id="f2PairList" role="listbox" hidden></ul></div></div>
+      <div class="f"><span id="f2PairLbl">Pair</span><div class="combo-wrap"><input type="text" id="f2Pair" role="combobox" aria-labelledby="f2PairLbl" aria-controls="f2PairList" aria-expanded="false" aria-autocomplete="list" autocomplete="off" spellcheck="false" required><button type="button" class="combo-btn" id="f2PairBtn" tabindex="-1" aria-label="Show all pairs">▾</button><ul class="combo-list" id="f2PairList" role="listbox" hidden></ul></div></div>
       <label class="f"><span>Date</span><input type="date" id="f2Date" required></label>
       <label class="f"><span>Close date</span><input type="date" id="f2Close"></label>
       <label class="f"><span>Account</span><select id="f2Account"></select></label>
@@ -861,9 +879,9 @@ main>*,.panel,.grid2>*,.ov>*{min-width:0}
         <div class="shots" id="f2ShotL" style="margin-top:12px"></div>
       </div>
       <div class="fields" style="margin-top:14px">
-        <label class="f"><span>Planned entry price</span><input type="number" step="any" inputmode="decimal" id="f2PlanEntry" placeholder="1.08450"></label>
-        <label class="f"><span>Stop loss (pips)</span><input type="number" step="any" min="0" inputmode="decimal" id="f2SlPips" placeholder="15"></label>
-        <label class="f"><span>Take profit (pips)</span><input type="number" step="any" min="0" inputmode="decimal" id="f2TpPips" placeholder="45"></label>
+        <label class="f"><span>Planned entry price</span><input type="number" step="any" inputmode="decimal" id="f2PlanEntry"></label>
+        <label class="f"><span>Stop loss (pips)</span><input type="number" step="any" min="0" inputmode="decimal" id="f2SlPips"></label>
+        <label class="f"><span>Take profit (pips)</span><input type="number" step="any" min="0" inputmode="decimal" id="f2TpPips"></label>
         <div class="f"><span>Planned R:R</span><b class="num rr" id="f2RR">—</b></div>
       </div>
     </details>
@@ -872,18 +890,22 @@ main>*,.panel,.grid2>*,.ov>*{min-width:0}
     <legend>Result</legend>
     <div class="fields">
       <div class="f"><span>Outcome</span><div class="segs" id="seg-f2out"></div></div>
-      <label class="f"><span>Result (R)</span><input type="number" step="any" inputmode="decimal" id="f2R" placeholder="e.g. 2.4 or -1"></label>
-      <label class="f"><span>Max R reached <em class="opt">optional</em></span><input type="number" step="any" min="0" inputmode="decimal" id="f2MaxR" placeholder="Max floating profit"></label>
+      <label class="f"><span>Result (R)</span><input type="number" step="any" inputmode="decimal" id="f2R"></label>
+      <label class="f"><span>Max R reached <em class="opt">optional</em></span><input type="number" step="any" min="0" inputmode="decimal" id="f2MaxR"></label>
       <label class="f"><span>Exit</span><select id="f2Exit"><option value="">Choose…</option></select></label>
       <div class="f wide"><span>According to plan?</span><div class="segs" id="seg-f2eval"></div><small class="hint" id="f2RevNote" style="margin:6px 0 0" hidden></small></div>
     </div>
+  </fieldset>
+  <fieldset>
+    <legend>Notes</legend>
+    <div class="fields"><label class="f wide"><textarea id="f2Notes" rows="4" aria-label="Notes" style="resize:vertical;font:15px/1.5 var(--body)"></textarea></label></div>
   </fieldset>
   <div class="formbar"><button type="submit" class="btn" id="f2Save">Save trade</button><button type="button" class="btn ghost" data-closesheet2>Cancel</button><span class="spacer"></span><button type="button" class="btn ghost" id="f2Dup" hidden>Duplicate</button><button type="button" class="btn ghost danger" id="f2Del" hidden>Delete</button></div>
 </form>
 </div></div>
 <div class="sheet" id="setSheet" hidden><div class="scrim" data-closeset></div><div class="sheet-inner np-inner" role="dialog" aria-modal="true" aria-labelledby="setTitle">
 <form id="setForm" autocomplete="off"><h3 id="setTitle">Settings</h3>
-<div class="setbody"><div class="settabs" role="tablist" aria-orientation="vertical"><button type="button" role="tab" data-settab="look">Look</button><button type="button" role="tab" data-settab="fx">Forex</button><button type="button" role="tab" data-settab="st">Stocks</button><button type="button" role="tab" data-settab="news">News</button><button type="button" role="tab" data-settab="data">Data</button></div>
+<div class="setbody"><div class="settabs" role="tablist" aria-orientation="vertical"><button type="button" role="tab" data-settab="look">Look</button><button type="button" role="tab" data-settab="fx">Forex</button><button type="button" role="tab" data-settab="st">Stocks</button><button type="button" role="tab" data-settab="news">News</button><button type="button" role="tab" data-settab="rev">Reviews</button><button type="button" role="tab" data-settab="data">Data</button></div>
 <div class="setpanes"><section class="setsec" data-setpane="look">
 <div class="setrow"><span class="setl">Theme</span><div class="segs" id="seg-stheme"></div></div>
 <div class="setrow"><span class="setl">Primary<small>Buttons, tabs, backtest</small></span><div class="swatches" id="sAccent" role="radiogroup" aria-label="Primary colour"></div></div>
@@ -893,6 +915,10 @@ main>*,.panel,.grid2>*,.ov>*{min-width:0}
 <div class="setrow"><span class="setl">Journal opens on</span><div class="segs" id="seg-speriod"></div></div>
 <div class="setrow"><span class="setl">Setup grades<small>Score needed</small></span><div class="gcuts"><label class="gcut"><span class="grade gA">A</span><input type="number" id="sGA" step="1" inputmode="numeric" aria-label="Score for A">+</label><label class="gcut"><span class="grade gB">B</span><input type="number" id="sGB" step="1" inputmode="numeric" aria-label="Score for B">+</label><span class="gcut"><span class="grade gC">C</span><span id="sGC"></span></span></div></div>
 <div class="setrow swrow"><span class="setl">Scoring<small>Points per item</small></span><div><div id="sScore" class="swtab"></div><button type="button" class="btn small ghost" id="swReset" style="margin-top:8px">Reset to default</button></div></div>
+</section>
+<section class="setsec" data-setpane="rev" hidden>
+<p class="hint" style="margin:0 0 12px">The layout of your period reviews. Each section becomes its own block in a review.</p>
+<div id="tplEd"></div>
 </section>
 <section class="setsec" data-setpane="news" hidden>
 <p class="hint" style="margin:0">Adds Forex Factory news to your own calendar, with reminders before each event. It stays up to date by itself.</p>
@@ -1508,7 +1534,109 @@ const rvEq=(a,b)=>JSON.stringify(a instanceof Array?[...a].sort():a&&typeof a===
 function rvDoneHTML(){const T=trades().filter(t=>t.reviews&&t.reviews.length&&mktOf(t)==="fx").map(t=>({t,n:t.reviews.length,last:t.reviews[t.reviews.length-1]})).sort((a,b)=>b.last.at.localeCompare(a.last.at));if(!T.length)return"";
   const pl=v=>v==="plan"?"Yes":v?"No":"—";
   return`<div class="panel"><details class="rvdone"><summary><span class="eyebrow">Progress</span><h2>Re-evaluated trades <small class="hint" style="margin:0;font-weight:400">${T.length}</small></h2></summary><div style="overflow-x:auto"><table class="rvdt"><thead><tr><th>Trade</th><th>Pair</th><th>Re-evaluated</th><th>Times</th><th>To plan now</th></tr></thead><tbody>${T.map(({t,n,last})=>`<tr data-rvopen-t="${t.id}"><td>${esc(fmtD(t.date))}</td><td>${esc(t.pair||"")}</td><td>${esc(fmtD(last.at.slice(0,10)))}</td><td>${n}×</td><td>${pl(last.plan)}</td></tr>`).join("")}</tbody></table></div></details></div>`}
-function rvRender(){const box=$("#rvBox"),S=rvState();
+/* ---------- period reviews ---------- */
+let rvMode=(()=>{try{return localStorage.getItem("tj-rvmode")||"period"}catch{return"period"}})();
+let prSel={per:"week",anchor:""},prOpen=null,prFilt="";
+const PR_PER=[["week","Week"],["month","Month"],["quarter","Quarter"],["year","Year"]];
+const PR_Q=[["notes","Notes"],["good","What went well"],["bad","What went wrong"],["next","Focus for next period"]];
+const PR_TYPES=[["text","Text"],["watch","Watchlist"],["bad","Trades not to plan"],["good","Trades to plan"],["missed","Missed trades"],["trades","All taken trades"]];
+const PR_TRT=["bad","good","missed","trades"];
+const PR_DEFSECS=[{id:"w",type:"watch",title:"Watchlist"},{id:"b",type:"bad",title:"Trades not to plan"},{id:"g",type:"good",title:"Trades to plan"},{id:"m",type:"missed",title:"Missed trades"},{id:"n",type:"text",title:"Notes"},{id:"c",type:"text",title:"Conclusion"}];
+const prSecs=per=>{const T=getSet().prSecs||{};return T[per]||T.week||PR_DEFSECS};
+const prSid=()=>"s"+Date.now().toString(36)+Math.random().toString(36).slice(2,5);
+let prCur={sec:{}};
+const prTF=(type,list)=>{const fx=market==="fx",tk=list.filter(t=>t.status!=="missed");return type==="missed"?list.filter(t=>t.status==="missed"):type==="good"?tk.filter(t=>fx?t.evaluation==="plan":t.r>=0):type==="bad"?tk.filter(t=>fx?t.evaluation&&t.evaluation!=="plan":t.r<0):tk};
+function prTList(type,list,sid){const a=prTF(type,list);if(!a.length)return`<p class="hint" style="margin:0">None</p>`;const tc=((prCur.sec[sid]||{}).tc)||{};
+  return a.map(t=>{const oc=t.outcome||(t.r>0?"win":t.r<0?"loss":t.r===0?"be":"");const gr=market==="fx"?tGrade(t):null;return `<button type="button" class="prtr" data-propen="${t.id}">${gr?`<b class="grade g${gr}">${gr}</b>`:market==="fx"?`<b class="grade" style="opacity:.35">–</b>`:""}<b>${esc(t.ticker||t.pair||"?")}</b><span class="dirar ${t.dir}">${t.dir==="long"?"↑":t.dir==="short"?"↓":""}</span>${t.status==="missed"?`<span class="hint" style="margin:0">${esc(fmtD(t.date))}</span>`:oc?`<span class="restag ${oc}">${({win:"Win",loss:"Loss",be:"BE"})[oc]}<b class="num">${fmtR(t.r)}</b></span>`:`<span class="restag open">Open</span>`}</button><textarea rows="1" class="prgrow" data-prs="${sid}" data-f="tc" data-t="${t.id}" placeholder="Comment" aria-label="Comment on ${esc(t.ticker||t.pair||"trade")}">${esc(tc[t.id]||"")}</textarea>`}).map(x=>`<div class="prtrow">${x}</div>`).join("")}
+const prTKey=(type,list)=>prTF(type,list).map(t=>t.id+":"+t.r+":"+t.evaluation+":"+t.status).join("|");
+function prWRow(x,r,i){return `<div class="prwr"><input type="text" value="${esc(r.pair||"")}" data-prs="${x.id}" data-f="pair" data-i="${i}" aria-label="Pair" autocapitalize="characters"><div class="segs prdir">${[["long","↑ Long"],["short","↓ Short"]].map(([v,l])=>`<button type="button" class="rvb${r.dir===v?" on":""} ${v}" data-prdir="${v}" data-prs="${x.id}" data-i="${i}">${l}</button>`).join("")}</div><textarea rows="1" class="prgrow" data-prs="${x.id}" data-f="note" data-i="${i}" aria-label="Note">${esc(r.note||"")}</textarea><button type="button" class="prx" data-prrm="${x.id}" data-i="${i}" aria-label="Remove">×</button></div>`}
+function prSecHTML(x,list){const v=prCur.sec[x.id]||{},hd=`<h3>${esc(x.title||"")}</h3>${x.hint?`<p class="hint" style="margin:0">${esc(x.hint)}</p>`:""}`;
+  if(x.type==="watch"){const rows=v.rows||[];return `<div class="panel prsec full" id="prsec-${x.id}">${hd}<div class="prwl">${rows.length?rows.map((r,i)=>prWRow(x,r,i)).join(""):`<p class="hint" style="margin:0">No pairs</p>`}</div><button type="button" class="btn small ghost" data-pradd="${x.id}">+ Add pair</button></div>`}
+  if(PR_TRT.includes(x.type))return `<div class="panel prsec full" id="prsec-${x.id}">${hd}<div class="prtl" id="prtl-${x.id}" data-k="${esc(prTKey(x.type,list))}">${prTList(x.type,list,x.id)}</div>${v.text?`<textarea rows="2" data-prs="${x.id}" data-f="text" aria-label="${esc(x.title||"")} comment">${esc(v.text)}</textarea>`:""}<button type="button" class="btn small ghost" data-praddt="${x.type}">+ Add ${x.type==="missed"?"missed ":""}trade</button></div>`;
+  return `<div class="panel prsec full" id="prsec-${x.id}">${hd}<textarea rows="5" data-prs="${x.id}" data-f="text" aria-label="${esc(x.title||"")}">${esc(v.text||"")}</textarea></div>`}
+const prGrow=el=>{el.style.height="auto";el.style.height=el.scrollHeight+2+"px"};const prGrowAll=()=>document.querySelectorAll("#prBox textarea.prgrow").forEach(prGrow);
+function prSave(){if(!prOpen)return;const st=$("#prStat");if(st)st.textContent="Saving…";clearTimeout(prSave.h);const per=prOpen.per,from=prOpen.from;
+  prSave.h=setTimeout(async()=>{const R=prRange(per,from),cur=prFind(per,R.from)||{id:prId(per,R.from),kind:"preview",market,per,from:R.from,to:R.to,created:Date.now(),secs:prSecs(per)};const nd={...cur,sec:JSON.parse(JSON.stringify(prCur.sec)),updated:Date.now()};if(!nd.secs)nd.secs=prSecs(per);
+    PR_Q.forEach(([q])=>{const el=$("#prq-"+q);if(el)nd[q]=el.value});await saveDoc(nd);const s2=$("#prStat");if(s2)s2.textContent="Saved"},600)}
+document.addEventListener("input",e=>{if(!prOpen||!e.target.closest("#prBox"))return;const el=e.target,id=el.dataset.prs,f=el.dataset.f;if(el.classList.contains("prgrow"))prGrow(el);
+  if(id){const v=prCur.sec[id]=prCur.sec[id]||{};if(f==="text")v.text=el.value;else if(f==="tc")v.tc={...(v.tc||{}),[el.dataset.t]:el.value};else{v.rows=v.rows&&v.rows.length?v.rows:[{}];const i=+el.dataset.i;v.rows[i]={...v.rows[i],[f]:f==="pair"?el.value.toUpperCase():el.value};if(f==="pair"){const p=el.selectionStart;el.value=el.value.toUpperCase();el.setSelectionRange(p,p)}}prSave()}
+  else if(el.dataset.prq)prSave()});
+let tplPer="week";
+function tplRender(){const box=$("#tplEd");if(!box)return;const T=getSet().prSecs||{},own=T[tplPer],arr=own||(tplPer==="week"?PR_DEFSECS:null);
+  box.innerHTML=`<div class="segs" style="margin-bottom:12px">${PR_PER.map(([v,l])=>`<button type="button" class="rvb${tplPer===v?" on":""}" data-tplper="${v}">${l}</button>`).join("")}</div>`+(!arr?`<p class="hint">${prPerL(tplPer)}ly reviews use the weekly layout.</p><button type="button" class="btn small" data-tplcustom>Customize ${prPerL(tplPer).toLowerCase()}ly layout</button>`:
+   `<div class="tpll">${arr.map((x,i)=>`<div class="tplr"><input type="text" value="${esc(x.title||"")}" data-tplf="title" data-i="${i}" aria-label="Section title"><select data-tplf="type" data-i="${i}" aria-label="Section type">${PR_TYPES.map(([v,l])=>`<option value="${v}" ${x.type===v?"selected":""}>${l}</option>`).join("")}</select><input type="text" value="${esc(x.hint||"")}" data-tplf="hint" data-i="${i}" placeholder="Prompt (optional)" aria-label="Prompt"><span class="tplbt"><button type="button" data-tplmv="-1" data-i="${i}" ${i?"":"disabled"} aria-label="Move up">↑</button><button type="button" data-tplmv="1" data-i="${i}" ${i<arr.length-1?"":"disabled"} aria-label="Move down">↓</button><button type="button" data-tplrm data-i="${i}" aria-label="Remove">×</button></span></div>`).join("")}</div>
+   <div class="row" style="margin-top:10px;gap:6px"><button type="button" class="btn small" data-tpladd>+ Add section</button><span class="spacer"></span>${tplPer==="week"?(own?`<button type="button" class="btn small ghost" data-tplreset>Reset to default</button>`:""):`<button type="button" class="btn small ghost" data-tplreset>Use weekly layout</button>`}</div>
+   <p class="hint" style="margin:10px 0 0">Trade sections fill themselves with the trades of that period. Changes apply to new reviews; saved reviews keep their layout.</p>`)}
+function tplSave(arr){const cur=docs.find(x=>x.id==="settings")||{id:"settings",kind:"settings"},T={...(cur.prSecs||{})};if(arr)T[tplPer]=arr;else delete T[tplPer];saveDoc({...cur,prSecs:T});setTimeout(tplRender,0)}
+const tplArr=()=>JSON.parse(JSON.stringify((getSet().prSecs||{})[tplPer]||(tplPer==="week"?PR_DEFSECS:prSecs("week"))));
+document.addEventListener("click",e=>{const b=e.target.closest("#tplEd button");if(!b)return;
+  if(b.dataset.tplper){tplPer=b.dataset.tplper;return tplRender()}
+  if(b.dataset.tplcustom!=null)return tplSave(tplArr());
+  if(b.dataset.tplreset!=null)return tplSave(null);
+  const a=tplArr(),i=+b.dataset.i;
+  if(b.dataset.tpladd!=null){a.push({id:prSid(),type:"text",title:"New section"});return tplSave(a)}
+  if(b.dataset.tplrm!=null){a.splice(i,1);return tplSave(a)}
+  if(b.dataset.tplmv){const j=i+(+b.dataset.tplmv);[a[i],a[j]]=[a[j],a[i]];return tplSave(a)}});
+document.addEventListener("change",e=>{const el=e.target;if(!el.dataset||el.dataset.tplf==null)return;const a=tplArr(),i=+el.dataset.i;a[i][el.dataset.tplf]=el.value;tplSave(a)});
+const prDocs=()=>docs.filter(d=>d.kind==="preview"&&(d.market||"fx")===market).sort((a,b)=>b.from.localeCompare(a.from)||PR_PER.findIndex(p=>p[0]===a.per)-PR_PER.findIndex(p=>p[0]===b.per));
+const prFind=(per,from)=>prDocs().find(d=>d.per===per&&d.from===from);
+const prId=(per,from)=>`pr_${market}_${per}_${from}`;
+const prWeekNo=d=>{const x=new Date(d+"T12:00:00");x.setDate(x.getDate()+3-((x.getDay()+6)%7));const w1=new Date(x.getFullYear(),0,4);return 1+Math.round(((x-w1)/864e5-3+((w1.getDay()+6)%7))/7)};
+const prLabel=(per,R)=>per==="week"?`Week ${prWeekNo(R.from)} · ${fmtD(R.from)} – ${fmtD(R.to)}`:R.label;
+const prRange=(per,anchor)=>{const R=rvRange({per,anchor});return{...R,label:prLabel(per,R)}};
+const prLastA=p=>{const a=new Date();if(p==="week")a.setDate(a.getDate()-7);else if(p==="month")a.setMonth(a.getMonth()-1,1);else if(p==="quarter")a.setMonth(a.getMonth()-3,1);else a.setFullYear(a.getFullYear()-1);return isoD(a)};
+const prPerL=p=>(PR_PER.find(x=>x[0]===p)||["",""])[1];
+function prTrades(R){const all=market==="stocks"?trades().map(sPct):trades();return all.filter(t=>t.mode==="live"&&(t.date||"")>=R.from&&(t.date||"")<=R.to).sort((a,b)=>(a.date||"").localeCompare(b.date||""))}
+function prStatsHTML(list){const ps=stats(list),tk=taken(list),w=tk.filter(t=>t.r>0).length,be=tk.filter(t=>t.r===0).length,l=tk.filter(t=>t.r<0).length,miss=list.filter(t=>t.status==="missed").length,fx=market==="fx";
+  const tile=(lab,v,c="",sub="")=>`<div class="prst"><span>${lab}</span><b class="num ${c}">${v}</b>${sub?`<small>${sub}</small>`:""}</div>`,sg=v=>v>0?"pos":v<0?"neg":"";
+  let g="";if(fx&&tk.length){const G={A:[],B:[],C:[]};tk.forEach(t=>{const x=tGrade(t);if(x)G[x].push(t.r)});g=`<div class="prgrades">${["A","B","C"].map(k=>`<span><b class="grade g${k}">${k}</b> ${G[k].length} · <span class="num ${sg(G[k].reduce((a,b)=>a+b,0))}">${G[k].length?fmtR(G[k].reduce((a,b)=>a+b,0)):"—"}</span></span>`).join("")}</div>`}
+  return `<div class="prtiles">${tile("Trades",tk.length,"",miss?`${miss} missed`:"")}${tile(fx?"Total R":"Total",tk.length?fmtR(ps.total):"—",sg(ps.total))}${tile("Win rate",fmtP(ps.wr))}${tile(fx?"Avg R":"Avg ROI",fmtR(ps.avg),sg(ps.avg))}${fx?tile("To plan",fmtP(ps.plan)):""}</div>
+  ${tk.length?`<div class="bstack sm">${w?`<div class="bseg" style="flex:${w};background:var(--good)"></div>`:""}${be?`<div class="bseg" style="flex:${be};background:var(--be)"></div>`:""}${l?`<div class="bseg" style="flex:${l};background:var(--bad)"></div>`:""}</div><div class="prbar"><span class="hint" style="margin:0">${w} W · ${be} BE · ${l} L</span>${g}</div>`:""}`}
+function prTradesHTML(list){if(!list.length)return`<p class="hint" style="margin:0">No live trades in this period.</p>`;const fx=market==="fx";
+  return `<div style="overflow-x:auto"><table class="rvdt prtt"><thead><tr><th>Date</th><th>${fx?"Pair":"Ticker"}</th>${fx?"<th>Grade</th>":""}<th>Result</th>${fx?"<th>To plan</th>":""}<th></th></tr></thead><tbody>${list.map(t=>{const oc=t.status==="missed"?"":t.outcome||(t.r>0?"win":t.r<0?"loss":t.r===0?"be":"");const gr=fx?tGrade(t):null;
+    return `<tr data-propen="${t.id}"><td>${esc(fmtD(t.date))}</td><td>${esc(t.ticker||t.pair||"")} <span class="dirar ${t.dir}">${t.dir==="long"?"↑":t.dir==="short"?"↓":""}</span></td>${fx?`<td>${gr?`<b class="grade g${gr}">${gr}</b>`:"—"}</td>`:""}<td>${t.status==="missed"?`<span class="hint" style="margin:0">Missed</span>`:oc?`<span class="restag ${oc}">${({win:"Win",loss:"Loss",be:"BE"})[oc]}<b class="num">${fmtR(t.r)}</b></span>`:`<span class="restag open">Open</span>`}</td>${fx?`<td>${t.evaluation==="plan"?"Yes":t.evaluation?`<span class="neg">No</span>`:"—"}</td>`:""}<td>${LSLOTS.some(([k])=>hasShot(t,k))?`<button type="button" class="btn small ghost" data-prcharts="${t.id}">Charts</button>`:""}</td></tr>`}).join("")}</tbody></table></div>`}
+function prSnippet(d){const v=[...(d.secs||[]).map(x=>{const q=(d.sec||{})[x.id]||{};return q.text||(q.rows||[]).map(r=>[r.pair,r.dir].filter(Boolean).join(" ")).filter(Boolean).join(", ")}),...PR_Q.map(([k])=>d[k])].find(x=>x&&x.trim());return v?v.trim().replace(/\s+/g," ").slice(0,90)+(v.trim().length>90?"…":""):""}
+function prRender(){const box=$("#prBox");
+  if(prOpen){const R=prRange(prOpen.per,prOpen.from),d=prFind(prOpen.per,R.from)||{},list=prTrades(R),sig=market+prOpen.per+R.from,secs=d.secs||prSecs(prOpen.per);
+    if(box.dataset.sig===sig&&$("#prStats")){$("#prStats").innerHTML=prStatsHTML(list);$("#prTrades").innerHTML=prTradesHTML(list);secs.filter(x=>PR_TRT.includes(x.type)).forEach(x=>{const el=$("#prtl-"+x.id),k=prTKey(x.type,list);if(el&&el.dataset.k!==k){el.dataset.k=k;el.innerHTML=prTList(x.type,list,x.id);prGrowAll()}});$("#prDel").hidden=!d.id;return}
+    box.dataset.sig=sig;prCur={sec:JSON.parse(JSON.stringify(d.sec||{}))};const leg=PR_Q.filter(([k])=>d[k]);
+    box.innerHTML=`<div class="panel prhead"><div class="row spread" style="align-items:center"><button type="button" class="btn small ghost" data-prback>‹ All reviews</button><div class="row" style="gap:10px;align-items:center"><span class="hint nstat" id="prStat" style="margin:0"></span><button type="button" class="btn small ghost danger" id="prDel" ${d.id?"":"hidden"}>Delete</button></div></div>
+      <div class="prtitle"><div><span class="eyebrow">${prPerL(prOpen.per)}ly review</span><h2>${esc(R.label)}</h2></div></div>
+      <div id="prStats">${prStatsHTML(list)}</div></div>
+      <div class="prsecs">${secs.map(x=>prSecHTML(x,list)).join("")}${leg.map(([k,l])=>`<div class="panel prsec full"><h3>${esc(l)}</h3><textarea id="prq-${k}" data-prq="${k}" rows="5">${esc(d[k]||"")}</textarea></div>`).join("")}</div>
+      <details class="panel prall"><summary><span class="eyebrow">All trades</span> <span class="hint" style="margin:0">${list.length}</span></summary><div id="prTrades" style="margin-top:8px">${prTradesHTML(list)}</div></details>`;prGrowAll();return}
+  box.dataset.sig="";
+  const R=prRange(prSel.per,prSel.anchor||todayISO()),ex=prFind(prSel.per,R.from),L=prDocs().filter(d=>!prFilt||d.per===prFilt);
+  const last=PR_PER.map(([p,l])=>{const a=new Date();if(p==="week")a.setDate(a.getDate()-7);else if(p==="month")a.setMonth(a.getMonth()-1,1);else if(p==="quarter")a.setMonth(a.getMonth()-3,1);else a.setFullYear(a.getFullYear()-1);const r=prRange(p,isoD(a));return{p,l,r,done:!!prFind(p,r.from)}});
+  box.innerHTML=`<div class="panel"><span class="eyebrow">New review</span><h2>Review a period</h2>
+    <div class="row" style="margin-top:10px;flex-wrap:wrap;gap:6px">${last.map(x=>`<button type="button" class="btn small${x.done?" ghost":""}" data-prgo="${x.p}|${x.r.from}">${x.done?"✓ ":""}Last ${x.l.toLowerCase()}</button>`).join("")}</div>
+    <div class="row" style="margin-top:14px;flex-wrap:wrap;gap:8px;align-items:center"><div class="segs">${PR_PER.map(([v,l])=>`<button type="button" class="rvb${prSel.per===v?" on":""}" data-prper="${v}">${l}</button>`).join("")}</div>
+      <div class="row" style="gap:4px;align-items:center"><button type="button" class="btn small ghost" data-prshift="-1" aria-label="Previous">‹</button><b style="min-width:150px;text-align:center;font-size:14px">${esc(R.label)}</b><button type="button" class="btn small ghost" data-prshift="1" aria-label="Next">›</button></div>
+      <button type="button" class="btn small primary" data-prgo="${prSel.per}|${R.from}">${ex?"Open review":"Start review"}</button></div></div>
+    <div class="panel" style="margin-top:20px"><div class="row spread" style="align-items:center"><div><span class="eyebrow">Saved</span><h2 style="margin:2px 0 0">Your reviews <small class="hint" style="margin:0;font-weight:400">${prDocs().length}</small></h2></div><div class="segs">${[["","All"],...PR_PER].map(([v,l])=>`<button type="button" class="rvb${prFilt===v?" on":""}" data-prfilt="${v}">${l}</button>`).join("")}</div></div>
+    ${L.length?`<div style="overflow-x:auto;margin-top:8px"><table class="rvdt prlist"><thead><tr><th>Period</th><th>Trades</th><th>Result</th><th>Notes</th></tr></thead><tbody>${L.map(d=>{const r=prRange(d.per,d.from),tl=prTrades(r),ps=stats(tl);return`<tr data-prgo="${d.per}|${d.from}"><td><span class="prtype">${prPerL(d.per)}</span> ${esc(r.label)}</td><td>${taken(tl).length}</td><td class="num ${ps.total>0?"pos":ps.total<0?"neg":""}">${taken(tl).length?fmtR(ps.total):"—"}</td><td class="hint" style="margin:0">${esc(prSnippet(d))}</td></tr>`}).join("")}</tbody></table></div>`:`<p class="hint" style="margin:10px 0 0">No ${prFilt?prPerL(prFilt).toLowerCase()+" ":""}reviews saved yet.</p>`}</div>`}
+document.addEventListener("click",e=>{const box=e.target.closest("#prBox, #rvTop");if(!box)return;
+  const md=e.target.closest("[data-rvmode]");if(md){rvMode=md.dataset.rvmode;try{localStorage.setItem("tj-rvmode",rvMode)}catch{}if(rvMode!=="game"&&rvActive){rvSave();rvActive=null;rvLocal=null;rvOpen=""}return rvRender()}
+  const ch=e.target.closest("[data-prcharts]");if(ch){openViewer(ch.dataset.prcharts);return}
+  const tr=e.target.closest("[data-propen]");if(tr){const t=docs.find(d=>d.id===tr.dataset.propen);if(t)(mktOf(t)==="stocks"?openStock(t):openSheet2(t));return}
+  const go=e.target.closest("[data-prgo]");if(go){const[p,f]=go.dataset.prgo.split("|");prOpen={per:p,from:f};window.scrollTo(0,0);return prRender()}
+  const b=e.target.closest("button");if(!b)return;
+  if(b.dataset.prdir){const v=prCur.sec[b.dataset.prs]=prCur.sec[b.dataset.prs]||{};v.rows=v.rows&&v.rows.length?v.rows:[{}];const i=+b.dataset.i;v.rows[i]={...v.rows[i],dir:v.rows[i].dir===b.dataset.prdir?"":b.dataset.prdir};b.parentNode.querySelectorAll("button").forEach(x=>x.classList.toggle("on",x.dataset.prdir===v.rows[i].dir));return prSave()}
+  if(b.dataset.pradd||b.dataset.prrm){const id=b.dataset.pradd||b.dataset.prrm,v=prCur.sec[id]=prCur.sec[id]||{};v.rows=v.rows||[];if(b.dataset.pradd)v.rows.push({});else{v.rows.splice(+b.dataset.i,1)}
+    const d=prFind(prOpen.per,prOpen.from)||{},x=(d.secs||prSecs(prOpen.per)).find(y=>y.id===id);$("#prsec-"+id).outerHTML=prSecHTML(x,[]);prGrowAll();if(b.dataset.pradd){const ins=$("#prsec-"+id).querySelectorAll('[data-f="pair"]');ins[ins.length-1].focus()}return prSave()}
+  if(b.dataset.praddt){const ty=b.dataset.praddt,miss=ty==="missed",R=prRange(prOpen.per,prOpen.from),td=todayISO(),dt=td>=R.from&&td<=R.to?td:R.to;
+    if(market==="stocks"){openStock();$("#sDate").value=dt;$("#sMissed").checked=miss;$("#sMissed").dispatchEvent(new Event("change",{bubbles:true}))}
+    else{openSheet2();$("#f2Date").value=dt;$("#f2Missed").checked=miss;$("#f2Missed").dispatchEvent(new Event("change",{bubbles:true}));if(ty==="good")setRadio("f2eval","plan");if(ty==="bad")setRadio("f2eval","off")}return}
+  if(b.dataset.prback!=null){prOpen=null;return prRender()}
+  if(b.dataset.prper){prSel={per:b.dataset.prper,anchor:""};return prRender()}
+  if(b.dataset.prshift){const o={per:prSel.per,anchor:prSel.anchor||todayISO()};rvShift(o,+b.dataset.prshift);prSel.anchor=o.anchor;return prRender()}
+  if(b.dataset.prfilt!=null){prFilt=b.dataset.prfilt;return prRender()}
+  if(b.dataset.prnav){const o={per:prOpen.per,anchor:prOpen.from};rvShift(o,+b.dataset.prnav);prOpen={per:prOpen.per,from:prRange(prOpen.per,o.anchor).from};return prRender()}
+  if(b.id==="prDel"){const d=prFind(prOpen.per,prOpen.from);if(!d)return;if(!b.dataset.armed){b.dataset.armed="1";b.textContent="Click again to delete";b.classList.add("armed");clearTimeout(b._t);b._t=setTimeout(()=>{if(b.isConnected){delete b.dataset.armed;b.textContent="Delete";b.classList.remove("armed")}},4000);return}
+    clearTimeout(prSave.h);deleteDoc(d.id);prOpen=null;$("#prBox").dataset.sig="";prRender()}});
+function rvRender(){const top=$("#rvTop");top.innerHTML=`<div class="segs rvmodes">${[["period","Period reviews"],["game","Re-evaluate"]].map(([v,l])=>`<button type="button" class="rvb${rvMode===v?" on":""}" data-rvmode="${v}">${l}</button>`).join("")}</div>`;
+  $("#prBox").hidden=rvMode!=="period";$("#rvBox").hidden=rvMode==="period";if(rvMode==="period")return prRender();return rvGameRender()}
+function rvGameRender(){const box=$("#rvBox"),S=rvState();
   if(market!=="fx"){box.innerHTML=`<div class="panel"><span class="eyebrow">Review</span><h2>Forex only for now</h2><p class="hint">Switch to Forex at the top to review trades.</p></div>`;return}
   if(!S||!S.queue||S.i>=S.queue.length){const o=rvOpts,R=rvRange(o),n=rvPool(o).length,acs=accounts("fx"),ps=projects(),L=rvSessions();
     const fin=S&&S.queue&&S.i>=S.queue.length;if(fin){rvShow=S.id;rvActive=null;rvLocal=null}const shown=rvShow&&docs.find(d=>d.id===rvShow),F=rvFinished();
@@ -1707,7 +1835,7 @@ $("#nRemAdd").onclick=()=>{const r=nRemsOf(getSet());r.push(r.includes(15)?5:15)
 $("#nRems").addEventListener("change",e=>{const i=e.target.dataset.nrv;if(i==null)return;const r=nRemsOf(getSet());r[i]=Number(e.target.value);nSave({newsRems:r})});
 $("#nRems").addEventListener("click",e=>{const x=e.target.closest("[data-nrx]");if(!x)return;const r=nRemsOf(getSet());r.splice(Number(x.dataset.nrx),1);nSave({newsRems:r})});
 $("#nCopy").onclick=async()=>{try{await navigator.clipboard.writeText($("#nCopy").dataset.url);toast("Link copied")}catch{$("#nMsg").textContent=$("#nCopy").dataset.url}};
-function openSettings(){showSetTab(setTab);newsLinks();$("#wipeBox").hidden=true;$("#wipeOpen").hidden=false;$("#setIo").textContent="";$("#csvMk").textContent=(market==="stocks"?"Stocks":"Forex")+" trades only";const st=getSet();setRadio("stheme",st.theme);setRadio("saccent",st.accent);setRadio("saccent2",st.accent2);setRadio("speriod",st.period);setRadio("speriod2",st.periodSt);$("#sGA").value=st.gradeA;$("#sGB").value=st.gradeB;gcHint();swRender();$("#setSheet").hidden=false}
+function openSettings(){showSetTab(setTab);newsLinks();$("#wipeBox").hidden=true;$("#wipeOpen").hidden=false;$("#setIo").textContent="";$("#csvMk").textContent=(market==="stocks"?"Stocks":"Forex")+" trades only";const st=getSet();setRadio("stheme",st.theme);setRadio("saccent",st.accent);setRadio("saccent2",st.accent2);setRadio("speriod",st.period);setRadio("speriod2",st.periodSt);$("#sGA").value=st.gradeA;$("#sGB").value=st.gradeB;gcHint();swRender();tplRender();$("#setSheet").hidden=false}
 $("#openSettings").onclick=openSettings;
 document.querySelectorAll("[data-closeset]").forEach(b=>b.onclick=()=>{$("#setSheet").hidden=true});
 $("#setForm").addEventListener("change",e=>{const n=e.target.name;if(n==="stheme")saveSetting("theme",e.target.value);else if(n==="saccent")saveSetting("accent",e.target.value);else if(n==="saccent2")saveSetting("accent2",e.target.value);else if(n==="speriod")saveSetting("period",e.target.value);else if(n==="speriod2")saveSetting("periodSt",e.target.value);else if(e.target.id==="sGA"||e.target.id==="sGB"){let a=Math.round(Number($("#sGA").value)),b=Math.round(Number($("#sGB").value));if(!isFinite(a))a=4;if(!isFinite(b))b=2;if(b>a){b=a;$("#sGB").value=b}const cur=docs.find(x=>x.id==="settings")||{id:"settings",kind:"settings"};saveDoc({...cur,gradeA:a,gradeB:b});applySettings();gcHint()}});
@@ -2103,7 +2231,7 @@ function openStock(t,dup){const f=$("#stockForm");f.reset();sEditing=t&&!dup?t.i
   const A=t||{};setRadio("sphase",A.sPhase||"");setRadio("s6bm",A.s6bm||"");setRadio("s6ret",A.s6ret||"");setRadio("swpat",A.swPat||"");
   ["s3bm","s3room","s3roomB","s1room","s1cc"].forEach(k=>$("#"+k).checked=!!A[k]);
   setRadio("s12mss",A.s12Ms||"");setRadio("s12bm",A.s12bm||"");setRadio("s12ret",A.s12ret||"");setRadio("s6mss",A.s6Ms||(A.s6ms?"for":""));setRadio("s3mss",A.s3Ms||(A.s3ms?"for":""));setRadio("s1mss",A.s1Ms||"");setRadio("swmss",A.swMs||"");
-  $("#sEntry").value=A.sEntry??"";$("#sStop").value=A.sStop??"";$("#sShares").value=A.sShares??"";$("#sFx").value=A.sFx??"";$("#sCur").value=A.sCur||(t&&!dup?stCur(t):(docs.filter(d=>!d.kind&&mktOf(d)==="stocks"&&d.sCur).sort((a,b)=>(b.created||0)-(a.created||0))[0]||{}).sCur||"USD");sExits=(A.sExits||[]).map(x=>({...x}));
+  $("#sEntry").value=A.sEntry??"";$("#sStop").value=A.sStop??"";$("#sShares").value=A.sShares??"";$("#sFx").value=A.sFx??"";$("#sNotes").value=(t&&t.notes)||"";$("#sCur").value=A.sCur||(t&&!dup?stCur(t):(docs.filter(d=>!d.kind&&mktOf(d)==="stocks"&&d.sCur).sort((a,b)=>(b.created||0)-(a.created||0))[0]||{}).sCur||"USD");sExits=(A.sExits||[]).map(x=>({...x}));
   SLINKS.forEach(k=>{$("#sl-"+k).value=(A.shotLinks||{})[k]||"";sLinkShow(k)});
   document.querySelectorAll("#stockForm details.subsec").forEach(d=>d.open=false);sPhase();exRender();
   $("#sDup").hidden=$("#sDel").hidden=!t||!!dup;{const b=$("#sDel");delete b.dataset.armed;b.textContent="Delete"}
@@ -2121,7 +2249,7 @@ $("#stockForm").onsubmit=e=>{e.preventDefault();const old=sEditing?docs.find(d=>
     ...Object.fromEntries(["s3bm","s3room","s3roomB","s1room","s1cc"].map(k=>[k,$("#"+k).checked])),
     s12Ms:radio("s12mss"),s12bm:radio("s12bm"),s12ret:radio("s12ret"),s6Ms:radio("s6mss"),s3Ms:radio("s3mss"),s1Ms:radio("s1mss"),swMs:radio("swmss"),
     sEntry:$("#sEntry").value===""?null:Number($("#sEntry").value),sStop:$("#sStop").value===""?null:Number($("#sStop").value),
-    sCur:$("#sCur").value,sFx:$("#sFx").value===""?null:Number($("#sFx").value),sShares:$("#sShares").value===""?null:Number($("#sShares").value),sExits:sExits.filter(x=>x.shares||x.price||exHows(x).length).map(x=>({shares:x.shares??null,price:x.price??null,date:x.date||"",hows:exHows(x),how:exHows(x).join(" + ")})),
+    notes:$("#sNotes").value.trim(),sCur:$("#sCur").value,sFx:$("#sFx").value===""?null:Number($("#sFx").value),sShares:$("#sShares").value===""?null:Number($("#sShares").value),sExits:sExits.filter(x=>x.shares||x.price||exHows(x).length).map(x=>({shares:x.shares??null,price:x.price??null,date:x.date||"",hows:exHows(x),how:exHows(x).join(" + ")})),
     shotLinks:Object.fromEntries(SLINKS.map(k=>[k,$("#sl-"+k).value.trim()]).filter(([,v])=>v)),
     created:old?old.created||Date.now():Date.now()};
   {const c=exCalc(),xs=t.sExits.filter(x=>Number(x.shares)>0&&Number(x.price)>0);
@@ -2250,7 +2378,7 @@ function f2Fill(t){const ch=(el)=>el.dispatchEvent(new Event("change",{bubbles:t
   $("#f2Entry").value=t.entry4h||"";ch($("#f2Entry"));setRadio("f2ectf",t.ecTf||"");
   setRadio("f2struct",t.struct||(t.bos==="ja"?"bos":t.bos==="nee"?"som":""));$("#f2Room").checked=t.room==="ja";$("#f2Scale").checked=!!t.scaleIn;
   $("#f2PlanEntry").value=t.planEntry??"";$("#f2SlPips").value=t.slPips??"";$("#f2TpPips").value=t.tpPips??"";
-  setRadio("f2out",t.outcome||(t.r>0?"win":t.r<0?"loss":t.r===0?"be":""));$("#f2R").value=t.r??"";$("#f2MaxR").value=t.maxR??"";$("#f2Exit").value=t.exitReason||"";setRadio("f2eval",t.evaluation==="plan"?"plan":t.evaluation?"off":"");{const rv=editingId?(t.reviews||[]):[],n=$("#f2RevNote");n.hidden=!rv.length;if(rv.length)n.textContent=`Re-evaluated ${rv.length}× · last ${fmtD(rv[rv.length-1].at.slice(0,10))}`}
+  setRadio("f2out",t.outcome||(t.r>0?"win":t.r<0?"loss":t.r===0?"be":""));$("#f2R").value=t.r??"";$("#f2MaxR").value=t.maxR??"";$("#f2Notes").value=t.notes||"";$("#f2Exit").value=t.exitReason||"";setRadio("f2eval",t.evaluation==="plan"?"plan":t.evaluation?"off":"");{const rv=editingId?(t.reviews||[]):[],n=$("#f2RevNote");n.hidden=!rv.length;if(rv.length)n.textContent=`Re-evaluated ${rv.length}× · last ${fmtD(rv[rv.length-1].at.slice(0,10))}`}
   f2Shots={...(t.shots||{})};f2Links={...(t.shotLinks||{})};renderF2Shots();f2Check();f2RR();f2Summaries()}
 function dupTrade(id){const t=docs.find(x=>x.id===id);if(!t)return;
   if(mktOf(t)==="stocks"){if(tab!=="analyze")show(t.mode==="live"?"live":"backtest");openStock(t,true);return}
@@ -2267,7 +2395,7 @@ $("#f2Del").onclick=e=>{const b=e.currentTarget,id=editingId;if(!id)return;
 function closeSheet2(){$("#sheet2").hidden=true;document.body.style.overflow="";editingId=null}
 $("#tradeForm2").onsubmit=e=>{e.preventDefault();const old=editingId?docs.find(d=>d.id===editingId):null,mode=old?old.mode:(f2Mode||formMode());
   const t={id:old?old.id:uid(),mode,market:old?mktOf(old):f2Market,project:mode==="backtest"&&$("#f2Project").value!=="none"?$("#f2Project").value:null,status:$("#f2Missed").checked?"missed":"taken",account:$("#f2Account").value,btDate:mode==="backtest"?($("#f2BtDate").value||todayISO()):null,
-    date:$("#f2Date").value,closeDate:$("#f2Close").value,concept:$("#f2Concept").value,fase:radio("f2fase")?Number(radio("f2fase")):null,wStruct:radio("f2wstruct")||"",wPat:$("#f2WPat").value==="?"?"":$("#f2WPat").value,wPatSub:$("#f2WPat").value&&$("#f2WPat").value!=="?"?$("#f2WPatSub").value:"",scaleIn:$("#f2Scale").checked,dMs:radio("f2dms")||"",hMs:radio("f2hms")||"",weekly:wcVals(),sub:$("#f2Variant").value,dPros:DCRIT.map(([k])=>k).filter(k=>dSel[k]),dailyFib:dSel.fc?"ja":"nee",outcome:radio("f2out"),r:num("f2R"),maxR:num("f2MaxR"),evaluation:radio("f2eval"),onPlan:radio("f2eval")?radio("f2eval")==="plan":null,exitReason:$("#f2Exit").value,entry4h:$("#f2Entry").value,planEntry:num("f2PlanEntry"),slPips:num("f2SlPips"),tpPips:num("f2TpPips"),...f2CheckVals(),ecTf:$("#f2Entry").value==="Engulfing Candle"?radio("f2ectf"):"",shots:Object.fromEntries(Object.entries(f2Shots).filter(([,v])=>v&&v!=="uploading")),shotLinks:{...f2Links},pair:$("#f2Pair").value.trim().toUpperCase(),dir:radio("f2dir"),created:Date.now()};
+    date:$("#f2Date").value,closeDate:$("#f2Close").value,concept:$("#f2Concept").value,fase:radio("f2fase")?Number(radio("f2fase")):null,wStruct:radio("f2wstruct")||"",wPat:$("#f2WPat").value==="?"?"":$("#f2WPat").value,wPatSub:$("#f2WPat").value&&$("#f2WPat").value!=="?"?$("#f2WPatSub").value:"",scaleIn:$("#f2Scale").checked,dMs:radio("f2dms")||"",hMs:radio("f2hms")||"",weekly:wcVals(),sub:$("#f2Variant").value,dPros:DCRIT.map(([k])=>k).filter(k=>dSel[k]),dailyFib:dSel.fc?"ja":"nee",outcome:radio("f2out"),r:num("f2R"),maxR:num("f2MaxR"),notes:$("#f2Notes").value.trim(),evaluation:radio("f2eval"),onPlan:radio("f2eval")?radio("f2eval")==="plan":null,exitReason:$("#f2Exit").value,entry4h:$("#f2Entry").value,planEntry:num("f2PlanEntry"),slPips:num("f2SlPips"),tpPips:num("f2TpPips"),...f2CheckVals(),ecTf:$("#f2Entry").value==="Engulfing Candle"?radio("f2ectf"):"",shots:Object.fromEntries(Object.entries(f2Shots).filter(([,v])=>v&&v!=="uploading")),shotLinks:{...f2Links},pair:$("#f2Pair").value.trim().toUpperCase(),dir:radio("f2dir"),created:Date.now()};
   if(old)t.created=old.created||t.created;saveDoc(old?{...old,...t}:t);acRemember("fx",t.account);if(t.date&&!old){calMonth=t.date.slice(0,7);calTouched=true}toast(old?"Changes saved":"Trade saved");closeSheet2()};
 document.addEventListener("keydown",e=>{if(e.key!=="Escape")return;if(!$("#sheetS").hidden){closeStock();return}if(!$("#setSheet").hidden){$("#setSheet").hidden=true;return}if(!$("#newProj").hidden){closeNewProj();return}if(!$("#projSheet").hidden){closeProjSheet();return}if(!$("#viewer").hidden){$("#viewer").hidden=true;if($("#sheet2").hidden)document.body.style.overflow="";return}if(!$("#sheet2").hidden)closeSheet2()});
 
@@ -2313,8 +2441,9 @@ F2SLOTS.forEach(([,sel])=>{const c=$(sel);
 function openViewer(id){const t=docs.find(x=>x.id===id);if(!t)return;viewTrade=t;
   $("#viewerTitle").textContent=`${t.pair||"Trade"} · ${t.date||""}`;
   $("#viewerTabs").innerHTML=LSLOTS.filter(([k])=>hasShot(t,k)).map(([k,l])=>`<label class="seg"><input type="radio" name="vtab" value="${k}" data-vtab="${k}"><span>${l}</span></label>`).join("");
+  {const vn=$("#viewerNotes");vn.hidden=!t.notes;vn.innerHTML=t.notes?`<span class="eyebrow">Notes</span><p>${esc(t.notes)}</p>`:""}
   $("#viewer").hidden=false;document.body.style.overflow="hidden";showVTab((LSLOTS.find(([k])=>hasShot(t,k))||[])[0])}
-function openImage(id,label){viewTrade=null;$("#viewerTitle").textContent=label||"Chart";$("#viewerTabs").innerHTML="";
+function openImage(id,label){viewTrade=null;$("#viewerNotes").hidden=true;$("#viewerTitle").textContent=label||"Chart";$("#viewerTabs").innerHTML="";
   $("#viewerImg").innerHTML=`<a href="${shotSrc(id)}" target="_blank" rel="noopener" title="Open full size in a new tab"><img src="${shotSrc(id)}" alt="${esc(label||"Chart")}"></a>`;
   $("#viewer").hidden=false;document.body.style.overflow="hidden"}
 function showVTab(k){if(!viewTrade||!k)return;document.querySelectorAll('input[name="vtab"]').forEach(i=>i.checked=i.value===k);
@@ -2385,7 +2514,7 @@ function loadDemo(){let s=7;const rnd=()=>(s=(s*16807)%2147483647)/2147483647;
 }
 
 /* ---------- nav + delegation ---------- */
-function show(t){if(t!=="review"&&typeof rvActive!=="undefined"&&rvActive){rvSave();rvActive=null;rvLocal=null;rvOpen=""}tab=t;document.querySelectorAll("nav button").forEach(b=>b.setAttribute("aria-selected",b.dataset.tab===t));
+function show(t){if(t!=="review"&&typeof prSel!=="undefined"&&tab==="review"){prSel={per:"week",anchor:""};prOpen=null}if(t!=="review"&&typeof rvActive!=="undefined"&&rvActive){rvSave();rvActive=null;rvLocal=null;rvOpen=""}tab=t;document.querySelectorAll("nav button").forEach(b=>b.setAttribute("aria-selected",b.dataset.tab===t));
   ["live","backtest","analyze","accounts","review"].forEach(x=>$("#view-"+x).hidden=x!==t);
   if(t==="live")$("#view-live").appendChild($("#jv"));
   $("#fab").hidden=t==="analyze"||t==="accounts"||t==="review";$("#fab").classList.toggle("btmode",t==="backtest");
