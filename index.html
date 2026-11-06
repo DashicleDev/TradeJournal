@@ -41,7 +41,7 @@ body{background:var(--paper);color:var(--ink);font-family:var(--body);font-size:
   padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:0 48px}
 body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--paper)}
 .wrap{max-width:1080px;margin:0 auto}
-header{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--paper);padding-block:18px 0;border-bottom:1px solid var(--line)}
+header{position:sticky;top:env(safe-area-inset-top,0px);margin-top:env(safe-area-inset-top,0px);z-index:5;background:var(--paper);padding-block:18px 0;border-bottom:1px solid var(--line)}
 .brand{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
 .segs.mkt{gap:2px;padding:3px;border:1px solid var(--line);border-radius:9px;background:var(--surface)}
 .segs.mkt label.seg span{border:0;padding:5px 12px;font-size:13px;font-weight:600;background:none}
