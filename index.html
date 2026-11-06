@@ -767,8 +767,8 @@ main>*,.panel,.grid2>*,.ov>*{min-width:0}
     </div>
     <details class="subsec"><summary><span>12 Monthly</span><span class="sumval" id="sSum12"></span></summary>
       <div class="fields" style="margin-bottom:10px"><div class="f"><span>Market structure</span><div class="mstf" role="radiogroup" aria-label="12 Monthly market structure"><label class="seg msok"><input type="radio" name="s12mss" value="for"><span>✓ With</span></label><label class="seg msno"><input type="radio" name="s12mss" value="against"><span>✗ Against</span></label></div></div></div>
-      <div class="sA"><div class="fields"><div class="f"><span>BM</span><div class="segs" id="seg-s12bm"></div></div></div></div>
-      <div class="sB"><div class="fields"><div class="f"><span>Back to previous MS</span><div class="segs" id="seg-s12ret"></div></div></div></div>
+      <div class="s12w" hidden><div class="fields"><div class="f"><span>Pattern <em class="opt">optional</em></span><div class="segs" id="seg-s12bm"></div></div></div></div>
+      <div class="s12a" hidden><div class="fields"><div class="f"><span>Back to previous structure</span><div class="segs" id="seg-s12ret"></div></div></div></div>
       <div class="shots" style="margin-top:12px"><div class="shot"><span class="eyebrow">Chart</span><div class="linkrow"><input type="url" class="shotlink" id="sl-m12" data-slink="m12" placeholder="Paste a TradingView link" aria-label="12 Monthly chart link" autocomplete="off" spellcheck="false"><a class="btn small" id="slo-m12" target="_blank" rel="noopener" hidden>Open ↗</a></div><a class="shotprev" id="slp-m12" target="_blank" rel="noopener" hidden><img alt="12 Monthly chart" loading="lazy" onerror="this.parentNode.hidden=true"></a></div></div>
     </details>
     <details class="subsec"><summary><span>6 Monthly</span><span class="sumval" id="sSum6"></span></summary>
@@ -2228,18 +2228,19 @@ seg("seg-s12bm","s12bm",[["FS","FS"],["100","100"],["PinP","PinP"]]);seg("seg-s1
 seg("seg-s6bm","s6bm",[["FS","FS"],["100","100"],["PinP","PinP"]]);
 seg("seg-s6ret","s6ret",[["FS","FS"],["100","100"]]);
 seg("seg-swpat","swpat",[["BM","BM"],["IHS","IHS"]]);
-function sPhase(){const ph=radio("sphase");document.querySelectorAll("#stockForm .sA").forEach(e=>e.hidden=ph!=="A");document.querySelectorAll("#stockForm .sB").forEach(e=>e.hidden=ph!=="B");document.querySelectorAll("#stockForm .sAB").forEach(e=>e.hidden=!ph);
+function s12Vis(){const m=radio("s12mss");document.querySelectorAll("#stockForm .s12w").forEach(e=>e.hidden=m!=="for");document.querySelectorAll("#stockForm .s12a").forEach(e=>e.hidden=m!=="against")}
+function sPhase(){s12Vis();const ph=radio("sphase");document.querySelectorAll("#stockForm .sA").forEach(e=>e.hidden=ph!=="A");document.querySelectorAll("#stockForm .sB").forEach(e=>e.hidden=ph!=="B");document.querySelectorAll("#stockForm .sAB").forEach(e=>e.hidden=!ph);
   const p=radio("swpat");$("#sEntryL").textContent=p==="IHS"?"Entry (S1)":p==="BM"?"Entry (FS)":"Entry";$("#sStopL").textContent=p==="IHS"?"Initial stop (head)":p==="BM"?"Initial stop (BOC)":"Initial stop";
   $("#sWHint").textContent="";$("#sWHint").hidden=true;sSum()}
-function sSum(){const ph=radio("sphase"),c=id=>$("#"+id).checked,L=k=>$("#sl-"+k).value.trim()?" · chart ✓":"",j=a=>a.filter(Boolean).join(" · ");
+function sSum(){s12Vis();const ph=radio("sphase"),c=id=>$("#"+id).checked,L=k=>$("#sl-"+k).value.trim()?" · chart ✓":"",j=a=>a.filter(Boolean).join(" · ");
   const M=n=>radio(n)?(radio(n)==="for"?"MS ✓":"MS ✗"):"";
-  const t12=j([M("s12mss"),...(ph==="B"?[radio("s12ret")?"Back to "+radio("s12ret"):""]:ph==="A"?[radio("s12bm")?"BM "+radio("s12bm"):""]:[])]);
+  const m12=radio("s12mss"),t12=j([M("s12mss"),m12==="for"&&radio("s12bm")?radio("s12bm"):"",m12==="against"&&radio("s12ret")?"Back to "+radio("s12ret"):""]);
   const t6=j([M("s6mss"),...(ph==="B"?[radio("s6ret")?"Back to "+radio("s6ret"):""]:ph==="A"?[radio("s6bm")?"BM "+radio("s6bm"):""]:[])]);
   const t3=j([M("s3mss"),...(ph==="B"?[c("s3roomB")?"Room":""]:ph==="A"?[c("s3bm")?"BM":"",c("s3room")?"Room":""]:[])]);
   const tm=j([M("s1mss"),...(ph==="B"?[c("s1cc")?"Bullish CC":""]:ph==="A"?[c("s1room")?"Room":"",c("s1cc")?"Bullish CC":""]:[])]);
   const p=radio("swpat"),tw=j([M("swmss"),p]);
   [["#sSum12",t12,"m12"],["#sSum6",t6,"m6"],["#sSum3",t3,"m3"],["#sSumM",tm,"mo"],["#sSumW",tw,"wk"]].forEach(([id,t,k])=>$(id).textContent=(t+L(k)).replace(/^ · /,""))}
-$("#stockForm").addEventListener("change",e=>{if(["sphase","swpat"].includes(e.target.name)){sPhase();exRender()}else sSum()});
+$("#stockForm").addEventListener("change",e=>{if(["sphase","swpat"].includes(e.target.name)){sPhase();exRender()}else{if(e.target.name==="s12mss")s12Vis();sSum()}});
 $("#stockForm").addEventListener("input",e=>{if(e.target.matches("#sEntry,#sStop"))sSum()});
 function openStock(t,dup){const f=$("#stockForm");f.reset();sEditing=t&&!dup?t.id:null;sMode=t?t.mode:(tab==="backtest"?"backtest":"live");const live=sMode==="live";
   $("#sChip").textContent=live?"Live":"Backtest";$("#sChip").classList.toggle("bt",!live);$("#sChip").classList.toggle("live",live);f.classList.toggle("mode-live",live);
@@ -2269,7 +2270,7 @@ $("#stockForm").onsubmit=e=>{e.preventDefault();const old=sEditing?docs.find(d=>
     date:$("#sDate").value,closeDate:$("#sClose").value,status:$("#sMissed").checked?"missed":"taken",account:$("#sAccount").value,btDate:(old?old.mode:sMode)==="backtest"?($("#sBtDate").value||todayISO()):null,
     sPhase:radio("sphase"),s6bm:radio("s6bm"),s6ret:radio("s6ret"),swPat:radio("swpat"),
     ...Object.fromEntries(["s3bm","s3room","s3roomB","s1room","s1cc"].map(k=>[k,$("#"+k).checked])),
-    s12Ms:radio("s12mss"),s12bm:radio("s12bm"),s12ret:radio("s12ret"),s6Ms:radio("s6mss"),s3Ms:radio("s3mss"),s1Ms:radio("s1mss"),swMs:radio("swmss"),
+    s12Ms:radio("s12mss"),s12bm:radio("s12mss")==="for"?radio("s12bm"):"",s12ret:radio("s12mss")==="against"?radio("s12ret"):"",s6Ms:radio("s6mss"),s3Ms:radio("s3mss"),s1Ms:radio("s1mss"),swMs:radio("swmss"),
     sEntry:$("#sEntry").value===""?null:Number($("#sEntry").value),sStop:$("#sStop").value===""?null:Number($("#sStop").value),
     notes:$("#sNotes").value.trim(),sCur:$("#sCur").value,sFx:$("#sFx").value===""?null:Number($("#sFx").value),sShares:$("#sShares").value===""?null:Number($("#sShares").value),sExits:sExits.filter(x=>x.shares||x.price||exHows(x).length).map(x=>({shares:x.shares??null,price:x.price??null,date:x.date||"",hows:exHows(x),how:exHows(x).join(" + ")})),
     shotLinks:Object.fromEntries(SLINKS.map(k=>[k,$("#sl-"+k).value.trim()]).filter(([,v])=>v)),
