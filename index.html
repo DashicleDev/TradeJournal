@@ -662,6 +662,11 @@ main>*,.panel,.grid2>*,.ov>*{min-width:0}
 }
 @media (max-width:520px){.day .dc{display:none}.day{min-height:58px}.wk{min-height:58px}}
 @media (prefers-reduced-motion:no-preference){.toastfix{transition:opacity .2s}.btn,label.seg span,nav button,.proj{transition:background .12s,border-color .12s,color .12s}}
+#stockForm.sim-on:not(.mode-live) .curf{display:grid!important}
+.simpill{cursor:pointer;font:inherit;font-size:12.5px}button.pill.simpill{border:1px solid color-mix(in srgb,var(--accent) 45%,transparent);background:color-mix(in srgb,var(--accent) 10%,transparent);color:var(--ink)}
+.linkbtn.simpill{background:none;border:0;color:var(--accent);font-weight:600;padding:0}
+#projForm .fxonly{display:none}.simf{grid-template-columns:repeat(auto-fit,minmax(170px,1fr))}.simmax{display:flex;gap:6px;align-items:center}.simmax input{flex:1;min-width:0}.simmax .segs{flex:none}
+#stockForm:not(.mode-live) .liveonly,#stockForm:not(.mode-live) #sFxF,#stockForm:not(.mode-live) #sFxLine,#stockForm:not(.mode-live) .exfx{display:none!important}
 .authwrap{position:fixed;inset:0;z-index:80;background:var(--paper);display:grid;place-items:center;padding:24px}
 .authbox{width:min(100%,380px);display:grid;gap:14px;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:26px}
 .authbox h1{font-family:var(--display);font-stretch:78%;font-weight:800;font-size:30px;margin:0}
@@ -696,6 +701,7 @@ main>*,.panel,.grid2>*,.ov>*{min-width:0}
 <main id="view-live">
   <div id="jv" class="jv">
   <section class="desk live" id="liveHead"></section>
+  <div id="liveSim"></div>
   <div id="liveNotes"></div>
   <div id="liveCharts"></div>
   <div id="liveCal"></div>
@@ -730,13 +736,13 @@ main>*,.panel,.grid2>*,.ov>*{min-width:0}
     <div class="row spread"><h2 id="projFormTitle">New backtest project</h2></div>
     <div class="fields">
       <label class="f"><span>Name</span><input type="text" id="pName" placeholder="EURUSD 2024 blind replay" required></label>
-      <label class="f"><span>Pairs</span><input type="text" id="pPairs" placeholder="EURUSD, GBPUSD"></label>
-      <label class="f"><span>Period from</span><input type="date" id="pFrom"></label>
-      <label class="f"><span>Period to</span><input type="date" id="pTo"></label>
-      <label class="f"><span>Method</span><select id="pMethod">
+      <label class="f fxonly"><span id="pPairsL">Pairs</span><input type="text" id="pPairs" placeholder="EURUSD, GBPUSD"></label>
+      <label class="f fxonly"><span>Period from</span><input type="date" id="pFrom"></label>
+      <label class="f fxonly"><span>Period to</span><input type="date" id="pTo"></label>
+      <label class="f fxonly"><span>Method</span><select id="pMethod">
         <option value="">Not set</option><option value="blind">Bar replay, blind</option><option value="replay">Bar replay, not strictly blind</option><option value="scroll">Chart scroll (hindsight risk)</option></select></label>
-      <label class="f"><span>Target trades</span><input type="number" id="pTarget" min="1" step="1" placeholder="50"></label>
-      <label class="f wide"><span>Focus or question to answer</span><textarea id="pFocus" placeholder="Does Phase 3 Reversal hold up when I decide the phase blind?"></textarea></label>
+      <label class="f fxonly"><span>Target trades</span><input type="number" id="pTarget" min="1" step="1" placeholder="50"></label>
+      <label class="f wide fxonly"><span>Focus or question to answer</span><textarea id="pFocus" placeholder="Does Phase 3 Reversal hold up when I decide the phase blind?"></textarea></label>
     </div>
     <div class="row" style="margin-top:14px"><button type="submit" class="btn btb" id="pSave">Start project</button><button type="button" class="btn ghost" id="pCancel">Cancel</button><button type="button" class="btn ghost danger" id="pDelete" hidden>Delete project</button></div>
   </form>
@@ -802,8 +808,8 @@ main>*,.panel,.grid2>*,.ov>*{min-width:0}
     <legend>Execution</legend>
     <div class="fields">
         <label class="f" id="sFxF" hidden><span id="sFxL">Rate</span><input type="number" id="sFx" min="0" step="any" inputmode="decimal"></label>
-        <label class="f"><span>Currency</span><select id="sCur"><option>USD</option><option>EUR</option><option>GBP</option><option>CAD</option><option>CHF</option></select></label>
-        <label class="f"><span>Shares bought</span><input type="number" id="sShares" min="0" step="any" inputmode="decimal"></label>
+        <label class="f liveonly curf"><span>Currency</span><select id="sCur"><option>USD</option><option>EUR</option><option>GBP</option><option>CAD</option><option>CHF</option></select></label>
+        <label class="f liveonly"><span>Shares bought</span><input type="number" id="sShares" min="0" step="any" inputmode="decimal"></label>
         <label class="f"><span id="sEntryL">Entry</span><input type="number" id="sEntry" step="any" inputmode="decimal"></label>
         <label class="f"><span id="sStopL">Initial stop</span><input type="number" id="sStop" step="any" inputmode="decimal"></label>
       </div>
@@ -1482,7 +1488,7 @@ let jvKey="live";const JVS={};
 function jvSwap(key){if(key===jvKey)return;JVS[jvKey]={calMonth,selDay,calTouched,jPeriod,jFrom,jTo};
   const st=JVS[key]||{calMonth:new Date().toISOString().slice(0,7),selDay:null,calTouched:false,jPeriod:key==="live"?"month":"all",jFrom:"",jTo:""};
   ({calMonth,selDay,calTouched,jPeriod,jFrom,jTo}=st);jvKey=key}
-function renderNotes(C){const box=$("#liveNotes"),p=C.key.startsWith("bt:")?projects().find(x=>x.id===activeProject):null;
+function renderNotes(C){const box=$("#liveNotes"),p=C.key.startsWith("bt:")?projects().find(x=>x.id===activeProject):null;renderSim(p);
   if(!p){box.innerHTML="";box.dataset.pid="";return}
   if(box.dataset.pid!==p.id){box.dataset.pid=p.id;box.innerHTML=`<div class="panel notes"><div class="row spread"><div><span class="eyebrow">Project</span><h2>Notes</h2></div><span class="hint nstat" id="nStat" style="margin:0"></span></div><textarea id="projNotes" rows="6" placeholder="Observations, rules you're testing, things to check next…"></textarea></div>`;$("#projNotes").value=p.notes||""}
   else if(document.activeElement!==$("#projNotes")&&$("#projNotes").value!==(p.notes||""))$("#projNotes").value=p.notes||""}
@@ -1492,7 +1498,7 @@ function jvCtx(){if(tab!=="backtest")return{key:"live",list:liveTrades(),cls:"li
   const p=projects().find(x=>x.id===activeProject),l=btTrades(activeProject),tg=p&&+p.target||0;
   return{key:"bt:"+activeProject,list:l,cls:"bt",
     title:`<nav class="crumbs" aria-label="Breadcrumb"><button type="button" class="crumb" data-backproj>← All projects</button><span aria-hidden="true">/</span><span>${esc(p?p.name:"No project")}</span></nav><div class="projhead"><h2><span>${esc(p?p.name:"No project")}</span></h2></div>`,
-    extra:`<div class="projmeta">${p?`${p.method?`<span class="pill ${p.method==="scroll"?"warn":"ok"}">${METHOD[p.method]}</span>`:""}<span>${esc(p.pairs||"All pairs")}${p.from||p.to?` · ${esc(fmtD(p.from)||"…")} – ${esc(fmtD(p.to)||"…")}`:""}</span>${tg?`<span class="projprog"><span class="bar"><i style="width:${Math.min(100,l.length/tg*100)}%"></i></span>${l.length}/${tg} trades</span>`:""}${p.status==="closed"?'<span class="pill">Closed</span>':""}<span class="spacer"></span><button class="btn small" data-editproj="${p.id}">Edit</button><button class="btn small" data-closeproj="${p.id}">${p.status==="closed"?"Reopen":"Close"}</button><button class="btn small ghost danger" data-delproj="${p.id}" data-label="Delete">Delete</button>`:`<span>Older backtest trades without a project</span>`}</div>${p&&p.focus?`<p class="hint" style="margin:0">${esc(p.focus)}</p>`:""}`}}
+    extra:`<div class="projmeta">${p?`${p.method?`<span class="pill ${p.method==="scroll"?"warn":"ok"}">${METHOD[p.method]}</span>`:""}${p.pairs||p.from||p.to?`<span>${esc(p.pairs||"All pairs")}${p.from||p.to?` · ${esc(fmtD(p.from)||"…")} – ${esc(fmtD(p.to)||"…")}`:""}</span>`:""}${tg?`<span class="projprog"><span class="bar"><i style="width:${Math.min(100,l.length/tg*100)}%"></i></span>${l.length}/${tg} trades</span>`:""}${p.status==="closed"?'<span class="pill">Closed</span>':""}${mktOf(p)==="stocks"?(p.simAccount&&p.simMax>0?`<button type="button" class="pill simpill" data-editsim="${p.id}" title="Simulation settings">Sim: ${esc(p.simAccount)} · ${p.simUnit==="pct"?esc(+p.simMax+"%"):esc(fmtMoney(p.simMax,(accounts("stocks").find(a=>a.name===p.simAccount)||{}).currency||"EUR").replace(/^\+/,""))} per position · ${p.simMode==="fixed"?"fixed":"follows account"}</button>`:""):""}<span class="spacer"></span><button class="btn small" data-editproj="${p.id}">Edit</button><button class="btn small" data-closeproj="${p.id}">${p.status==="closed"?"Reopen":"Close"}</button><button class="btn small ghost danger" data-delproj="${p.id}" data-label="Delete">Delete</button>`:`<span>Older backtest trades without a project</span>`}</div>${p&&p.focus?`<p class="hint" style="margin:0">${esc(p.focus)}</p>`:""}`}}
 
 
 /* ---------- Review: blind re-analysis of old forex trades ---------- */
@@ -2156,14 +2162,24 @@ function taxHTML(){const all=taxSales().filter(x=>getSet().cgtOn===false||x.year
     ${on?`<div class="taxsum">${WH||hasAct?`<div class="taxact"><span>Withheld by your broker<small>${hasAct?"From your broker's tax overview":`Estimate: ${pc}% of gains, ${fmtEur(est)}. Enter the real amount from your broker`}</small></span><input type="number" min="0" step="0.01" inputmode="decimal" id="taxAct" value="${hasAct?esc(String(act)):""}" placeholder="${esc(est.toFixed(2))}" aria-label="Actually withheld in ${esc(taxYear)}"></div>`:""}<div><span>Tax due${EX?" after exemption":""} (est. ${pc}%)</span><b class="num">${fmtEur(due)}</b></div>${WH||hasAct?`<div><span>Reclaimable via your tax return${hasAct?"":" (est.)"}</span><b class="num pos">${fmtEur(back)}</b></div>`:""}</div>`:""}
     <div style="overflow-x:auto;margin-top:12px"><table class="rvdt taxt"><thead><tr><th>Sold</th><th>Ticker</th><th class="r">Shares</th><th class="r">Rate buy → sell</th><th class="r">Cost</th><th class="r">Proceeds</th><th class="r">Gain</th></tr></thead><tbody>${L.map(row).join("")}</tbody></table></div>
     <p class="hint" style="margin:10px 0 0">Estimate only. Euro amounts use the ECB rate on the purchase and sale date (rate shown as 1 unit of the trade currency in EUR), each trade as its own lot, costs not included. Your broker's annual statement is what counts for your tax return.${miss?` ${miss} sale${miss===1?"":"s"} still need${miss===1?"s":""} an exchange rate; it loads in the app when online.`:""}${L.some(x=>x.pre)?" Positions bought before 2026 officially use the value on 31 Dec 2025 (or a higher proven price); here the purchase price is used.":""}</p></div>`}
-const capPct=(t,pnl)=>{if(pnl==null)return null;{const a=acOf(t.account),cap=a&&(acInit(a)??a.current),v=capAcct(t,pnl);if(v!=null&&cap)return v/cap*100}const c=capOf(t.account,stCur(t),t.sFx);return c?pnl*c.rate/c.cap*100:null};
-const sPnl=t=>t.pnl!=null&&!sIsOpen(t)?t.pnl:(t.sExits||[]).length?(t.sExits||[]).reduce((a,x)=>a+(Number(x.shares)||0)*((Number(x.price)||0)-(Number(t.sEntry)||0)),0):null;
+const capPct=(t,pnl)=>{if(pnl==null)return null;{const sm=simOf(t);if(sm)return sm.wait?null:sm.cap}{const a=acOf(t.account),cap=a&&(acInit(a)??a.current),v=capAcct(t,pnl);if(v!=null&&cap)return v/cap*100}const c=capOf(t.account,stCur(t),t.sFx);return c?pnl*c.rate/c.cap*100:null};
+const sPnl=t=>{const sm=simOf(t);if(sm)return sm.wait?null:(t.sExits||[]).length?sm.pnl:null;if(t.mode==="backtest"&&mktOf(t)==="stocks"&&Number(t.sShares)===1)return null;return sPnl0(t)};
+const sPnl0=t=>t.pnl!=null&&!sIsOpen(t)?t.pnl:(t.sExits||[]).length?(t.sExits||[]).reduce((a,x)=>a+(Number(x.shares)||0)*((Number(x.price)||0)-(Number(t.sEntry)||0)),0):null;
 const pct=v=>v==null?"—":(v>0?"+":"")+v.toFixed(v!==0&&Math.abs(v)<1?2:1)+"%";
-const inAcct=(t,v)=>{const a=acOf(t.account),c=stCur(t);if(v==null)return[c,0];if(!a||!a.currency||a.currency===c)return[c,v];const x=capAcct(t,v);if(x!=null)return[a.currency,x];if(t.sFx)return[a.currency,v*Number(t.sFx)];return[c,v]};
+const inAcct=(t,v)=>{const a=acOf(t.account),c=stCur(t);if(v==null)return[c,0];{const sm=simOf(t);if(sm&&!sm.wait)return[sm.ac,v*sm.rate]}if(!a||!a.currency||a.currency===c)return[c,v];const x=capAcct(t,v);if(x!=null)return[a.currency,x];if(t.sFx)return[a.currency,v*Number(t.sFx)];return[c,v]};
 const plTile=list=>{const by={};list.forEach(t=>{const[c,v]=inAcct(t,sPnl(t));if(sPnl(t)!=null)by[c]=(by[c]||0)+v});const e=Object.entries(by),cl=v=>v>0?"pos":v<0?"neg":"";
   return `<div class="tile"><span class="eyebrow">Realised P&amp;L</span>${!e.length?"<b>—</b>":e.length>1?e.map(([c,v])=>`<b class="${cl(v)}" style="font-size:18px;line-height:1.25">${esc(fmtMoney(v,c))}</b>`).join(""):`<b class="${cl(e[0][1])}">${esc(fmtMoney(e[0][1],e[0][0]))}</b>`}${e.length>1?`<small class="hint" style="margin:0">${fxBusy?"Loading exchange rates…":"No exchange rates yet"}</small>`:""}</div>`};
+let simT;const simRefresh=()=>{clearTimeout(simT);simT=setTimeout(()=>render(),250)};
+function simOf(t,o){o=o||{};const proj=o.project!==undefined?o.project:t.project;if((o.mode||t.mode)!=="backtest"||mktOf(t)!=="stocks"||Number(o.shares??t.sShares)!==1)return null;
+  const p=docs.find(d=>d.id===proj&&d.kind==="project");if(!p||!p.simAccount||!(p.simMax>0))return null;
+  const a=accounts("stocks").find(x=>x.name===p.simAccount);if(!a)return null;
+  const ac=a.currency||"EUR",cur=o.cur||t.sCur||"USD",en=Number(o.entry??t.sEntry),dt=o.date??t.date;if(!en)return null;
+  const rate=cur===ac?1:fxCache[(dt||"")+cur+ac];if(!rate){if(dt)fxGet(dt,cur,ac).then(r=>{if(r)simRefresh()}).catch(()=>{});return{wait:true}}
+  const size=p.simMode==="fixed"&&p.simSize?p.simSize:acSize(a),maxAmt=p.simUnit==="pct"?(size||0)*p.simMax/100:p.simMax,shares=Math.floor(maxAmt/(en*rate)),ex=o.exits||t.sExits||[];
+  const pnl=shares*ex.reduce((s,x)=>s+(Number(x.shares)||0)*((Number(x.price)||0)-en),0),pnlAcc=pnl*rate;
+  return{shares,rate,ac,cur,size,cost:shares*en,pnl,pnlAcc,cap:size&&ex.length?pnlAcc/size*100:null,account:a.name}}
 const sSold=t=>(t.sExits||[]).reduce((a,x)=>a+(Number(x.shares)||0),0);
-const sIsOpen=t=>t.status!=="missed"&&!(t.closeDate&&(!Number(t.sShares)||sSold(t)>=Number(t.sShares)));
+const sIsOpen=t=>t.status!=="missed"&&!(t.closeDate&&(!Number(t.sShares)||sSold(t)>=Number(t.sShares)-1e-6));
 const daysBetween=(a,b)=>Math.max(0,Math.round((new Date((b||new Date().toISOString().slice(0,10))+"T12:00:00")-new Date(a+"T12:00:00"))/864e5));
 function stocksOverviewHTML(all,per,P){
   const cls=v=>v>0?"pos":v<0?"neg":"",cur=stCur;
@@ -2198,7 +2214,7 @@ function stockTableHTML(list,title){
     <p class="hint ioMsg"></p>
     ${list.length?`<div class="tbl"><table class="trades"><thead><tr><th>Date</th><th>Ticker</th><th>Setup</th><th>Result</th><th class="r">P&amp;L</th><th class="r">ROI</th><th class="r">Of capital</th><th></th></tr></thead><tbody>
     ${list.map(t=>{const cur=stCur(t),setup=[t.sPhase?"Phase "+t.sPhase:"",t.swPat||""].filter(Boolean).join(" · "),ex=t.sExits||[],
-        pl=t.pnl!=null?t.pnl:ex.length?ex.reduce((a,x)=>a+(Number(x.shares)||0)*((Number(x.price)||0)-(Number(t.sEntry)||0)),0):null,rp=ex.length?sPct(t).r:null,cp=capPct(t,pl);
+        sim=simOf(t),pl=sim&&!sim.wait?(ex.length?sim.pnl:null):t.mode==="backtest"?null:t.pnl!=null?t.pnl:ex.length?ex.reduce((a,x)=>a+(Number(x.shares)||0)*((Number(x.price)||0)-(Number(t.sEntry)||0)),0):null,rp=ex.length?sPct(t).r:null,cp=sim&&!sim.wait?sim.cap:capPct(t,pl);
       return `<tr class="clickrow" data-edit="${t.id}" tabindex="0" title="Open trade"><td class="num c-date">${esc(t.date||"")}</td><td class="c-pair">${esc(t.ticker||t.pair||"")}${t.status==="missed"?`<span class="misstag">Missed</span>`:""}</td>
       <td class="c-concept">${esc(setup||"—")}</td><td class="c-res">${res(t)}</td>
       <td class="r num c-entry ${cls(pl)}">${pl!=null?esc(fmtMoney(pl,cur)):"—"}</td><td class="r num c-status ${cls(rp)}">${pct(rp)}</td><td class="r num c-status ${cls(cp)}">${pct(cp)}</td><td class="c-charts">${shotCount(t)?`<button class="camb chico" data-view="${t.id}" title="View charts"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 3v18h18"/><path d="M7 15l4-4 3 3 5-6"/></svg>${shotCount(t)}</button>`:""}</td></tr>`}).join("")}
@@ -2224,13 +2240,35 @@ $("#npForm").onsubmit=e=>{e.preventDefault();const name=$("#npName").value.trim(
 function openProjForm(p){if(!p){openNewProj();return}editingProj=p?p.id:null;const f=$("#projForm");$("#projSheet").hidden=false;delete $("#pDelete").dataset.confirm;
   $("#projFormTitle").textContent=p?"Edit project":"New backtest project";$("#pSave").textContent=p?"Save project":"Start project";$("#pDelete").hidden=!p;$("#pDelete").textContent="Delete project";
   $("#pName").value=p?.name||"";$("#pPairs").value=p?.pairs||"";$("#pFrom").value=p?.from||"";$("#pTo").value=p?.to||"";$("#pMethod").value=p?.method||"";$("#pTarget").value=p?.target||"";$("#pFocus").value=p?.focus||"";
+  $("#projForm").classList.toggle("st",(p&&p.market||market)==="stocks");
   setTimeout(()=>$("#pName").focus(),30)}
 function closeProjSheet(){$("#projSheet").hidden=true}
+const acSize=a=>a?(a.current??acInit(a)):null;
+/* simulation panel on an invest backtest project page: settings save as you change them */
+function renderSim(p){const box=$("#liveSim");if(!p||mktOf(p)!=="stocks"){box.innerHTML="";box.dataset.pid="";return}
+  if(box.dataset.pid===p.id&&box.contains(document.activeElement))return;
+  box.dataset.pid=p.id;const A=accounts("stocks"),a=A.find(x=>x.name===p.simAccount),cur=a?a.currency||"EUR":"",fixed=p.simMode==="fixed";
+  box.innerHTML=`<div class="panel simp"><div class="row spread"><div><span class="eyebrow">Project</span><h2>Simulate with an account</h2></div><span class="hint nstat" id="simStat" style="margin:0"></span></div>
+    <p class="hint" style="margin:0 0 10px">${a?"Each trade buys as many whole shares as the max per position allows, so you see P&amp;L and % of capital as if you'd taken it.":"Pick an account to see each backtest trade's shares, P&amp;L and % of capital as if you'd taken it."}</p>
+    <div class="fields simf">
+      <label class="f"><span>Account</span><select id="simAcc"><option value="">No simulation</option>${A.map(x=>`<option value="${esc(x.name)}" ${x.name===p.simAccount?"selected":""}>${esc(x.name)}</option>`).join("")}</select></label>
+      ${a?`<div class="f"><span>Max per position</span><div class="simmax"><input type="number" id="simMax" min="0" step="any" inputmode="decimal" placeholder="${p.simUnit==="pct"?"20":"2000"}" value="${p.simMax??""}"><div class="segs">${[["amt",cur],["pct","%"]].map(([v,l])=>`<label class="seg"><input type="radio" name="simUnit" value="${v}" ${(p.simUnit||"amt")===v?"checked":""}><span>${esc(l)}</span></label>`).join("")}</div></div></div>
+      <div class="f"><span>Account size</span><div class="segs">${[["follow","Follow account"],["fixed","Fixed"]].map(([v,l])=>`<label class="seg"><input type="radio" name="simMode" value="${v}" ${(p.simMode||"follow")===v?"checked":""}><span>${l}</span></label>`).join("")}</div></div>
+      ${fixed?`<label class="f"><span>Fixed size <em class="opt">${esc(cur)}</em></span><input type="number" id="simSize" min="0" step="any" inputmode="decimal" value="${p.simSize??acSize(a)??""}"></label>`:`<div class="f"><span>Account size now</span><b class="num" style="padding:9px 0">${esc(fmtMoney(acSize(a)||0,cur).replace(/^\+/,""))}</b></div>`}`:""}
+    </div></div>`}
+async function simSave(patch,rebuild){const box=$("#liveSim"),p=docs.find(d=>d.id===box.dataset.pid);if(!p)return;const st=$("#simStat");if(st)st.textContent="Saving…";
+  const np={...p,...patch};if(np.simMode==="fixed"&&np.simSize==null){const a=accounts("stocks").find(x=>x.name===np.simAccount);np.simSize=acSize(a)}
+  await saveDoc(np);if(rebuild){box.dataset.pid="";document.activeElement&&document.activeElement.blur&&document.activeElement.blur();renderSim(np)}const s2=$("#simStat");if(s2)s2.textContent="Saved"}
+document.addEventListener("change",e=>{const id=e.target.id;if(!e.target.closest||!e.target.closest("#liveSim"))return;const num=v=>v===""?null:Number(v);
+  if(id==="simAcc")simSave({simAccount:e.target.value},true);else if(e.target.name==="simUnit")simSave({simUnit:e.target.value},true);else if(e.target.name==="simMode")simSave({simMode:e.target.value,...(e.target.value==="follow"?{simSize:null}:{})},true)});
+document.addEventListener("input",e=>{if(!e.target.closest||!e.target.closest("#liveSim"))return;const id=e.target.id,v=e.target.value===""?null:Number(e.target.value);
+  if(id!=="simMax"&&id!=="simSize")return;clearTimeout(simSave.h);simSave.h=setTimeout(()=>simSave(id==="simMax"?{simMax:v}:{simSize:v}),600)});
 $("#newProjBtn").onclick=()=>openProjForm(null);
 $("#pCancel").onclick=closeProjSheet;
 $("#pDelete").onclick=()=>{const b=$("#pDelete");if(b.dataset.confirm){delete b.dataset.confirm;deleteDoc(editingProj);closeProjSheet();activeProject=null;btOpen=false;toast("Project deleted")}else{b.dataset.confirm="1";b.textContent="Really delete? Trades stay, without project"}};
 $("#projForm").onsubmit=e=>{e.preventDefault();const old=docs.find(d=>d.id===editingProj)||{};
   const p={...old,kind:"project",market:old&&old.market||market,id:editingProj||uid(),name:$("#pName").value.trim()||"Untitled project",pairs:$("#pPairs").value.trim().toUpperCase(),from:$("#pFrom").value,to:$("#pTo").value,method:$("#pMethod").value,target:$("#pTarget").value?Number($("#pTarget").value):null,focus:$("#pFocus").value.trim(),status:old.status||"active",created:old.created||Date.now()};
+
   activeProject=p.id;btOpen=true;closeProjSheet();saveDoc(p);toast("Project saved")};
 
 /* ---------- trade form ---------- */
@@ -2253,15 +2291,17 @@ let exOpen=-1;
 function exChips(i,hows){const ph=radio("sphase"),plan=(EXITS[ph]||[]).map(x=>x[0]),all=[...new Set([...plan,...EXOTHER,...hows])],pc=o=>((EXITS[ph]||[]).find(x=>x[0]===o)||[])[1];
   return `<div class="ms exms ${exOpen===i?"open":""}"><button type="button" class="ms-field" data-exfield="${i}" aria-haspopup="listbox" aria-expanded="${exOpen===i}">${hows.length?hows.map(h=>`<span class="chip-sel exc">${esc(h)}<span class="x" data-exx="${esc(h)}" data-exi2="${i}" aria-label="Remove ${esc(h)}">×</span></span>`).join(""):'<span class="ph">Choose strategy…</span>'}<span class="caret">▾</span></button>
   <ul class="ms-list" role="listbox" aria-multiselectable="true" ${exOpen===i?"":"hidden"}>${all.map(o=>{const on=hows.includes(o);return `<li role="option" aria-selected="${on}" data-exhow="${esc(o)}" data-exi2="${i}"><span class="box exb">${on?"✓":""}</span>${esc(o)}</li>`}).join("")}</ul></div>`}
+const sBt=()=>sMode==="backtest";
+const exPosPct=(x,sh)=>x.shares==null||!sh?"":+(x.shares/sh*100).toFixed(2);
 function exRender(){const sh=Number($("#sShares").value)||0;
   $("#sExits").innerHTML=sExits.length?sExits.map((x,i)=>`<div class="exrow" data-exi="${i}">
-    <label><span>Shares</span><input type="number" min="0" step="any" inputmode="decimal" data-exk="shares" value="${x.shares??""}"></label>
+    ${sBt()?`<label><span>% of position</span><input type="number" min="0" max="100" step="any" inputmode="decimal" data-exk="pct" value="${exPosPct(x,sh)}"></label>`:`<label><span>Shares</span><input type="number" min="0" step="any" inputmode="decimal" data-exk="shares" value="${x.shares??""}"></label>`}
     <label><span>Price</span><input type="number" min="0" step="any" inputmode="decimal" data-exk="price" value="${x.price??""}"></label>
     <label><span>Date</span><input type="date" data-exk="date" value="${esc(x.date||"")}"></label>
     <button type="button" class="acx" data-exdel="${i}" aria-label="Remove exit" title="Remove">✕</button>
     <div class="exhow"><span>Exit strategy</span>${exChips(i,exHows(x))}</div><div class="exfx" data-exfx="${i}"></div></div>`).join(""):"";
-  const ph=radio("sphase");$("#sPlanHint").textContent=EXITS[ph]?"Plan: "+(()=>{const E=EXITS[ph],raw=E.map(([n,p])=>sh*p/100),q=raw.map(Math.floor);let left=sh-q.reduce((a,b)=>a+b,0);raw.map((v,i)=>[v-q[i],i]).sort((a,b)=>b[0]-a[0]||a[1]-b[1]).forEach(([,i])=>{if(left>0){q[i]++;left--}});return E.map(([n,p],i)=>`${p}% ${n}`+(sh?` (${q[i]})`:"")).join(" · ")})():"";
-  exCalc();exFx()}
+  const ph=radio("sphase");$("#sPlanHint").textContent=EXITS[ph]?"Plan: "+(()=>{const E=EXITS[ph],raw=E.map(([n,p])=>sh*p/100),q=raw.map(Math.floor);let left=sh-q.reduce((a,b)=>a+b,0);raw.map((v,i)=>[v-q[i],i]).sort((a,b)=>b[0]-a[0]||a[1]-b[1]).forEach(([,i])=>{if(left>0){q[i]++;left--}});return E.map(([n,p],i)=>`${p}% ${n}`+(sh&&!sBt()?` (${q[i]})`:"")).join(" · ")})():"";
+  exCalc();if(!sBt())exFx()}
 async function exFx(){const cur=$("#sCur").value||"USD",en=Number($("#sEntry").value)||0,d0=$("#sDate").value,line=$("#sFxLine");
   const st=sEditing&&docs.find(d=>d.id===sEditing),same=st&&st.date===d0&&stCur(st)===cur&&st.fxTo==="EUR";
   const rin=cur==="EUR"?1:same&&st.fxIn?st.fxIn:d0?await fxGet(d0,cur,"EUR"):null;
@@ -2270,11 +2310,18 @@ async function exFx(){const cur=$("#sCur").value||"USD",en=Number($("#sEntry").v
     if(!x.date||!sh||!pr){el.textContent="";continue}const ro=cur==="EUR"?1:(x.fx&&(!st||st.fxTo==="EUR"))?x.fx:await fxGet(x.date,cur,"EUR");
     const g=ro&&rin&&en?sh*(pr*ro-en*rin):null;el.innerHTML=`${cur==="EUR"?"":ro?`1 ${cur} = ${fmtRate(ro)} EUR · `:"Rate not available yet · "}${g!=null?`Taxable gain <b class="num ${g>0?"pos":g<0?"neg":""}">${g>0?"+":""}${fmtEur(g)}</b>`:""}`}}
 function exCalc(){const sh=Number($("#sShares").value)||0,en=Number($("#sEntry").value)||0,sl=Number($("#sStop").value),xs=sExits.filter(x=>Number(x.shares)>0&&Number(x.price)>0);
-  const sold=xs.reduce((a,x)=>a+Number(x.shares),0),pnl=xs.reduce((a,x)=>a+Number(x.shares)*(Number(x.price)-en),0),left=sh-sold;
+  const sold=xs.reduce((a,x)=>a+Number(x.shares),0),pnl=xs.reduce((a,x)=>a+Number(x.shares)*(Number(x.price)-en),0),left0=sh-sold,left=Math.abs(left0)<1e-9?0:left0;
   const risk=sh&&en&&sl&&en>sl?sh*(en-sl):0,cost=sh*en;
   const cur=$("#sCur").value||"USD",money=v=>fmtMoney(v,cur);
-  if(!sh||!en){$("#sExSum").innerHTML=sExits.length?`<span class="hint" style="margin:0">Fill in shares bought and entry to see the result.</span>`:"";return null}
-  const r=risk?pnl/risk:null,ret=cost?pnl/cost*100:null,ac=acOf($("#sAccount").value),diff=!!(ac&&ac.currency&&ac.currency!==cur);
+  if(!sh||!en){$("#sExSum").innerHTML=sExits.length?`<span class="hint" style="margin:0">${sBt()?"Fill in the entry to see the result.":"Fill in shares bought and entry to see the result."}</span>`:"";return null}
+  const r=risk?pnl/risk:null,ret=cost?pnl/cost*100:null;
+  if(sBt()){const pc=v=>+(v/sh*100).toFixed(1)+"%";
+    $("#sExSum").innerHTML=`<div><span>Closed</span><b class="num">${pc(sold)}</b></div><div><span>Still open</span><b class="num ${left<0?"neg":""}">${pc(left)}${left<0?" (over 100%)":""}</b></div>
+    <div><span>Result</span><b class="num ${pnl>0?"pos":pnl<0?"neg":""}">${xs.length&&r!=null?(r>0?"+":"")+r.toFixed(2)+"R":xs.length&&!risk?"set a stop":"—"}</b></div><div><span>Return</span><b class="num ${pnl>0?"pos":pnl<0?"neg":""}">${xs.length&&ret!=null?(ret>0?"+":"")+ret.toFixed(2)+"%":"—"}</b></div>`;
+    {const sim=simOf({market:"stocks",sCur:$("#sCur").value},{mode:"backtest",project:$("#sProject").value,shares:1,cur:$("#sCur").value,entry:en,date:$("#sDate").value,exits:xs});
+     if(sim&&!sim.wait)$("#sExSum").innerHTML+=`<div><span>Sim: ${sim.shares} shares</span><b class="num ${sim.pnl>0?"pos":sim.pnl<0?"neg":""}">${xs.length?fmtMoney(sim.pnl,sim.cur):"—"}</b></div><div><span>Of capital</span><b class="num ${sim.cap>0?"pos":sim.cap<0?"neg":""}">${sim.cap!=null?(sim.cap>0?"+":"")+sim.cap.toFixed(2)+"%":"—"}</b></div>`}
+    return{sold,left,pnl,r,ret}}
+  const ac0=0,ac=acOf($("#sAccount").value),diff=!!(ac&&ac.currency&&ac.currency!==cur);
   $("#sFxF").hidden=true;if(diff){$("#sFxL").textContent=`1 ${cur} in ${ac.currency} (optional)`;$("#sFx").placeholder="auto from history"}
   const cc=capOf($("#sAccount").value,cur,$("#sFx").value);let cp=cc&&xs.length?pnl*cc.rate/cc.cap*100:null;
   if(diff&&xs.length&&!$("#sFx").value){const to=ac.currency,pk=d=>d&&fxCache[d+cur+to],tt={account:ac.name,sCur:cur,sEntry:en,fxIn:pk($("#sDate").value),fxTo:to,sExits:xs.map(x=>({...x,fx:pk(x.date)}))},v=tt.fxIn?capAcct(tt):null,cap=acInit(ac)??ac.current;if(v!=null&&cap)cp=v/cap*100}
@@ -2283,9 +2330,10 @@ function exCalc(){const sh=Number($("#sShares").value)||0,en=Number($("#sEntry")
     <div><span>Of capital</span><b class="num ${cp>0?"pos":cp<0?"neg":""}">${cp!=null?(cp>0?"+":"")+cp.toFixed(2)+"%":!ac?"pick an account":!(acInit(ac)??ac.current)?"set account size":"—"}</b></div>`;
   return{sold,left,pnl,r,ret}}
 $("#sAddExit").onclick=()=>{const sh=Number($("#sShares").value)||0,ph=radio("sphase"),plan=EXITS[ph]||[],used=sExits.flatMap(exHows),nx=plan.find(([n])=>!used.includes(n));
-  sExits.push({shares:nx&&sh?Math.floor(sh*nx[1]/100):null,price:null,date:new Date().toISOString().slice(0,10),hows:nx?[nx[0]]:[]});exRender();
+  const soldNow=sExits.reduce((a,x)=>a+(Number(x.shares)||0),0);
+  sExits.push({shares:sBt()?(nx?sh*nx[1]/100:Math.max(0,sh-soldNow))||null:nx&&sh?Math.floor(sh*nx[1]/100):null,price:null,date:new Date().toISOString().slice(0,10),hows:nx?[nx[0]]:[]});exRender();
   const last=$("#sExits").lastElementChild;if(last)last.querySelector('[data-exk="price"]').focus()};
-$("#sExits").addEventListener("input",e=>{const r=e.target.closest("[data-exi]"),k=e.target.dataset.exk;if(!r||!k||k==="how")return;const x=sExits[+r.dataset.exi];x[k]=e.target.type==="number"?(e.target.value===""?null:Number(e.target.value)):e.target.value;if(k==="date")delete x.fx;exCalc();clearTimeout(exFx.h);exFx.h=setTimeout(exFx,300)});
+$("#sExits").addEventListener("input",e=>{const r=e.target.closest("[data-exi]"),k=e.target.dataset.exk;if(!r||!k||k==="how")return;const x=sExits[+r.dataset.exi];if(k==="pct"){const sh=Number($("#sShares").value)||1;x.shares=e.target.value===""?null:Number(e.target.value)/100*sh}else x[k]=e.target.type==="number"?(e.target.value===""?null:Number(e.target.value)):e.target.value;if(k==="date")delete x.fx;exCalc();clearTimeout(exFx.h);exFx.h=setTimeout(exFx,300)});
 
 $("#sExits").addEventListener("click",e=>{const d=e.target.closest("[data-exdel]");if(d){sExits.splice(+d.dataset.exdel,1);exRender();return}
   const f=e.target.closest("[data-exfield]");const xx=e.target.closest("[data-exx]");
@@ -2330,12 +2378,14 @@ function openStock(t,dup){const f=$("#stockForm");f.reset();sEditing=t&&!dup?t.i
   const A=t||{};setRadio("sphase",A.sPhase||"");setRadio("s6bm",A.s6bm||"");setRadio("s6ret",A.s6ret||"");setRadio("swpat",A.swPat||"");
   ["s3bm","s3room","s3roomB","s1room","s1cc"].forEach(k=>$("#"+k).checked=!!A[k]);
   setRadio("s12mss",A.s12Ms||"");setRadio("s12bm",A.s12bm||"");setRadio("s12ret",A.s12ret||"");setRadio("s6mss",A.s6Ms||(A.s6ms?"for":""));setRadio("s3mss",A.s3Ms||(A.s3ms?"for":""));setRadio("s1mss",A.s1Ms||"");setRadio("swmss",A.swMs||"");
-  $("#sEntry").value=A.sEntry??"";$("#sStop").value=A.sStop??"";$("#sShares").value=A.sShares??"";$("#sFx").value=A.sFx??"";$("#sNotes").value=(t&&t.notes)||"";$("#sCur").value=A.sCur||(t&&!dup?stCur(t):(docs.filter(d=>!d.kind&&mktOf(d)==="stocks"&&d.sCur).sort((a,b)=>(b.created||0)-(a.created||0))[0]||{}).sCur||"USD");sExits=(A.sExits||[]).map(x=>({...x}));
+  $("#sEntry").value=A.sEntry??"";$("#sStop").value=A.sStop??"";$("#sShares").value=A.sShares??(live?"":1);$("#sFx").value=A.sFx??"";$("#sNotes").value=(t&&t.notes)||"";$("#sCur").value=A.sCur||(t&&!dup?stCur(t):(docs.filter(d=>!d.kind&&mktOf(d)==="stocks"&&d.sCur).sort((a,b)=>(b.created||0)-(a.created||0))[0]||{}).sCur||"USD");sExits=(A.sExits||[]).map(x=>({...x}));
   SLINKS.forEach(k=>{$("#sl-"+k).value=(A.shotLinks||{})[k]||"";sLinkShow(k)});
-  document.querySelectorAll("#stockForm details.subsec").forEach(d=>d.open=false);sPhase();exRender();
+  document.querySelectorAll("#stockForm details.subsec").forEach(d=>d.open=false);sPhase();sSimOn();exRender();
   $("#sDup").hidden=$("#sDel").hidden=!t||!!dup;{const b=$("#sDel");delete b.dataset.armed;b.textContent="Delete"}
   $("#sheetS").hidden=false;document.body.style.overflow="hidden";$("#sheetS .sheet-inner").scrollTop=0;
   if(!t&&matchMedia("(hover:hover) and (pointer:fine)").matches)setTimeout(()=>$("#sTicker").focus(),30)}
+function sSimOn(){const p=sMode==="backtest"&&docs.find(d=>d.id===$("#sProject").value&&d.kind==="project");$("#stockForm").classList.toggle("sim-on",!!(p&&p.simAccount&&p.simMax>0))}
+$("#sProject").addEventListener("change",()=>{sSimOn();exCalc()});$("#sCur").addEventListener("change",()=>exCalc());
 function closeStock(){$("#sheetS").hidden=true;document.body.style.overflow="";sEditing=null}
 document.querySelectorAll("[data-closesheets]").forEach(b=>b.onclick=closeStock);
 $("#sTicker").addEventListener("input",e=>{const i=e.target,p=i.selectionStart;i.value=i.value.toUpperCase().replace(/\s+/g,"");i.setSelectionRange(p,p)});
@@ -2352,9 +2402,10 @@ $("#stockForm").onsubmit=e=>{e.preventDefault();const old=sEditing?docs.find(d=>
     shotLinks:Object.fromEntries(SLINKS.map(k=>[k,$("#sl-"+k).value.trim()]).filter(([,v])=>v)),
     created:old?old.created||Date.now():Date.now()};
   {const c=exCalc(),xs=t.sExits.filter(x=>Number(x.shares)>0&&Number(x.price)>0);
-    if(c&&xs.length&&c.left<=0){t.r=c.r!=null?+c.r.toFixed(2):null;t.pnl=+c.pnl.toFixed(2);t.retPct=c.ret!=null?+c.ret.toFixed(2):null;t.outcome=c.pnl>0?"win":c.pnl<0?"loss":"be";
+    if(c&&xs.length&&c.left<=(t.mode==="backtest"?0.0005:0)){t.r=c.r!=null?+c.r.toFixed(2):null;t.pnl=+c.pnl.toFixed(2);t.retPct=c.ret!=null?+c.ret.toFixed(2):null;t.outcome=c.pnl>0?"win":c.pnl<0?"loss":"be";
       if(!t.closeDate)t.closeDate=xs.map(x=>x.date).filter(Boolean).sort().pop()||""}
-    else{t.r=null;t.pnl=c&&xs.length?+c.pnl.toFixed(2):null;t.retPct=null;t.outcome=""}}
+    else{t.r=null;t.pnl=c&&xs.length?+c.pnl.toFixed(2):null;t.retPct=null;t.outcome=""}
+    if(t.mode==="backtest")t.pnl=null}
   saveDoc(t);fxFill(t).then(nt=>{if(nt)saveDoc(nt)});acRemember("stocks",t.account);if(t.date&&!old){calMonth=t.date.slice(0,7);calTouched=true}toast(old?"Changes saved":"Trade saved");closeStock()};
 $("#sDup").onclick=()=>{const id=sEditing;if(!id)return;closeStock();dupTrade(id)};
 $("#sDel").onclick=e=>{const b=e.currentTarget,id=sEditing;if(!id)return;
@@ -2626,7 +2677,7 @@ function show(t){if(t!=="review"&&typeof prSel!=="undefined"&&tab==="review"){pr
   render();window.scrollTo(0,0)}
 document.querySelectorAll("nav button").forEach(b=>b.onclick=()=>{if(b.dataset.tab==="backtest"&&tab==="backtest")btOpen=false;show(b.dataset.tab)});
 document.addEventListener("keydown",e=>{if((e.key==="Enter"||e.key===" ")&&e.target.matches&&e.target.matches("tr.clickrow")){e.preventDefault();editTrade(e.target.dataset.edit)}});
-document.addEventListener("click",e=>{const el=e.target.closest("[data-go],[data-edit],[data-dup],[data-del],[data-proj],[data-newproj],[data-editproj],[data-closeproj],[data-export],[data-preset],[data-addset],[data-dupset],[data-rmset],[data-resetset],[data-closesheet],[data-backup],[data-day],[data-mon],[data-view],[data-closeviewer],[data-vtab],[data-shotdel],[data-closesheet2],[data-zoom],[data-backproj],[data-closenp],[data-closeps],[data-delproj]");if(!el)return;
+document.addEventListener("click",e=>{const el=e.target.closest("[data-go],[data-edit],[data-dup],[data-del],[data-proj],[data-newproj],[data-editproj],[data-editsim],[data-closesim],[data-closeproj],[data-export],[data-preset],[data-addset],[data-dupset],[data-rmset],[data-resetset],[data-closesheet],[data-backup],[data-day],[data-mon],[data-view],[data-closeviewer],[data-vtab],[data-shotdel],[data-closesheet2],[data-zoom],[data-backproj],[data-closenp],[data-closeps],[data-delproj]");if(!el)return;
   const d=el.dataset;
   if(d.go)show(d.go);
   else if(d.edit)editTrade(d.edit);
@@ -2639,6 +2690,7 @@ document.addEventListener("click",e=>{const el=e.target.closest("[data-go],[data
   else if("backproj" in d){btOpen=false;render();window.scrollTo(0,0)}
   else if("newproj" in d){if(tab!=="backtest")show("backtest");openProjForm(null)}
   else if(d.editproj)openProjForm(docs.find(x=>x.id===d.editproj));
+  else if(d.editsim){const b=$("#liveSim");if(b){b.scrollIntoView({block:"center",behavior:"smooth"});const s=$("#simAcc");if(s)s.focus({preventScroll:true})}}
   else if(d.closeproj){const p=docs.find(x=>x.id===d.closeproj);if(p)saveDoc({...p,status:p.status==="closed"?"active":"closed"})}
   else if("closesheet2" in d)closeSheet2();
   else if(d.zoom)openImage(d.zoom,d.zlabel);
