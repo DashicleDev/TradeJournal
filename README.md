@@ -4,6 +4,13 @@
 
 A trade journal and backtesting app I built for my own forex and stock trading, following the Archer Academy trade plan. I use it daily to log live trades, run backtest projects and review what works.
 
+<p>
+  <img src="docs/journal.png" alt="Journal: monthly stats, equity curve and trade calendar" width="49%">
+  <img src="docs/analyze.png" alt="Analyze: backtest vs live comparison" width="49%">
+</p>
+
+<sub>Screenshots use demo data.</sub>
+
 ## What it does
 
 - **Live** and **Backtest**: log trades with the plan's analysis per timeframe (weekly phase, daily, 4H entry), result in R, exit reason, notes and chart screenshots. Backtests are grouped in projects.
