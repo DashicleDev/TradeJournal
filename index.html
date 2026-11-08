@@ -504,7 +504,34 @@ fieldset.subs-closed .legend-toggle .chev{transform:none}
 .acx:focus-visible{outline:2px solid var(--accent)}
 .acname{all:unset;cursor:text;font-weight:600}.acname:hover{text-decoration:underline dotted;text-underline-offset:3px}
 .acedit{font:14px var(--body);padding:6px 8px;border:1px solid var(--accent);border-radius:6px;width:100%;box-sizing:border-box;background:var(--paper);color:var(--ink)}
-#setSheet .np-inner{max-height:calc(100dvh - 24px);overflow-y:auto;margin-top:12px}
+#setSheet .np-inner,#admSheet .np-inner{max-height:calc(100dvh - 24px);overflow-y:auto;margin-top:12px}
+#admSheet .sheet-inner{width:min(100%,760px);max-width:760px;padding-bottom:18px}
+.admhead{display:flex;justify-content:space-between;align-items:center}.admhead h3{margin:0}
+#admSheet [data-admpane]{padding-top:14px}
+.rolesplit{display:grid;grid-template-columns:200px 1fr;gap:18px;align-items:start}
+.rolelist{display:grid;gap:2px;border-right:1px solid var(--line);padding-right:12px}
+.rolelist button{all:unset;cursor:pointer;display:flex;justify-content:space-between;gap:8px;padding:8px 10px;border-radius:7px;font:500 14px var(--body);color:var(--muted)}
+.rolelist button:hover{background:var(--soft);color:var(--ink)}
+.rolelist button[aria-selected="true"]{background:var(--soft);color:var(--ink);font-weight:600;box-shadow:inset 3px 0 0 var(--accent)}
+.rolelist button:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+.rolelist button small{color:var(--muted);font-weight:500}
+.rolelist .rnew{color:var(--accent);font-weight:600;margin-top:6px}
+.roleedit{display:grid;gap:14px;min-width:0}
+.rfeats{display:grid;gap:2px}
+.rfeat{display:flex;gap:12px;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--line);cursor:pointer}
+.rfeat:last-child{border-bottom:0}
+.rfeat span{display:grid;gap:2px}.rfeat small{color:var(--muted);font-size:12.5px}
+.rfeat input{flex:none;width:18px;height:18px;accent-color:var(--accent)}
+.rolefoot{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.utab{width:100%;border-collapse:collapse}
+.utab th{text-align:left;font:700 11px var(--body);letter-spacing:.06em;text-transform:uppercase;color:var(--muted);padding:6px 8px;border-bottom:1px solid var(--line)}
+.utab td{padding:9px 8px;border-bottom:1px solid var(--line);vertical-align:middle}
+.utab td:first-child{overflow-wrap:anywhere}
+.utab select{min-width:120px}
+.seen{display:inline-flex;align-items:center;gap:6px;white-space:nowrap;color:var(--muted);font-size:13px}
+.seen.on{color:var(--ink)}.seen.on::before{content:"";width:8px;height:8px;border-radius:50%;background:var(--win,#2e9d5b)}
+#admStat{display:block;min-height:18px;margin-top:8px}
+@media (max-width:620px){.rolesplit{grid-template-columns:1fr}.rolelist{border-right:0;padding-right:0;border-bottom:1px solid var(--line);padding-bottom:8px}.utab th:nth-child(2),.utab td:nth-child(2){display:none}}
 .np-inner{width:min(100%,440px);margin-top:12vh;border-radius:14px;padding:20px}
 .np-inner form{display:grid;gap:14px}
 .np-inner h3{margin:0;font-family:var(--display);font-stretch:85%;font-size:20px}
@@ -687,7 +714,7 @@ main>*,.panel,.grid2>*,.ov>*{min-width:0}
   <div class="brand">
     <h1>Trade <span>Journal</span></h1>
     <div class="segs mkt" role="radiogroup" aria-label="Market"><label class="seg"><input type="radio" name="mkt" value="fx"><span>Forex</span></label><label class="seg"><input type="radio" name="mkt" value="stocks"><span>Invest</span></label></div>
-    <span class="acct"><span class="acct"><span class="sync" id="sync">Starting…</span><button type="button" class="btn small ghost" id="signOut" hidden>Sign out</button></span><button type="button" class="btn small ghost" id="openSettings" aria-label="Settings" title="Settings">⚙</button></span>
+    <span class="acct"><span class="acct"><span class="sync" id="sync">Starting…</span><button type="button" class="btn small ghost" id="signOut" hidden>Sign out</button></span><button type="button" class="btn small ghost" id="openAdmin" hidden title="Admin">Admin</button><button type="button" class="btn small ghost" id="openSettings" aria-label="Settings" title="Settings">⚙</button></span>
   </div>
   <nav role="tablist">
     <button role="tab" data-tab="live" aria-selected="true"><span class="dot"></span>Journal <span class="count" id="cLive"></span></button>
@@ -921,9 +948,16 @@ main>*,.panel,.grid2>*,.ov>*{min-width:0}
   <div class="formbar"><button type="submit" class="btn" id="f2Save">Save trade</button><button type="button" class="btn ghost" data-closesheet2>Cancel</button><span class="spacer"></span><button type="button" class="btn ghost" id="f2Dup" hidden>Duplicate</button><button type="button" class="btn ghost danger" id="f2Del" hidden>Delete</button></div>
 </form>
 </div></div>
+<div class="sheet" id="admSheet" hidden><div class="scrim" data-closeadm></div><div class="sheet-inner np-inner" role="dialog" aria-modal="true" aria-labelledby="admTitle">
+<div class="admhead"><h3 id="admTitle">Admin</h3><button type="button" class="btn small ghost" data-closeadm aria-label="Close">✕</button></div>
+<div class="settabs" role="tablist"><button type="button" role="tab" data-admtab="roles" aria-selected="true">Roles</button><button type="button" role="tab" data-admtab="users">Users</button></div>
+<section data-admpane="roles"><div class="rolesplit"><div class="rolelist" id="roleList"></div><div class="roleedit" id="roleEdit"></div></div></section>
+<section data-admpane="users" hidden><div id="userList"></div></section>
+<span class="hint nstat" id="admStat"></span>
+</div></div>
 <div class="sheet" id="setSheet" hidden><div class="scrim" data-closeset></div><div class="sheet-inner np-inner" role="dialog" aria-modal="true" aria-labelledby="setTitle">
 <form id="setForm" autocomplete="off"><h3 id="setTitle">Settings</h3>
-<div class="setbody"><div class="settabs" role="tablist" aria-orientation="vertical"><button type="button" role="tab" data-settab="look">Look</button><button type="button" role="tab" data-settab="fx">Forex</button><button type="button" role="tab" data-settab="st">Invest</button><button type="button" role="tab" data-settab="news">News</button><button type="button" role="tab" data-settab="rev">Reviews</button><button type="button" role="tab" data-settab="data">Data</button><button type="button" role="tab" data-settab="feat" hidden>Features</button><button type="button" role="tab" data-settab="users" hidden>Users</button></div>
+<div class="setbody"><div class="settabs" role="tablist" aria-orientation="vertical"><button type="button" role="tab" data-settab="look">Look</button><button type="button" role="tab" data-settab="fx">Forex</button><button type="button" role="tab" data-settab="st">Invest</button><button type="button" role="tab" data-settab="news">News</button><button type="button" role="tab" data-settab="rev">Reviews</button><button type="button" role="tab" data-settab="data">Data</button></div>
 <div class="setpanes"><section class="setsec" data-setpane="look">
 <div class="setrow"><span class="setl">Theme</span><div class="segs" id="seg-stheme"></div></div>
 <div class="setrow"><span class="setl">Primary<small>Buttons, tabs, backtest</small></span><div class="swatches" id="sAccent" role="radiogroup" aria-label="Primary colour"></div></div>
@@ -933,14 +967,6 @@ main>*,.panel,.grid2>*,.ov>*{min-width:0}
 <div class="setrow"><span class="setl">Journal opens on</span><div class="segs" id="seg-speriod"></div></div>
 <div class="setrow"><span class="setl">Setup grades<small>Score needed</small></span><div class="gcuts"><label class="gcut"><span class="grade gA">A</span><input type="number" id="sGA" step="1" inputmode="numeric" aria-label="Score for A">+</label><label class="gcut"><span class="grade gB">B</span><input type="number" id="sGB" step="1" inputmode="numeric" aria-label="Score for B">+</label><span class="gcut"><span class="grade gC">C</span><span id="sGC"></span></span></div></div>
 <div class="setrow swrow"><span class="setl">Scoring<small>Points per item</small></span><div><div id="sScore" class="swtab"></div><button type="button" class="btn small ghost" id="swReset" style="margin-top:8px">Reset to default</button></div></div>
-</section>
-<section class="setsec" data-setpane="feat" hidden>
-<p class="hint" style="margin:0 0 10px">Developer · only admins see this. New features start off. Turn one on for admins to try it yourself, then for users to release it. Nothing is deleted when you turn it off.</p>
-<div id="featList" class="featl"></div>
-</section>
-<section class="setsec" data-setpane="users" hidden>
-<p class="hint" style="margin:0 0 10px">Admin · everyone who signed up. The role decides which column of Features applies to them. A feature set to On or Off here overrides that for this one person.</p>
-<div id="userList"></div>
 </section>
 <section class="setsec" data-setpane="rev" hidden>
 <p class="hint" style="margin:0 0 12px">The layout of your period reviews. Each section becomes its own block in a review.</p>
@@ -1053,12 +1079,14 @@ async function dbDel(id){lsSave();if(!ME)return;const{error}=await SB.from("docs
 async function saveDoc(t){const i=docs.findIndex(x=>x.id===t.id);if(i>=0)docs[i]=t;else docs.push(t);render();await dbPut(t)}
 async function deleteDoc(id){docs=docs.filter(t=>t.id!==id);render();await dbDel(id)}
 async function loadAll(){let all=[],from=0;for(;;){const{data,error}=await SB.from("docs").select("id,data").range(from,from+999);if(error)throw error;all=all.concat(data);if(data.length<1000)break;from+=1000}return all.map(r=>({...r.data,id:r.id}))}
-window.TJF={load:async()=>{if(!SB)return{};const{data,error}=await SB.from("app_flags").select("key,enabled");if(error)throw error;const o={};(data||[]).forEach(r=>o[r.key]=r.enabled);try{localStorage.setItem("tj-appflags",JSON.stringify(o))}catch{}return o},
-  save:async(k,v)=>{const{error}=await SB.from("app_flags").upsert({key:k,enabled:v,updated_at:new Date().toISOString()});if(error)throw error;try{const o=JSON.parse(localStorage.getItem("tj-appflags")||"{}");o[k]=v;localStorage.setItem("tj-appflags",JSON.stringify(o))}catch{}},
-  admin:async()=>{if(!SB||!ME)return false;const{data,error}=await SB.rpc("is_app_admin");return !error&&data===true},
-  access:async()=>{if(!SB||!ME)return{};const{data,error}=await SB.from("app_users").select("role,features").eq("user_id",ME).maybeSingle();if(error)throw error;return data||{}},
-  users:async()=>{const{data,error}=await SB.rpc("admin_users");if(error)throw error;return data||[]},
-  setUser:async(id,role,features)=>{const{error}=await SB.rpc("admin_set_user",{uid:id,new_role:role,new_features:features||{}});if(error)throw error}};
+window.TJF={admin:async()=>{if(!SB||!ME)return false;const{data,error}=await SB.rpc("is_app_admin");return !error&&data===true},
+  me:async()=>{if(!SB||!ME)return"user";const{data,error}=await SB.from("app_members").select("role").eq("user_id",ME).maybeSingle();if(error)throw error;return(data&&data.role)||"user"},
+  roles:async()=>{const{data,error}=await SB.from("app_roles").select("key,name,features,sort");if(error)throw error;return data||[]},
+  saveRole:async r=>{const{error}=await SB.from("app_roles").upsert(r);if(error)throw error},
+  delRole:async k=>{const{error}=await SB.from("app_roles").delete().eq("key",k);if(error)throw error},
+  members:async()=>{const{data,error}=await SB.rpc("admin_members");if(error)throw error;return data||[]},
+  setRole:async(id,role)=>{const{error}=await SB.rpc("admin_set_role",{uid:id,new_role:role});if(error)throw error},
+  seen:async()=>{if(SB&&ME)await SB.rpc("touch_seen")}};
 function upsertLocal(t){const i=docs.findIndex(d=>d.id===t.id);if(i>=0)docs[i]=t;else docs.push(t)}
 async function startSession(user){if(ME===user.id)return;ME=user.id;$("#auth").hidden=true;$("#signOut").hidden=false;$("#signOut").title=user.email||"";
   setSync("Connecting…");
@@ -1835,32 +1863,63 @@ const SKEY="tj-look";
 const getSet=()=>{const d=docs.find(x=>x.id==="settings");let l={};try{l=JSON.parse(localStorage.getItem(SKEY)||"{}")}catch{}return{theme:"system",accent:"blue",accent2:"orange",period:"month",periodSt:"year",gradeA:4,gradeB:2,cgtOn:true,cgtRate:10,cgtEx:10000,cgtWh:true,...l,...(d||{})}};
 let _periodApplied=false;
 const FEATS=[["ext","TradingView extension","An install guide for the backtesting extension on the Backtest tab (Forex)."],["cgt","Capital gains","The capital gains overview under Invest → Accounts, the exchange rates and taxable gain per sale in the trade form, and the capital gains tax settings."]];
-let APPF=(()=>{try{return JSON.parse(localStorage.getItem("tj-appflags")||"{}")}catch{return{}}})(),APPADMIN=false,MYROLE="user",MYFEAT={},USERS=null;
-const ROLES=[["admin","Admin"],["tester","Tester"],["user","User"]];
-if(!window.TJF)window.TJF={load:async()=>{const d=docs.find(x=>x.id==="appflags");return (d&&d.flags)||{}},save:async(k,v)=>{const d=docs.find(x=>x.id==="appflags")||{id:"appflags",kind:"appflags",flags:{}};await saveDoc({...d,flags:{...(d.flags||{}),[k]:v}})},admin:async()=>true};
-async function flagsLoad(){try{APPF=(await TJF.load())||{}}catch(e){console.warn("flags",e)}try{APPADMIN=!!(await TJF.admin())}catch{APPADMIN=false}
-  try{const ac=TJF.access?await TJF.access():{};MYROLE=APPADMIN?"admin":ac.role||"user";MYFEAT=ac.features||{}}catch(e){console.warn("access",e);MYROLE=APPADMIN?"admin":"user"}
-  applySettings();featRender();usersLoad();render()}
+let MYF=(()=>{try{return JSON.parse(localStorage.getItem("tj-myfeat")||"{}")}catch{return{}}})(),APPADMIN=false,MYROLE="user",ROLES=null,USERS=null,admRole="admin",admTab="roles",roleDel=false;
+if(!window.TJF)window.TJF={ /* single-user fallback (artifact): roles live in one doc */
+  roles:async()=>{const d=docs.find(x=>x.id==="approles");if(d&&d.roles)return d.roles;const f=(docs.find(x=>x.id==="appflags")||{}).flags||{},pick=suf=>Object.fromEntries(FEATS.map(x=>[x[0],f[x[0]+suf]===true]));
+    return[{key:"admin",name:"Admin",sort:0,features:pick("_admin")},{key:"user",name:"User",sort:100,features:pick("")}]},
+  saveRoles:async list=>{const d=docs.find(x=>x.id==="approles")||{id:"approles",kind:"approles"};await saveDoc({...d,roles:list})},
+  saveRole:async r=>{const l=(await TJF.roles()).filter(x=>x.key!==r.key);l.push(r);await TJF.saveRoles(l)},
+  delRole:async k=>{await TJF.saveRoles((await TJF.roles()).filter(x=>x.key!==k))},
+  admin:async()=>true,me:async()=>"admin"};
+const roleSort=l=>l.sort((a,b)=>(a.sort??100)-(b.sort??100)||a.name.localeCompare(b.name));
+async function flagsLoad(){try{APPADMIN=!!(await TJF.admin())}catch{APPADMIN=false}
+  try{MYROLE=APPADMIN?"admin":(await TJF.me())||"user"}catch(e){console.warn("role",e);MYROLE=APPADMIN?"admin":"user"}
+  try{ROLES=roleSort(await TJF.roles())}catch(e){console.warn("roles",e);ROLES=null}
+  if(ROLES){const r=ROLES.find(x=>x.key===MYROLE)||ROLES.find(x=>x.key==="user");MYF=(r&&r.features)||{};try{localStorage.setItem("tj-myfeat",JSON.stringify(MYF))}catch{}}
+  if(TJF.seen)TJF.seen().catch(()=>{});
+  applySettings();admRender();render()}
 setTimeout(function w(){if(docsReady)flagsLoad();else setTimeout(w,400)},400);
-const gfeat=k=>APPF[k]===true;
-const feat=k=>!FEATS.some(f=>f[0]===k)||(typeof MYFEAT[k]==="boolean"?MYFEAT[k]:gfeat(MYROLE==="user"?k:k+"_"+MYROLE));
-function featRender(){const tb=document.querySelector('[data-settab="feat"]');if(tb)tb.hidden=!APPADMIN;const box=$("#featList");if(!box)return;
-  box.innerHTML=APPADMIN?`<table class="feattab"><thead><tr><th>Feature</th>${ROLES.map(r=>`<th>${r[1]}s</th>`).join("")}</tr></thead><tbody>${FEATS.map(f=>`<tr><td><b>${f[1]}</b><small>${f[2]}</small></td>${ROLES.map(([r,l])=>{const k=r==="user"?f[0]:f[0]+"_"+r;return `<td><input type="checkbox" data-gfeat="${k}" ${gfeat(k)?"checked":""} aria-label="${f[1]} for ${l.toLowerCase()}s"></td>`}).join("")}</tr>`).join("")}</tbody></table><span class="hint nstat" id="gfeatStat" style="margin:0"></span>`:""}
-async function usersLoad(){const tb=document.querySelector('[data-settab="users"]'),ok=APPADMIN&&!!TJF.users;if(tb)tb.hidden=!ok;if(!ok){USERS=null;return}
-  try{USERS=await TJF.users()}catch(e){console.warn("users",e);USERS=[]}usersRender()}
-function usersRender(msg){const box=$("#userList");if(!box)return;if(!USERS){box.innerHTML="";return}
-  const d=v=>v?new Date(v).toLocaleDateString(undefined,{day:"numeric",month:"short",year:"numeric"}):"never";
-  box.innerHTML=`<div class="ulist">${USERS.map(u=>{const me=u.id===ME,f=u.features||{};return `<div class="urow" data-uid="${esc(u.id)}"><div class="uhead"><div><b>${esc(u.email||"(no email)")}</b>${me?' <span class="hint">you</span>':""}<small class="hint">Joined ${d(u.created_at)} · last sign-in ${d(u.last_sign_in_at)}</small></div>
-    <label class="f"><span>Role</span><select data-urole ${me?"disabled":""}>${ROLES.map(([r,l])=>`<option value="${r}" ${u.role===r?"selected":""}>${l}</option>`).join("")}</select></label></div>
-    <div class="ufeats">${FEATS.map(x=>{const v=f[x[0]];return `<label class="f"><span>${esc(x[1])}</span><select data-ufeat="${x[0]}"><option value="" ${typeof v!=="boolean"?"selected":""}>Role default (${gfeat(u.role==="user"?x[0]:x[0]+"_"+u.role)?"on":"off"})</option><option value="on" ${v===true?"selected":""}>On</option><option value="off" ${v===false?"selected":""}>Off</option></select></label>`}).join("")}</div></div>`}).join("")||'<p class="hint">No users yet.</p>'}</div><span class="hint nstat" id="userStat" style="margin:0">${msg||""}</span>`}
-document.addEventListener("change",async e=>{const row=e.target.closest&&e.target.closest(".urow");if(!row||!USERS||!(e.target.matches("[data-urole]")||e.target.matches("[data-ufeat]")))return;
-  const u=USERS.find(x=>x.id===row.dataset.uid);if(!u)return;const role=row.querySelector("[data-urole]").value,features={};
-  row.querySelectorAll("[data-ufeat]").forEach(s=>{if(s.value)features[s.dataset.ufeat]=s.value==="on"});
-  const st=$("#userStat");if(st)st.textContent="Saving…";
-  try{await TJF.setUser(u.id,role,features);u.role=role;u.features=features;usersRender("Saved")}catch(er){usersRender("Couldn't save: "+(er.message||er))}});
-document.addEventListener("change",async e=>{const k=e.target.dataset&&e.target.dataset.gfeat;if(!k)return;const v=e.target.checked,st=$("#gfeatStat");if(st)st.textContent="Saving…";
-  let m="Saved";try{await TJF.save(k,v);APPF={...APPF,[k]:v};try{localStorage.setItem("tj-appflags",JSON.stringify(APPF))}catch{}}catch(er){m="Couldn't save: "+(er.message||er)}
-  applySettings();featRender();usersRender();render();const s2=$("#gfeatStat");if(s2)s2.textContent=m});
+setInterval(()=>{if(TJF.seen&&document.visibilityState==="visible")TJF.seen().catch(()=>{})},3e5);
+document.addEventListener("visibilitychange",()=>{if(TJF.seen&&document.visibilityState==="visible")TJF.seen().catch(()=>{})});
+const feat=k=>!FEATS.some(f=>f[0]===k)||MYF[k]===true;
+const admMsg=m=>{const e=$("#admStat");if(e)e.textContent=m||""};
+function ago(v){if(!v)return["Never",false];const m=(Date.now()-new Date(v))/6e4;if(m<5)return["Online now",true];if(m<60)return[Math.round(m)+" min ago",false];
+  const h=m/60;if(h<24)return[Math.round(h)+" h ago",false];const d=h/24;if(d<14)return[Math.round(d)+(Math.round(d)===1?" day ago":" days ago"),false];
+  return[new Date(v).toLocaleDateString(undefined,{day:"numeric",month:"short",year:"numeric"}),false]}
+function admRender(){$("#openAdmin").hidden=!APPADMIN;if(!APPADMIN){$("#admSheet").hidden=true;return}
+  const ub=document.querySelector('[data-admtab="users"]');if(ub)ub.hidden=!TJF.members;
+  document.querySelectorAll("[data-admtab]").forEach(b=>b.setAttribute("aria-selected",b.dataset.admtab===admTab));document.querySelectorAll("[data-admpane]").forEach(p=>p.hidden=p.dataset.admpane!==admTab);
+  const L=ROLES||[];if(!L.some(r=>r.key===admRole))admRole=(L[0]||{}).key;
+  const cnt=k=>USERS?USERS.filter(u=>u.role===k).length:null;
+  $("#roleList").innerHTML=L.map(r=>{const n=cnt(r.key);return `<button type="button" data-role="${esc(r.key)}" aria-selected="${r.key===admRole}"><span>${esc(r.name)}</span>${n==null?"":`<small>${n}</small>`}</button>`}).join("")+`<button type="button" class="rnew" data-act="rolenew">+ New role</button>`;
+  const r=L.find(x=>x.key===admRole),fixed=r&&(r.key==="admin"||r.key==="user");
+  $("#roleEdit").innerHTML=r?`<label class="f"><span>Name</span><input type="text" id="roleName" value="${esc(r.name)}" maxlength="40"></label>
+    <p class="hint" style="margin:0">${r.key==="admin"?"Admins also get this Admin menu.":r.key==="user"?"Everyone who signs up starts as User.":"Features people with this role get."}</p>
+    <div class="rfeats">${FEATS.map(f=>`<label class="rfeat"><span><b>${f[1]}</b><small>${f[2]}</small></span><input type="checkbox" data-rfeat="${f[0]}" ${r.features&&r.features[f[0]]?"checked":""}></label>`).join("")}</div>
+    ${fixed?"":`<div class="rolefoot">${roleDel?`<span class="hint">Delete ${esc(r.name)}?${cnt(r.key)?` Its ${cnt(r.key)} ${cnt(r.key)===1?"person goes":"people go"} back to User.`:""}</span><button type="button" class="btn small dangerb" data-act="roledel2">Delete</button><button type="button" class="btn small ghost" data-act="roledelno">Cancel</button>`:`<button type="button" class="btn small ghost danger" data-act="roledel">Delete role</button>`}</div>`}`:"";
+  usersRender()}
+function usersRender(){const box=$("#userList");if(!box)return;if(!USERS){box.innerHTML='<p class="hint">Loading…</p>';return}
+  const L=ROLES||[],list=[...USERS].sort((a,b)=>new Date(b.last_seen||0)-new Date(a.last_seen||0));
+  box.innerHTML=`<table class="utab"><thead><tr><th>User</th><th>Joined</th><th>Last online</th><th>Role</th></tr></thead><tbody>${list.map(u=>{const me=u.id===ME,[t,on]=ago(u.last_seen);
+    return `<tr><td>${esc(u.email||"(no email)")}${me?' <span class="hint">· you</span>':""}</td><td class="hint">${new Date(u.created_at).toLocaleDateString(undefined,{day:"numeric",month:"short",year:"numeric"})}</td><td><span class="seen${on?" on":""}">${t}</span></td>
+    <td><select data-urole="${esc(u.id)}" ${me?"disabled":""} aria-label="Role for ${esc(u.email||"")}">${L.map(r=>`<option value="${esc(r.key)}" ${u.role===r.key?"selected":""}>${esc(r.name)}</option>`).join("")}</select></td></tr>`}).join("")}</tbody></table>`}
+async function usersLoad(){if(!APPADMIN||!TJF.members){USERS=null;return}try{USERS=await TJF.members()}catch(e){console.warn("users",e);USERS=[]}admRender()}
+async function roleSave(r,msg){admMsg("Saving…");try{await TJF.saveRole({key:r.key,name:r.name,features:r.features||{},sort:r.sort??100});admMsg(msg||"Saved")}catch(e){admMsg("Couldn't save: "+(e.message||e))}
+  const me=(ROLES||[]).find(x=>x.key===MYROLE);if(me){MYF=me.features||{};try{localStorage.setItem("tj-myfeat",JSON.stringify(MYF))}catch{}applySettings();render()}}
+document.addEventListener("click",async e=>{const b=e.target.closest&&e.target.closest("#admSheet [data-role],#admSheet [data-act],#admSheet [data-admtab]");if(!b)return;
+  if(b.dataset.admtab){admTab=b.dataset.admtab;admMsg("");admRender();return}
+  if(b.dataset.role){admRole=b.dataset.role;roleDel=false;admMsg("");admRender();return}
+  const a=b.dataset.act;
+  if(a==="rolenew"){let n=1;while((ROLES||[]).some(r=>r.name==="New role"+(n>1?" "+n:"")))n++;
+    const r={key:"r"+Date.now().toString(36),name:"New role"+(n>1?" "+n:""),features:{},sort:60};ROLES=roleSort([...(ROLES||[]),r]);admRole=r.key;roleDel=false;admRender();await roleSave(r,"Role added");const i=$("#roleName");if(i){i.focus();i.select()}}
+  else if(a==="roledel"){roleDel=true;admRender()}
+  else if(a==="roledelno"){roleDel=false;admRender()}
+  else if(a==="roledel2"){const k=admRole;admMsg("Deleting…");try{await TJF.delRole(k);ROLES=ROLES.filter(r=>r.key!==k);(USERS||[]).forEach(u=>{if(u.role===k)u.role="user"});roleDel=false;admMsg("Role deleted")}catch(er){admMsg("Couldn't delete: "+(er.message||er))}admRender()}});
+document.addEventListener("change",async e=>{const t=e.target;
+  if(t.matches&&t.matches("#admSheet [data-rfeat]")){const r=(ROLES||[]).find(x=>x.key===admRole);if(!r)return;r.features={...(r.features||{}),[t.dataset.rfeat]:t.checked};await roleSave(r)}
+  else if(t.matches&&t.matches("#roleName")){const r=(ROLES||[]).find(x=>x.key===admRole),v=t.value.trim();if(!r||!v||v===r.name){if(r)t.value=r.name;return}r.name=v.slice(0,40);roleSort(ROLES);admRender();await roleSave(r)}
+  else if(t.matches&&t.matches("#admSheet [data-urole]")){const u=(USERS||[]).find(x=>x.id===t.dataset.urole);if(!u)return;admMsg("Saving…");
+    try{await TJF.setRole(u.id,t.value);u.role=t.value;admMsg("Saved")}catch(er){admMsg("Couldn't save: "+(er.message||er))}admRender()}});
 function applySettings(){const st=getSet(),r=document.documentElement;document.body.classList.toggle("nf-cgt",!feat("cgt"));GRADE={a:Number(st.gradeA),b:Math.min(Number(st.gradeB),Number(st.gradeA))};SW={...SW_DEF,...(st.scoreW||{})};
   if(st.theme==="system")delete r.dataset.theme;else r.dataset.theme=st.theme;
   const a=ACCENTS.find(x=>x[0]===st.accent)||ACCENTS[0];
@@ -1914,8 +1973,10 @@ $("#nRemAdd").onclick=()=>{const r=nRemsOf(getSet());r.push(r.includes(15)?5:15)
 $("#nRems").addEventListener("change",e=>{const i=e.target.dataset.nrv;if(i==null)return;const r=nRemsOf(getSet());r[i]=Number(e.target.value);nSave({newsRems:r})});
 $("#nRems").addEventListener("click",e=>{const x=e.target.closest("[data-nrx]");if(!x)return;const r=nRemsOf(getSet());r.splice(Number(x.dataset.nrx),1);nSave({newsRems:r})});
 $("#nCopy").onclick=async()=>{try{await navigator.clipboard.writeText($("#nCopy").dataset.url);toast("Link copied")}catch{$("#nMsg").textContent=$("#nCopy").dataset.url}};
-function openSettings(){showSetTab(setTab);newsLinks();$("#wipeBox").hidden=true;$("#wipeOpen").hidden=false;$("#setIo").textContent="";$("#csvMk").textContent=(market==="stocks"?"Invest":"Forex")+" trades only";const st=getSet();setRadio("stheme",st.theme);setRadio("saccent",st.accent);setRadio("saccent2",st.accent2);setRadio("speriod",st.period);setRadio("speriod2",st.periodSt);featRender();$("#sGA").value=st.gradeA;$("#sGB").value=st.gradeB;$("#sCgtOn").checked=st.cgtOn!==false;$("#sCgtRate").value=st.cgtRate;$("#sCgtEx").value=st.cgtEx;gcHint();swRender();tplRender();$("#setSheet").hidden=false}
+function openSettings(){showSetTab(setTab);newsLinks();$("#wipeBox").hidden=true;$("#wipeOpen").hidden=false;$("#setIo").textContent="";$("#csvMk").textContent=(market==="stocks"?"Invest":"Forex")+" trades only";const st=getSet();setRadio("stheme",st.theme);setRadio("saccent",st.accent);setRadio("saccent2",st.accent2);setRadio("speriod",st.period);setRadio("speriod2",st.periodSt);$("#sGA").value=st.gradeA;$("#sGB").value=st.gradeB;$("#sCgtOn").checked=st.cgtOn!==false;$("#sCgtRate").value=st.cgtRate;$("#sCgtEx").value=st.cgtEx;gcHint();swRender();tplRender();$("#setSheet").hidden=false}
 $("#openSettings").onclick=openSettings;
+$("#openAdmin").onclick=async()=>{admMsg("");roleDel=false;$("#admSheet").hidden=false;try{ROLES=roleSort(await TJF.roles())}catch{}admRender();usersLoad()};
+document.querySelectorAll("[data-closeadm]").forEach(b=>b.onclick=()=>{$("#admSheet").hidden=true});
 document.querySelectorAll("[data-closeset]").forEach(b=>b.onclick=()=>{$("#setSheet").hidden=true});
 $("#setForm").addEventListener("change",e=>{const n=e.target.name;if(n==="stheme")saveSetting("theme",e.target.value);else if(n==="saccent")saveSetting("accent",e.target.value);else if(n==="saccent2")saveSetting("accent2",e.target.value);else if(n==="speriod")saveSetting("period",e.target.value);else if(n==="speriod2")saveSetting("periodSt",e.target.value);else if(e.target.id==="sGA"||e.target.id==="sGB"){let a=Math.round(Number($("#sGA").value)),b=Math.round(Number($("#sGB").value));if(!isFinite(a))a=4;if(!isFinite(b))b=2;if(b>a){b=a;$("#sGB").value=b}const cur=docs.find(x=>x.id==="settings")||{id:"settings",kind:"settings"};saveDoc({...cur,gradeA:a,gradeB:b});applySettings();gcHint()}});
 matchMedia("(prefers-color-scheme: dark)").addEventListener("change",applySettings);
@@ -2575,7 +2636,7 @@ $("#tradeForm2").onsubmit=e=>{e.preventDefault();const old=editingId?docs.find(d
   const t={id:old?old.id:uid(),mode,market:old?mktOf(old):f2Market,project:mode==="backtest"&&$("#f2Project").value!=="none"?$("#f2Project").value:null,status:$("#f2Missed").checked?"missed":"taken",account:$("#f2Account").value,btDate:mode==="backtest"?($("#f2BtDate").value||todayISO()):null,
     date:$("#f2Date").value,closeDate:$("#f2Close").value,concept:$("#f2Concept").value,fase:radio("f2fase")?Number(radio("f2fase")):null,wStruct:radio("f2wstruct")||"",wPat:$("#f2WPat").value==="?"?"":$("#f2WPat").value,wPatSub:$("#f2WPat").value&&$("#f2WPat").value!=="?"?$("#f2WPatSub").value:"",scaleIn:$("#f2Scale").checked,dMs:radio("f2dms")||"",hMs:radio("f2hms")||"",weekly:wcVals(),sub:$("#f2Variant").value,dPros:DCRIT.map(([k])=>k).filter(k=>dSel[k]),dailyFib:dSel.fc?"ja":"nee",outcome:radio("f2out"),r:num("f2R"),maxR:num("f2MaxR"),wRange:$("#f2Range").checked,notes:$("#f2Notes").value.trim(),evaluation:radio("f2eval"),onPlan:radio("f2eval")?radio("f2eval")==="plan":null,exitReason:$("#f2Exit").value,entry4h:$("#f2Entry").value,planEntry:num("f2PlanEntry"),slPips:num("f2SlPips"),tpPips:num("f2TpPips"),...f2CheckVals(),ecTf:$("#f2Entry").value==="Engulfing Candle"?radio("f2ectf"):"",shots:Object.fromEntries(Object.entries(f2Shots).filter(([,v])=>v&&v!=="uploading")),shotLinks:{...f2Links},pair:$("#f2Pair").value.trim().toUpperCase(),dir:radio("f2dir"),created:Date.now()};
   if(old)t.created=old.created||t.created;saveDoc(old?{...old,...t}:t);acRemember("fx",t.account);if(t.date&&!old){calMonth=t.date.slice(0,7);calTouched=true}toast(old?"Changes saved":"Trade saved");closeSheet2()};
-document.addEventListener("keydown",e=>{if(e.key!=="Escape")return;if(!$("#sheetS").hidden){closeStock();return}if(!$("#setSheet").hidden){$("#setSheet").hidden=true;return}if(!$("#newProj").hidden){closeNewProj();return}if(!$("#projSheet").hidden){closeProjSheet();return}if(!$("#viewer").hidden){$("#viewer").hidden=true;if($("#sheet2").hidden)document.body.style.overflow="";return}if(!$("#sheet2").hidden)closeSheet2()});
+document.addEventListener("keydown",e=>{if(e.key!=="Escape")return;if(!$("#sheetS").hidden){closeStock();return}if(!$("#setSheet").hidden){$("#setSheet").hidden=true;return}if(!$("#admSheet").hidden){$("#admSheet").hidden=true;return}if(!$("#newProj").hidden){closeNewProj();return}if(!$("#projSheet").hidden){closeProjSheet();return}if(!$("#viewer").hidden){$("#viewer").hidden=true;if($("#sheet2").hidden)document.body.style.overflow="";return}if(!$("#sheet2").hidden)closeSheet2()});
 
 /* ---------- chart screenshots ---------- */
 const SLOTS=[["weekly","Weekly"],["daily","Daily"],["h4","4H"],["ltf","1H/2H"]];
