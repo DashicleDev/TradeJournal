@@ -5,7 +5,7 @@ from datetime import datetime, timedelta, timezone
 
 URL = "https://nfs.faireconomy.media/ff_calendar_thisweek.xml"
 CURRENCIES = {"USD", "EUR", "GBP", "JPY", "CAD", "AUD", "CHF", "NZD"}
-HEAVY = re.compile(r"^(?:(?:FOMC|Fed|ECB|BOE|BOJ|SNB|RBA|RBNZ|BOC|MPC) )?(?:CPI y/y|Non-Farm Employment Change|Federal Funds Rate|FOMC Statement|FOMC Press Conference|Main Refinancing Rate|Official Bank Rate|Cash Rate|Overnight Rate|Policy Rate|Rate Statement|Monetary Policy Statement|Monetary Policy Summary|Press Conference)$")
+HEAVY = re.compile(r"^(?:(?:FOMC|Fed|ECB|BOE|BOJ|SNB|RBA|RBNZ|BOC|MPC) )?(?:(?:Core )?CPI(?: Flash Estimate)? (?:m/m|y/y|q/q)|Non-Farm Employment Change|Federal Funds Rate|FOMC Statement|FOMC Press Conference|Main Refinancing Rate|Official Bank Rate|Cash Rate|Overnight Rate|Policy Rate|Rate Statement|Monetary Policy Statement|Monetary Policy Summary|Press Conference)$")
 VARIANTS = {  # file -> impact levels included
     "news.ics": {"Heavy", "High", "Medium"},
     "news-high.ics": {"Heavy", "High"},
@@ -72,7 +72,8 @@ def with_history(events, out_dir):
         st = datetime.strptime(r["start"], "%Y-%m-%dT%H:%M:%SZ").replace(tzinfo=timezone.utc)
         if st.date() in week or st < cutoff:
             continue
-        old.append(dict(title=r["title"], cur=r["cur"], imp=r.get("imp") or ("High" if r["level"] == "Heavy" else r["level"]), level=r["level"], start=st))
+        imp = r.get("imp") or ("High" if r["level"] == "Heavy" else r["level"])
+        old.append(dict(title=r["title"], cur=r["cur"], imp=imp, level="Heavy" if HEAVY.search(r["title"]) else r["level"], start=st))
     return old + events
 
 def main(out_dir="news"):
