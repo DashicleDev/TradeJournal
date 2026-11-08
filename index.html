@@ -528,10 +528,9 @@ fieldset.subs-closed .legend-toggle .chev{transform:none}
 .utab td{padding:9px 8px;border-bottom:1px solid var(--line);vertical-align:middle}
 .utab td:first-child{overflow-wrap:anywhere}
 .utab select{min-width:120px}
-.seen{display:inline-flex;align-items:center;gap:6px;white-space:nowrap;color:var(--muted);font-size:13px}
-.seen.on{color:var(--ink)}.seen.on::before{content:"";width:8px;height:8px;border-radius:50%;background:var(--win,#2e9d5b)}
+.seen{white-space:nowrap}.utab .num,.utab th:nth-child(3),.utab th:nth-child(4){font-family:var(--mono,inherit);text-align:right;padding-right:18px}.utab th:nth-child(3),.utab th:nth-child(4){font-family:var(--body)}.utab th small{text-transform:none;letter-spacing:0;font-weight:500}.ujoin{display:block;font-size:12px}
 #admStat{display:block;min-height:18px;margin-top:8px}
-@media (max-width:620px){.rolesplit{grid-template-columns:1fr}.rolelist{border-right:0;padding-right:0;border-bottom:1px solid var(--line);padding-bottom:8px}.utab th:nth-child(2),.utab td:nth-child(2){display:none}}
+@media (max-width:620px){.rolesplit{grid-template-columns:1fr}.rolelist{border-right:0;padding-right:0;border-bottom:1px solid var(--line);padding-bottom:8px}.utab th:nth-child(3),.utab td:nth-child(3){display:none}}
 .np-inner{width:min(100%,440px);margin-top:12vh;border-radius:14px;padding:20px}
 .np-inner form{display:grid;gap:14px}
 .np-inner h3{margin:0;font-family:var(--display);font-stretch:85%;font-size:20px}
@@ -1084,7 +1083,7 @@ window.TJF={admin:async()=>{if(!SB||!ME)return false;const{data,error}=await SB.
   roles:async()=>{const{data,error}=await SB.from("app_roles").select("key,name,features,sort");if(error)throw error;return data||[]},
   saveRole:async r=>{const{error}=await SB.from("app_roles").upsert(r);if(error)throw error},
   delRole:async k=>{const{error}=await SB.from("app_roles").delete().eq("key",k);if(error)throw error},
-  members:async()=>{const{data,error}=await SB.rpc("admin_members");if(error)throw error;return data||[]},
+  members:async()=>{const{data,error}=await SB.rpc("admin_usage");if(error)throw error;return data||[]},
   setRole:async(id,role)=>{const{error}=await SB.rpc("admin_set_role",{uid:id,new_role:role});if(error)throw error},
   seen:async()=>{if(SB&&ME)await SB.rpc("touch_seen")}};
 function upsertLocal(t){const i=docs.findIndex(d=>d.id===t.id);if(i>=0)docs[i]=t;else docs.push(t)}
@@ -1879,13 +1878,12 @@ async function flagsLoad(){try{APPADMIN=!!(await TJF.admin())}catch{APPADMIN=fal
   if(TJF.seen)TJF.seen().catch(()=>{});
   applySettings();admRender();render()}
 setTimeout(function w(){if(docsReady)flagsLoad();else setTimeout(w,400)},400);
-setInterval(()=>{if(TJF.seen&&document.visibilityState==="visible")TJF.seen().catch(()=>{})},3e5);
-document.addEventListener("visibilitychange",()=>{if(TJF.seen&&document.visibilityState==="visible")TJF.seen().catch(()=>{})});
+let seenDay=new Date().toDateString(); /* usage: one ping per day the journal is opened */
+document.addEventListener("visibilitychange",()=>{const d=new Date().toDateString();if(TJF.seen&&document.visibilityState==="visible"&&d!==seenDay){seenDay=d;TJF.seen().catch(()=>{})}});
 const feat=k=>!FEATS.some(f=>f[0]===k)||MYF[k]===true;
 const admMsg=m=>{const e=$("#admStat");if(e)e.textContent=m||""};
-function ago(v){if(!v)return["Never",false];const m=(Date.now()-new Date(v))/6e4;if(m<5)return["Online now",true];if(m<60)return[Math.round(m)+" min ago",false];
-  const h=m/60;if(h<24)return[Math.round(h)+" h ago",false];const d=h/24;if(d<14)return[Math.round(d)+(Math.round(d)===1?" day ago":" days ago"),false];
-  return[new Date(v).toLocaleDateString(undefined,{day:"numeric",month:"short",year:"numeric"}),false]}
+function dayAgo(v){if(!v)return"Never";const t=new Date(),d=new Date(v+"T12:00:00"),n=Math.round((new Date(t.getFullYear(),t.getMonth(),t.getDate(),12)-d)/864e5);
+  return n<=0?"Today":n===1?"Yesterday":n<7?n+" days ago":d.toLocaleDateString(undefined,{day:"numeric",month:"short",year:"numeric"})}
 function admRender(){$("#openAdmin").hidden=!APPADMIN;if(!APPADMIN){$("#admSheet").hidden=true;return}
   const ub=document.querySelector('[data-admtab="users"]');if(ub)ub.hidden=!TJF.members;
   document.querySelectorAll("[data-admtab]").forEach(b=>b.setAttribute("aria-selected",b.dataset.admtab===admTab));document.querySelectorAll("[data-admpane]").forEach(p=>p.hidden=p.dataset.admpane!==admTab);
@@ -1899,9 +1897,9 @@ function admRender(){$("#openAdmin").hidden=!APPADMIN;if(!APPADMIN){$("#admSheet
     ${fixed?"":`<div class="rolefoot">${roleDel?`<span class="hint">Delete ${esc(r.name)}?${cnt(r.key)?` Its ${cnt(r.key)} ${cnt(r.key)===1?"person goes":"people go"} back to User.`:""}</span><button type="button" class="btn small dangerb" data-act="roledel2">Delete</button><button type="button" class="btn small ghost" data-act="roledelno">Cancel</button>`:`<button type="button" class="btn small ghost danger" data-act="roledel">Delete role</button>`}</div>`}`:"";
   usersRender()}
 function usersRender(){const box=$("#userList");if(!box)return;if(!USERS){box.innerHTML='<p class="hint">Loading…</p>';return}
-  const L=ROLES||[],list=[...USERS].sort((a,b)=>new Date(b.last_seen||0)-new Date(a.last_seen||0));
-  box.innerHTML=`<table class="utab"><thead><tr><th>User</th><th>Joined</th><th>Last online</th><th>Role</th></tr></thead><tbody>${list.map(u=>{const me=u.id===ME,[t,on]=ago(u.last_seen);
-    return `<tr><td>${esc(u.email||"(no email)")}${me?' <span class="hint">· you</span>':""}</td><td class="hint">${new Date(u.created_at).toLocaleDateString(undefined,{day:"numeric",month:"short",year:"numeric"})}</td><td><span class="seen${on?" on":""}">${t}</span></td>
+  const L=ROLES||[],list=[...USERS].sort((a,b)=>(b.last_day||"").localeCompare(a.last_day||"")||(b.days30||0)-(a.days30||0));
+  box.innerHTML=`<table class="utab"><thead><tr><th>User</th><th>Last active</th><th>Active days<small> · 30d</small></th><th>Trades</th><th>Role</th></tr></thead><tbody>${list.map(u=>{const me=u.id===ME;
+    return `<tr><td>${esc(u.email||"(no email)")}${me?' <span class="hint">· you</span>':""}<small class="hint ujoin">Joined ${new Date(u.created_at).toLocaleDateString(undefined,{day:"numeric",month:"short",year:"numeric"})}</small></td><td class="seen">${dayAgo(u.last_day)}</td><td class="num">${u.days30||0}</td><td class="num">${u.trades||0}</td>
     <td><select data-urole="${esc(u.id)}" ${me?"disabled":""} aria-label="Role for ${esc(u.email||"")}">${L.map(r=>`<option value="${esc(r.key)}" ${u.role===r.key?"selected":""}>${esc(r.name)}</option>`).join("")}</select></td></tr>`}).join("")}</tbody></table>`}
 async function usersLoad(){if(!APPADMIN||!TJF.members){USERS=null;return}try{USERS=await TJF.members()}catch(e){console.warn("users",e);USERS=[]}admRender()}
 async function roleSave(r,msg){admMsg("Saving…");try{await TJF.saveRole({key:r.key,name:r.name,features:r.features||{},sort:r.sort??100});admMsg(msg||"Saved")}catch(e){admMsg("Couldn't save: "+(e.message||e))}
