@@ -57,12 +57,31 @@ def ics(events, name, alarms=("-PT1H", "-PT15M")):
     L.append("END:VCALENDAR")
     return "\r\n".join(L) + "\r\n"
 
+KEEP_DAYS = 56  # past events stay in the calendars this long
+
+def with_history(events, out_dir):
+    """This week's events plus earlier weeks from history.json, so past news stays visible."""
+    import json, os
+    hist_path = f"{out_dir}/history.json"
+    if not os.path.exists(hist_path):
+        return events
+    week = {e["start"].date() for e in events}
+    cutoff = datetime.now(timezone.utc) - timedelta(days=KEEP_DAYS)
+    old = []
+    for r in json.load(open(hist_path, encoding="utf-8")):
+        st = datetime.strptime(r["start"], "%Y-%m-%dT%H:%M:%SZ").replace(tzinfo=timezone.utc)
+        if st.date() in week or st < cutoff:
+            continue
+        old.append(dict(title=r["title"], cur=r["cur"], imp=r.get("imp") or ("High" if r["level"] == "Heavy" else r["level"]), level=r["level"], start=st))
+    return old + events
+
 def main(out_dir="news"):
     events = parse(fetch())
     if not events:
         sys.exit("No events parsed; keeping the old files.")
+    all_events = with_history(events, out_dir)
     for fn, levels in VARIANTS.items():
-        sel = [e for e in events if e["level"] in levels]
+        sel = [e for e in all_events if e["level"] in levels]
         for suf, alarms in REMINDERS.items():
             out = fn.replace(".ics", suf + ".ics")
             with open(f"{out_dir}/{out}", "w", encoding="utf-8", newline="") as f:
