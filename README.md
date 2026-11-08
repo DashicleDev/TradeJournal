@@ -2,7 +2,7 @@
 
 **[Open the app → dashicledev.github.io/TradeJournal](https://dashicledev.github.io/TradeJournal/)**
 
-A trade journal and backtesting app I built for my own forex and stock trading, following the Archer Academy trade plan. I use it daily to log live trades, run backtest projects and review what works.
+A trade journal and backtesting app I built for my own forex and stock trading, built around my own trade plan. I use it daily to log live trades, run backtest projects and review what works.
 
 <p>
   <img src="docs/journal.png" alt="Journal: monthly stats, equity curve and trade calendar" width="49%">
