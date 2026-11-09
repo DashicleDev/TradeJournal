@@ -18,7 +18,8 @@ const GR_CRIT = [
   ["fibc", "FC"],
   ["fiba", "Fib active"],
   ["ic", "IC"],
-  ["pattern", "Pattern"],
+  ["pattern", "Weekly pattern"],
+  ["dPat", "Daily pattern"],
   ["whl", "High / Low"],
   ["sd", "S&D zone"],
   ["pz", "Proven zone"],
@@ -57,16 +58,23 @@ let GR = grNorm(null);
 const dProsOf = t => (Array.isArray(t.dPros) ? t.dPros : t.dailyFib === "ja" ? ["fc"] : []);
 const grLab = k => (GR_CRIT.find(c => c[0] === k) || [k, k])[1];
 // "for" / "against" / "" for one criterion of a trade
+// Daily pattern: every trade concept except "Weekly - 4H" is a pattern on the daily.
 const critV = (t, k) =>
-  k === "dMs"
-    ? t.dMs || ""
-    : k === "hMs"
-      ? t.hMs || ""
-      : k.startsWith("d:")
-        ? dProsOf(t).includes(k.slice(2))
-          ? "for"
-          : ""
-        : (t.weekly || {})[k] || "";
+  k === "dPat"
+    ? t.concept
+      ? t.concept === "Weekly - 4H"
+        ? "against"
+        : "for"
+      : ""
+    : k === "dMs"
+      ? t.dMs || ""
+      : k === "hMs"
+        ? t.hMs || ""
+        : k.startsWith("d:")
+          ? dProsOf(t).includes(k.slice(2))
+            ? "for"
+            : ""
+          : (t.weekly || {})[k] || "";
 // { g: "A" | "B" | "C" | "X", why } or null when grades are off or the trade has no phase / analysis
 function gradeOf(t, rules) {
   if (!feat("grade")) return null;
