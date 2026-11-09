@@ -249,10 +249,11 @@ function grRender() {
     overview = ["1", "2", "3", "4"]
       .map(ph => {
         const R = GR[ph];
-        return `<tr class="${ph === grPh ? "on" : ""}" data-grgo="${ph}"><td><b>${ph}</b></td><td>${esc(names(R.req, "—"))}</td><td>${R.min ? `${R.min} of ${esc(names(R.extras, "—"))}` : "never"}${R.innerB ? " · inner at most B" : ""}</td><td class="num">${R.flags.length}</td></tr>`;
+        return `<tr class="${ph === grPh ? "on" : ""}" data-grgo="${ph}"><td><b>${ph}</b></td><td>${esc(R.inner === "x" ? [names(R.req, ""), "outer structure"].filter(Boolean).join(", ") : names(R.req, "—"))}</td><td>${R.min ? `${R.min} of ${esc(names(R.extras, "—"))}` : "never"}${R.inner === "b" ? " · inner at most B" : ""}</td><td class="num">${R.flags.length}</td></tr>`;
       })
       .join("");
-  box.innerHTML = `<table class="grov"><thead><tr><th>Phase</th><th>X unless with you</th><th>A with</th><th class="num">Red flags</th></tr></thead><tbody>${overview}</tbody></table>
+  box.innerHTML = `${grPreview()}
+    <table class="grov"><thead><tr><th>Phase</th><th>X unless with you</th><th>A with</th><th class="num">Red flags</th></tr></thead><tbody>${overview}</tbody></table>
     <div class="grph"><b>Phase ${grPh}</b><div class="segs">${["1", "2", "3", "4"].map(p => `<label class="seg"><input type="radio" name="grph" value="${p}" ${p === grPh ? "checked" : ""}><span>${p}</span></label>`).join("")}</div></div>
     <div class="grline"><span><span class="grade gX">X</span> unless with you</span>${grMsHTML("req")}</div>
     <div class="grline"><span><span class="grade gC">C</span> if marked against</span>${grMsHTML("flags")}</div>
@@ -266,14 +267,14 @@ function grRender() {
     <div class="grline"><span>Inner structure</span><div class="segs">${[
       ["", "Same rules"],
       ["b", "At most B"],
+      ["x", "Not valid (X)"],
     ]
       .map(
         ([v, l]) =>
-          `<label class="seg"><input type="radio" name="grinner" value="${v}" ${(P.innerB ? "b" : "") === v ? "checked" : ""}><span>${l}</span></label>`
+          `<label class="seg"><input type="radio" name="grinner" value="${v}" ${P.inner === v ? "checked" : ""}><span>${l}</span></label>`
       )
       .join("")}</div></div>
     <p class="hint" style="margin:0">Anything else is <span class="grade gB">B</span>.</p>
-    ${grPreview()}
     <button type="button" class="btn small ghost" id="grReset">Reset all phases to default</button>`;
   seg("seg-grset", "grset", [
     ["plan", "On plan"],
@@ -344,7 +345,7 @@ document.addEventListener("change", e => {
     grSet = t.value;
     grRender();
   } else if (t.id === "grMin") grUpd({ min: +t.value });
-  else if (t.name === "grinner") grUpd({ innerB: t.value === "b" });
+  else if (t.name === "grinner") grUpd({ inner: t.value, innerB: t.value === "b" });
 });
 let setTab = "look";
 function showSetTab(k) {

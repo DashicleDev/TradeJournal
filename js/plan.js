@@ -31,10 +31,10 @@ const GR_CRIT = [
 ];
 const GR_FLAGS = ["fibc", "fiba", "ic", "pattern", "whl", "sd", "pz", "lcc"];
 const GR_DEF = {
-  1: { req: [], extras: ["fibc", "lcc", "pz", "sd"], min: 1, flags: GR_FLAGS, innerB: false },
-  2: { req: ["ms", "fiba"], extras: ["fibc", "lcc", "pz", "sd"], min: 1, flags: GR_FLAGS, innerB: false },
-  3: { req: ["pz"], extras: ["fibc", "lcc", "sd", "whl"], min: 1, flags: GR_FLAGS, innerB: false },
-  4: { req: [], extras: ["fibc", "lcc", "pz", "sd"], min: 1, flags: GR_FLAGS, innerB: false },
+  1: { req: [], extras: ["fibc", "lcc", "pz", "sd"], min: 1, flags: GR_FLAGS, inner: "" },
+  2: { req: ["ms", "fiba"], extras: ["fibc", "lcc", "pz", "sd"], min: 1, flags: GR_FLAGS, inner: "" },
+  3: { req: ["pz"], extras: ["fibc", "lcc", "sd", "whl"], min: 1, flags: GR_FLAGS, inner: "x" },
+  4: { req: [], extras: ["fibc", "lcc", "pz", "sd"], min: 1, flags: GR_FLAGS, inner: "" },
 };
 const GR_KEYS = new Set(GR_CRIT.map(c => c[0]));
 const grNorm = r => {
@@ -48,7 +48,7 @@ const grNorm = r => {
       extras: list(x.extras, d.extras),
       flags: list(x.flags, d.flags),
       min: Number.isFinite(+x.min) && +x.min >= 0 ? Math.round(+x.min) : d.min,
-      innerB: typeof x.innerB === "boolean" ? x.innerB : d.innerB,
+      inner: ["", "b", "x"].includes(x.inner) ? x.inner : x.innerB === true ? "b" : d.inner,
     };
   }
   return out;
@@ -73,13 +73,14 @@ function gradeOf(t, rules) {
   const P = (rules || GR)[String(t.fase || "")];
   if (!P) return null;
   if (!Object.keys(t.weekly || {}).length && !t.dMs && !t.hMs && !dProsOf(t).length) return null;
+  if (P.inner === "x" && t.wStruct === "inner") return { g: "X", why: "Inner structure not valid in phase " + t.fase };
   const miss = P.req.filter(k => critV(t, k) !== "for");
   if (miss.length) return { g: "X", why: "Missing: " + miss.map(grLab).join(", ") };
   const ag = P.flags.filter(k => critV(t, k) === "against");
   if (ag.length) return { g: "C", why: "Against: " + ag.map(grLab).join(", ") };
   const ex = P.extras.filter(k => critV(t, k) === "for");
   if (ex.length >= P.min && P.min > 0) {
-    if (P.innerB && t.wStruct === "inner") return { g: "B", why: "Inner structure: at most B" };
+    if (P.inner === "b" && t.wStruct === "inner") return { g: "B", why: "Inner structure: at most B" };
     return { g: "A", why: ex.map(grLab).join(", ") };
   }
   return { g: "B", why: ex.length ? ex.map(grLab).join(", ") : "No extras" };

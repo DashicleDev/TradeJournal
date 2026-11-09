@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.1.2 — 2026-11-10
+
+- The "How your trades grade" table now sits at the top of the grade rules editor, so you see the grades move while picking criteria.
+- Inner structure per phase can now also be **Not valid (X)**. Phase 3 defaults to this: an inner-structure trade in phase 3 is X.
+
 ## 1.1.1 — 2026-11-10
 
 - Clearer grade rules editor: an overview of all four phases on top (click a phase to edit it), then per phase three lines you can read as a sentence: **X** unless with you…, **C** if marked against…, **A** with at least N of…, each with the same multi-select as Pros and Cons in the trade form.
