@@ -3833,9 +3833,10 @@ fieldset.subs-closed .legend-toggle .chev {
   display: none;
 }
 .notes textarea {
-  min-height: 160px;
+  min-height: 0;
   font: 15px/1.6 var(--body);
-  resize: vertical;
+  resize: none;
+  overflow: hidden;
 }
 .projhead {
   display: flex;

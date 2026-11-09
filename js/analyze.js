@@ -1497,13 +1497,16 @@ function renderNotes(C) {
   }
   if (box.dataset.pid !== p.id) {
     box.dataset.pid = p.id;
-    box.innerHTML = `<div class="panel notes"><div class="row spread"><div><span class="eyebrow">Project</span><h2>Notes</h2></div><span class="hint nstat" id="nStat" style="margin:0"></span></div><textarea id="projNotes" rows="6" placeholder="Observations, rules you're testing, things to check next…"></textarea></div>`;
+    box.innerHTML = `<div class="panel notes"><div class="row spread"><div><span class="eyebrow">Project</span><h2>Notes</h2></div><span class="hint nstat" id="nStat" style="margin:0"></span></div><textarea id="projNotes" class="prgrow prtext" rows="3" placeholder="Observations, rules you're testing, things to check next…"></textarea></div>`;
     $("#projNotes").value = p.notes || "";
   } else if (document.activeElement !== $("#projNotes") && $("#projNotes").value !== (p.notes || ""))
     $("#projNotes").value = p.notes || "";
+  requestAnimationFrame(() => $("#projNotes") && prGrow($("#projNotes")));
 }
+addEventListener("resize", () => $("#projNotes") && prGrow($("#projNotes")));
 document.addEventListener("input", e => {
   if (e.target.id !== "projNotes") return;
+  prGrow(e.target);
   const pid = $("#liveNotes").dataset.pid;
   $("#nStat").textContent = "Saving…";
   clearTimeout(renderNotes.h);
