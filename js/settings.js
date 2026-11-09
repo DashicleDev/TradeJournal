@@ -192,7 +192,7 @@ $("#sAccent2").innerHTML = ACCENTS2.map(
 ).join("");
 /* ---------- grade rules editor (Settings → Forex) ---------- */
 let grPh = "2",
-  grSet = "plan";
+  grF = { plan: "plan", mode: "", from: "", to: "" }; // preview filters
 function grSave(rules) {
   const cur = docs.find(x => x.id === "settings") || { id: "settings", kind: "settings" };
   saveDoc({ ...cur, gradeRules: rules });
@@ -208,7 +208,10 @@ function grPreview() {
       mktOf(t) === "fx" &&
       t.status === "taken" &&
       typeof t.r === "number" &&
-      (grSet === "all" || (grSet === "plan" ? t.evaluation === "plan" : t.mode === "backtest"))
+      (!grF.plan || (grF.plan === "plan") === (t.evaluation === "plan")) &&
+      (!grF.mode || (grF.mode === "backtest") === (t.mode === "backtest")) &&
+      (!grF.from || (t.date || "") >= grF.from) &&
+      (!grF.to || (t.date || "") <= grF.to)
   );
   const rows = GRADES.map(g => {
     const L = T.filter(t => tGrade(t) === g),
@@ -217,7 +220,9 @@ function grPreview() {
     return `<tr><td><b class="grade g${g}">${g}</b></td><td class="num">${L.length}</td><td class="num ${tot / (L.length || 1) > 0 ? "pos" : tot < 0 ? "neg" : ""}">${L.length ? fmtR(tot / L.length) : "—"}</td><td class="num ${tot > 0 ? "pos" : tot < 0 ? "neg" : ""}">${L.length ? fmtR(tot) : "—"}</td><td class="num">${L.length ? Math.round((w / L.length) * 100) + "%" : "—"}</td></tr>`;
   }).join("");
   const none = T.filter(t => !tGrade(t)).length;
-  return `<div class="grprev"><div class="row spread" style="gap:8px;align-items:center"><b class="eyebrow" style="margin:0">How your trades grade</b><div class="segs" id="seg-grset"></div></div>
+  return `<div class="grprev"><b class="eyebrow" style="margin:0">How your trades grade</b>
+    <div class="grfil"><div class="segs" id="seg-grplan"></div><div class="segs" id="seg-grmode"></div>
+    <span class="grdates"><input type="date" id="grFrom" aria-label="From" value="${grF.from}"> – <input type="date" id="grTo" aria-label="To" value="${grF.to}"></span></div>
     <table class="grtab"><thead><tr><th>Grade</th><th class="num">Trades</th><th class="num">Avg R</th><th class="num">Total</th><th class="num">Win</th></tr></thead><tbody>${rows}</tbody></table>
     <p class="hint" style="margin:6px 0 0">${T.length} taken trades${none ? `, ${none} without a phase or analysis (no grade)` : ""}. Changes apply right away.</p></div>`;
 }
@@ -239,6 +244,7 @@ function grMsHTML(list) {
     ([g, keys]) =>
       `<li class="ms-grp" role="presentation">${g}</li>` +
       keys
+        .filter(k => list !== "flags" || GR_CAN_AGAINST.has(k))
         .map(k => {
           const l = grLab(k).replace(/^(Weekly|Daily|4H) /, ""),
             on = sel.includes(k),
@@ -283,12 +289,18 @@ function grRender() {
       .join("")}</div></div>
     <p class="hint" style="margin:0">Anything else is <span class="grade gB">B</span>.</p>
     <button type="button" class="btn small ghost" id="grReset">Reset all phases to default</button>`;
-  seg("seg-grset", "grset", [
+  seg("seg-grplan", "grplan", [
     ["plan", "On plan"],
-    ["bt", "Backtests"],
-    ["all", "All"],
+    ["off", "Off plan"],
+    ["", "Both"],
   ]);
-  setRadio("grset", grSet);
+  seg("seg-grmode", "grmode", [
+    ["live", "Live"],
+    ["backtest", "Backtest"],
+    ["", "Both"],
+  ]);
+  setRadio("grplan", grF.plan);
+  setRadio("grmode", grF.mode);
 }
 document.addEventListener("click", e => {
   const ms = e.target.closest && e.target.closest(".grms");
@@ -348,8 +360,11 @@ document.addEventListener("change", e => {
   if (t.name === "grph") {
     grPh = t.value;
     grRender();
-  } else if (t.name === "grset") {
-    grSet = t.value;
+  } else if (t.name === "grplan" || t.name === "grmode") {
+    grF[t.name.slice(2)] = t.value;
+    grRender();
+  } else if (t.id === "grFrom" || t.id === "grTo") {
+    grF[t.id === "grFrom" ? "from" : "to"] = t.value;
     grRender();
   } else if (t.id === "grMin") grUpd({ min: +t.value });
   else if (t.name === "grinner") grUpd({ inner: t.value, innerB: t.value === "b" });

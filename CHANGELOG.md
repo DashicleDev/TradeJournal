@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.1.5 — 2026-11-10
+
+- "How your trades grade" has filters: on plan / off plan / both, live / backtest / both, and a from–to date range.
+- The red-flag list only offers criteria a trade can actually have marked against (no weekly pattern or daily pros).
+
 ## 1.1.4 — 2026-11-10
 
 - The pick lists in the grade rules editor are grouped under Weekly, Daily and 4H.

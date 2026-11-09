@@ -4889,3 +4889,21 @@ button.pill.simpill {
 .ms-list li.ms-grp:first-child {
   padding-top: 4px;
 }
+.grfil {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+  margin-top: 8px;
+}
+.grdates {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--muted);
+}
+.grdates input {
+  width: auto;
+  padding: 5px 8px;
+  font-size: 13px;
+}

@@ -36,7 +36,9 @@ const GR_GROUPS = [
   ["Daily", ["dPat", "dMs", "d:fc", "d:dcc", "d:sd"]],
   ["4H", ["hMs"]],
 ];
-const GR_FLAGS = ["fibc", "fiba", "ic", "pattern", "whl", "sd", "pz", "lcc"];
+const GR_FLAGS = ["fibc", "fiba", "ic", "whl", "sd", "pz", "lcc"];
+// criteria a trade can have marked "against" (weekly pattern and the daily pros are only ever "with")
+const GR_CAN_AGAINST = new Set(["ms", "trend", "fibc", "fiba", "ic", "whl", "sd", "pz", "lcc", "dPat", "dMs", "hMs"]);
 const GR_DEF = {
   1: { req: [], extras: ["fibc", "lcc", "pz", "sd"], min: 1, flags: GR_FLAGS, inner: "" },
   2: { req: ["ms", "fiba"], extras: ["fibc", "lcc", "pz", "sd"], min: 1, flags: GR_FLAGS, inner: "" },
@@ -53,7 +55,7 @@ const grNorm = r => {
     out[ph] = {
       req: list(x.req, d.req),
       extras: list(x.extras, d.extras),
-      flags: list(x.flags, d.flags),
+      flags: list(x.flags, d.flags).filter(k => GR_CAN_AGAINST.has(k)),
       min: Number.isFinite(+x.min) && +x.min >= 0 ? Math.round(+x.min) : d.min,
       inner: ["", "b", "x"].includes(x.inner) ? x.inner : x.innerB === true ? "b" : d.inner,
     };
