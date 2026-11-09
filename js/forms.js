@@ -933,13 +933,12 @@ function f2Summaries() {
           hMs: radio("f2hms") || "",
           dPros: Object.keys(dSel),
           wStruct: radio("f2wstruct") || "",
+          fase: radio("f2fase") || "",
         },
-        sc = tScore(tt),
-        g = tGrade(tt);
-      $("#f2Score").innerHTML =
-        sc == null
-          ? "Setup score: pick your pros, cons and market structure"
-          : `Setup score <b class="num">${sc > 0 ? "+" : ""}${sc}</b> <span class="grade g${g}">${g}</span>`;
+        g = gradeOf(tt);
+      $("#f2Score").innerHTML = g
+        ? `Setup grade <span class="grade g${g.g}">${g.g}</span> <span class="hint" style="margin:0">${esc(g.why)}</span>`
+        : "Setup grade: pick the weekly phase and fill in the analysis";
     }
     ["#f2SumW", "#f2SumD", "#f2SumH"].forEach(id => {
       const e = $(id);

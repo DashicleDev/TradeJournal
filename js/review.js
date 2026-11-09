@@ -626,12 +626,12 @@ function prStatsHTML(list) {
     sg = v => (v > 0 ? "pos" : v < 0 ? "neg" : "");
   let g = "";
   if (fx && tk.length && feat("grade")) {
-    const G = { A: [], B: [], C: [] };
+    const G = { A: [], B: [], C: [], X: [] };
     tk.forEach(t => {
       const x = tGrade(t);
       if (x) G[x].push(t.r);
     });
-    g = `<div class="prgrades">${["A", "B", "C"].map(k => `<span><b class="grade g${k}">${k}</b> ${G[k].length} · <span class="num ${sg(G[k].reduce((a, b) => a + b, 0))}">${G[k].length ? fmtR(G[k].reduce((a, b) => a + b, 0)) : "—"}</span></span>`).join("")}</div>`;
+    g = `<div class="prgrades">${GRADES.map(k => `<span><b class="grade g${k}">${k}</b> ${G[k].length} · <span class="num ${sg(G[k].reduce((a, b) => a + b, 0))}">${G[k].length ? fmtR(G[k].reduce((a, b) => a + b, 0)) : "—"}</span></span>`).join("")}</div>`;
   }
   return `<div class="prtiles">${tile("Trades", tk.length, "", miss ? `${miss} missed` : "")}${tile(fx ? "Total R" : "Total", tk.length ? fmtR(ps.total) : "—", sg(ps.total))}${tile("Win rate", fmtP(ps.wr))}${tile(fx ? "Avg R" : "Avg ROI", fmtR(ps.avg), sg(ps.avg))}${fx ? tile("To plan", fmtP(ps.plan)) : ""}</div>
   ${tk.length ? `<div class="bstack sm">${w ? `<div class="bseg" style="flex:${w};background:var(--good)"></div>` : ""}${be ? `<div class="bseg" style="flex:${be};background:var(--be)"></div>` : ""}${l ? `<div class="bseg" style="flex:${l};background:var(--bad)"></div>` : ""}</div><div class="prbar"><span class="hint" style="margin:0">${w} W · ${be} BE · ${l} L</span>${g}</div>` : ""}`;
@@ -972,10 +972,8 @@ function rvGameRender() {
     return;
   }
   const o = rvOrig(t),
-    so = tScore(rvAsTrade(o)),
-    sn = tScore(rvAsTrade(a)),
-    go = tGrade(rvAsTrade(o)),
-    gn = tGrade(rvAsTrade(a));
+    go = gradeOf(rvAsTrade(o)),
+    gn = gradeOf(rvAsTrade(a));
   const rows = RV_ROWS.map(([k, l]) => {
     const ov = rvPick(o, k),
       nv = rvPick(a, k),
@@ -989,7 +987,7 @@ function rvGameRender() {
     oc = t.outcome || (t.r > 0 ? "win" : t.r < 0 ? "loss" : "be");
   box.innerHTML = `<div class="panel rvstep"><div class="row spread"><div><span class="eyebrow">${prog} · reveal</span><h2>${esc(t.pair || "?")} <span class="dirar ${t.dir}">${t.dir === "long" ? "↑" : t.dir === "short" ? "↓" : ""}</span> <span class="restag ${oc}">${{ win: "Win", loss: "Loss", be: "BE" }[oc]}<b class="num">${fmtR(t.r)}</b></span></h2>
       <p class="hint" style="margin:2px 0 0">${esc(fmtD(t.date))} · ${t.mode === "backtest" ? "Backtest" : esc(t.account || "Live")}</p></div><button type="button" class="btn small ghost" id="rvPause">Pause</button></div>
-    <p class="rvsum">${nd ? `${nd} difference${nd > 1 ? "s" : ""} with what you filled in back then` : "Exactly the same as back then"} · score ${so == null ? "—" : (so > 0 ? "+" : "") + so} ${go ? `<span class="grade g${go}">${go}</span>` : ""} → ${sn == null ? "—" : (sn > 0 ? "+" : "") + sn} ${gn ? `<span class="grade g${gn}">${gn}</span>` : ""}</p>
+    <p class="rvsum">${nd ? `${nd} difference${nd > 1 ? "s" : ""} with what you filled in back then` : "Exactly the same as back then"} · grade ${go ? `<span class="grade g${go.g}" title="${esc(go.why)}">${go.g}</span>` : "—"} → ${gn ? `<span class="grade g${gn.g}" title="${esc(gn.why)}">${gn.g}</span> <span class="hint" style="margin:0">${esc(gn.why)}</span>` : "—"}</p>
     <div class="tbl"><table class="rvtab"><thead><tr><th></th><th>Back then</th><th>Now</th></tr></thead><tbody>${rows}<tr class="rvplan ${S.plan && op && S.plan !== op ? "diff" : ""}"><td>According to plan</td><td>${opL}</td><td>${S.plan ? npL : `<span class="hint" style="margin:0">answer below</span>`}</td></tr></tbody></table></div>
     ${S.plan && op && S.plan !== op ? `<p class="rvplanchg">You now think this trade was <b>${S.plan === "plan" ? "according to plan" : "not according to plan"}</b>; back then you said <b>${op === "plan" ? "according to plan" : "not according to plan"}</b>.</p>` : ""}
     <div class="fields" style="margin-top:14px">${rvF(

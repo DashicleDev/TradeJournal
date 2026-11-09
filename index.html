@@ -881,26 +881,13 @@
                     <span class="setl">Journal opens on</span>
                     <div class="segs" id="seg-speriod"></div>
                   </div>
-                  <div class="setrow">
-                    <span class="setl">Setup grades<small>Score needed</small></span>
-                    <div class="gcuts">
-                      <label class="gcut"
-                        ><span class="grade gA">A</span
-                        ><input type="number" id="sGA" step="1" inputmode="numeric" aria-label="Score for A" />+</label
-                      ><label class="gcut"
-                        ><span class="grade gB">B</span
-                        ><input type="number" id="sGB" step="1" inputmode="numeric" aria-label="Score for B" />+</label
-                      ><span class="gcut"><span class="grade gC">C</span><span id="sGC"></span></span>
-                    </div>
-                  </div>
-                  <div class="setrow swrow">
-                    <span class="setl">Scoring<small>Points per item</small></span>
-                    <div>
-                      <div id="sScore" class="swtab"></div>
-                      <button type="button" class="btn small ghost" id="swReset" style="margin-top: 8px">
-                        Reset to default
-                      </button>
-                    </div>
+                  <div class="setrow grrow">
+                    <span class="setl"
+                      >Grade rules<small
+                        >Per weekly phase: what a trade needs, what makes it C and what makes it A</small
+                      ></span
+                    >
+                    <div id="grEd"></div>
                   </div>
                 </section>
                 <section class="setsec" data-setpane="rev" hidden>

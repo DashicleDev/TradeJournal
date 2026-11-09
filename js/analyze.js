@@ -193,14 +193,7 @@ let SPLITS = {
         .map(([k]) => WLAB(k)),
     WKEYS.filter(k => k !== "ms").map(WLAB),
   ],
-  score: [
-    "Setup score",
-    t => {
-      const v = tScore(t);
-      return v == null ? null : (v > 0 ? "+" : "") + v;
-    },
-  ],
-  grade: ["Setup grade", t => tGrade(t), ["A", "B", "C"]],
+  grade: ["Setup grade", t => tGrade(t), GRADES],
   wscore: [
     "Weekly score (pros − cons)",
     t => {
@@ -351,7 +344,7 @@ let SPLITGROUPS = [
   ["4H", ["hms", "entry4h", "struct", "room", "scale", "ectf", "rr", "sl"]],
   [
     "Context",
-    ["grade", "score", "pair", "dir", "status", "weekday", "month", "account", "actype", "project", "btmonth", "btlag"],
+    ["grade", "pair", "dir", "status", "weekday", "month", "account", "actype", "project", "btmonth", "btlag"],
   ],
   ["Result", ["outcome", "evaluation", "exit", "maxr", "days"]],
 ];
@@ -378,6 +371,7 @@ let PRESETS = [
   ],
   ["Long vs short", { mode: "live", dir: "long" }, { mode: "live", dir: "short" }],
   ["A vs B vs C setups", { mode: "live", grade: "A" }, { mode: "live", grade: "B" }, { mode: "live", grade: "C" }],
+  ["Graded vs outside your rules (X)", { mode: "live", grade: ["A", "B", "C"] }, { mode: "live", grade: "X" }],
   ["With vs against weekly structure", { mode: "live", wms: "for" }, { mode: "live", wms: "against" }],
   ["All timeframes with vs mixed", { mode: "live", align: "all" }, { mode: "live", align: ["mixed", "none"] }],
   ["To plan vs not", { mode: "live", eval: "plan" }, { mode: "live", eval: "off" }],
@@ -390,9 +384,10 @@ let FDEF = [
     "Setup grade",
     () => [
       ["", "Any"],
-      ["A", `A (score ${GRADE.a}+)`],
-      ["B", GRADE.a - 1 > GRADE.b ? `B (${GRADE.b}–${GRADE.a - 1})` : `B (${GRADE.b})`],
-      ["C", `C (${GRADE.b - 1} or less)`],
+      ["A", "A (rules met, extras)"],
+      ["B", "B (rules met)"],
+      ["C", "C (something against)"],
+      ["X", "X (a requirement missing)"],
     ],
     t => tGrade(t),
   ],
@@ -935,13 +930,12 @@ const ST_DEFS = {
 function useMarketDefs() {
   const d = market === "stocks" ? ST_DEFS : FX_DEFS,
     gr = feat("grade"),
-    noG = G =>
-      gr ? G : G.map(([g, ks]) => [g, ks.filter(k => k !== "grade" && k !== "score")]).filter(x => x[1].length);
+    noG = G => (gr ? G : G.map(([g, ks]) => [g, ks.filter(k => k !== "grade")]).filter(x => x[1].length));
   FDEF = d.FDEF;
   FGROUPS = noG(d.FGROUPS);
   SPLITS = d.SPLITS;
   SPLITGROUPS = noG(d.SPLITGROUPS);
-  if (!gr && (split === "grade" || split === "score")) split = d.split;
+  if (!gr && split === "grade") split = d.split;
   PRESETS = gr ? d.PRESETS : d.PRESETS.filter(p => !p.slice(1).some(f => f && f.grade));
   if (!SPLITS[split]) split = d.split;
 }

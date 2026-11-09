@@ -1,5 +1,5 @@
 /*
- * plan.js — Plan logic: weekly/daily criteria, setup score and A/B/C grade, R and pip maths.
+ * plan.js — Plan logic: weekly/daily criteria, setup grades (A/B/C/X rules per phase), R and pip maths.
  */
 /* ---------- plan logic ---------- */
 const DCRIT = [
@@ -8,56 +8,87 @@ const DCRIT = [
   ["sd", "S&D zone"],
 ];
 let dSel = {};
-const SW_DEF = {
-  msr: [0, 0],
-  ms: [2, -2],
-  trend: [2, -2],
-  fibc: [1, -1],
-  fiba: [1, -1],
-  ic: [1, -1],
-  pattern: [1, -1],
-  whl: [1, -1],
-  sd: [1, -1],
-  pz: [1, -1],
-  lcc: [1, -1],
-  dMs: [1, 0],
-  hMs: [1, 0],
-  "d:fc": [1, 0],
-  "d:dcc": [1, 0],
-  "d:sd": [1, 0],
-  outer: [1, 0],
-  inner: [0, 0],
+/* ---------- setup grades: rules per weekly phase (Settings → Forex → Grade rules) ---------- */
+// For the trade's phase:  X = a requirement isn't "with" you · C = a red-flag item is marked "against"
+//                         A = at least `min` extras are "with" you · B = otherwise.
+// "Inner structure: at most B" turns an A on an inner structure into a B.
+const GR_CRIT = [
+  ["ms", "Weekly MS"],
+  ["trend", "Market trend"],
+  ["fibc", "FC"],
+  ["fiba", "Fib active"],
+  ["ic", "IC"],
+  ["pattern", "Pattern"],
+  ["whl", "High / Low"],
+  ["sd", "S&D zone"],
+  ["pz", "Proven zone"],
+  ["lcc", "Last CC"],
+  ["dMs", "Daily MS"],
+  ["hMs", "4H MS"],
+  ["d:fc", "Daily FC"],
+  ["d:dcc", "Daily last CC"],
+  ["d:sd", "Daily S&D zone"],
+];
+const GR_FLAGS = ["fibc", "fiba", "ic", "pattern", "whl", "sd", "pz", "lcc"];
+const GR_DEF = {
+  1: { req: [], extras: ["fibc", "lcc", "pz", "sd"], min: 1, flags: GR_FLAGS, innerB: false },
+  2: { req: ["ms", "fiba"], extras: ["fibc", "lcc", "pz", "sd"], min: 1, flags: GR_FLAGS, innerB: false },
+  3: { req: ["pz"], extras: ["fibc", "lcc", "sd", "whl"], min: 1, flags: GR_FLAGS, innerB: false },
+  4: { req: [], extras: ["fibc", "lcc", "pz", "sd"], min: 1, flags: GR_FLAGS, innerB: false },
 };
-let SW = { ...SW_DEF };
-const swv = (k, v) => {
-  const w = SW[k] || [1, -1];
-  return v === "for" ? +w[0] || 0 : v === "against" ? +w[1] || 0 : 0;
+const GR_KEYS = new Set(GR_CRIT.map(c => c[0]));
+const grNorm = r => {
+  const out = {};
+  for (const ph of ["1", "2", "3", "4"]) {
+    const d = GR_DEF[ph],
+      x = (r && r[ph]) || {},
+      list = (v, def) => (Array.isArray(v) ? v.filter(k => GR_KEYS.has(k)) : [...def]);
+    out[ph] = {
+      req: list(x.req, d.req),
+      extras: list(x.extras, d.extras),
+      flags: list(x.flags, d.flags),
+      min: Number.isFinite(+x.min) && +x.min >= 0 ? Math.round(+x.min) : d.min,
+      innerB: typeof x.innerB === "boolean" ? x.innerB : d.innerB,
+    };
+  }
+  return out;
 };
-const msV = v => (v === "for" ? 1 : v === "against" ? -1 : 0);
-const tScore = t => {
-  if (!feat("grade")) return null;
-  const w = t.weekly || {},
-    dp = dProsOf(t);
-  if (!Object.keys(w).length && !t.dMs && !t.hMs && !dp.length && !t.wStruct) return null;
-  const r =
-    Object.entries(w).reduce(
-      (a, [k, v]) =>
-        a +
-        (k === "ms" && v === "against" && (t.wRange || w.trend === "range") ? +(SW.msr || [0, 0])[1] || 0 : swv(k, v)),
-      0
-    ) +
-    swv("dMs", t.dMs) +
-    swv("hMs", t.hMs) +
-    dp.reduce((a, k) => a + swv("d:" + k, "for"), 0) +
-    (t.wStruct ? swv(t.wStruct, "for") : 0);
-  return Math.round(r * 100) / 100;
-};
-let GRADE = { a: 4, b: 2 };
-const tGrade = t => {
-  const s = tScore(t);
-  return s == null ? null : s >= GRADE.a ? "A" : s >= GRADE.b ? "B" : "C";
-};
+let GR = grNorm(null);
 const dProsOf = t => (Array.isArray(t.dPros) ? t.dPros : t.dailyFib === "ja" ? ["fc"] : []);
+const grLab = k => (GR_CRIT.find(c => c[0] === k) || [k, k])[1];
+// "for" / "against" / "" for one criterion of a trade
+const critV = (t, k) =>
+  k === "dMs"
+    ? t.dMs || ""
+    : k === "hMs"
+      ? t.hMs || ""
+      : k.startsWith("d:")
+        ? dProsOf(t).includes(k.slice(2))
+          ? "for"
+          : ""
+        : (t.weekly || {})[k] || "";
+// { g: "A" | "B" | "C" | "X", why } or null when grades are off or the trade has no phase / analysis
+function gradeOf(t, rules) {
+  if (!feat("grade")) return null;
+  const P = (rules || GR)[String(t.fase || "")];
+  if (!P) return null;
+  if (!Object.keys(t.weekly || {}).length && !t.dMs && !t.hMs && !dProsOf(t).length) return null;
+  const miss = P.req.filter(k => critV(t, k) !== "for");
+  if (miss.length) return { g: "X", why: "Missing: " + miss.map(grLab).join(", ") };
+  const ag = P.flags.filter(k => critV(t, k) === "against");
+  if (ag.length) return { g: "C", why: "Against: " + ag.map(grLab).join(", ") };
+  const ex = P.extras.filter(k => critV(t, k) === "for");
+  if (ex.length >= P.min && P.min > 0) {
+    if (P.innerB && t.wStruct === "inner") return { g: "B", why: "Inner structure: at most B" };
+    return { g: "A", why: ex.map(grLab).join(", ") };
+  }
+  return { g: "B", why: ex.length ? ex.map(grLab).join(", ") : "No extras" };
+}
+const tGrade = t => {
+  const x = gradeOf(t);
+  return x ? x.g : null;
+};
+const GRADES = ["A", "B", "C", "X"];
 function verdict(t) {
   if (!t.entry4h || !t.bos) return { v: "open", txt: "Answer the questions" };
   const rev = t.entry4h === "Reversal";

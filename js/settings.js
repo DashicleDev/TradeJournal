@@ -32,8 +32,6 @@ const getSet = () => {
     accent2: "orange",
     period: "month",
     periodSt: "year",
-    gradeA: 4,
-    gradeB: 2,
     cgtOn: true,
     cgtRate: 10,
     cgtEx: 10000,
@@ -52,7 +50,7 @@ const FEATS = [
   [
     "grade",
     "Setup grades (A/B/C)",
-    "The setup score and A/B/C grade on forex trades, in the trade form, tables and reviews, as Analyze filters and splits, and the grade and scoring settings.",
+    "The A/B/C/X grade on forex trades (from your grade rules per phase), in the trade form, tables and reviews, as Analyze filters and splits, and the grade rules editor in settings.",
   ],
   [
     "cgt",
@@ -124,8 +122,7 @@ function applySettings() {
     r = document.documentElement;
   document.body.classList.toggle("nf-cgt", !feat("cgt"));
   document.body.classList.toggle("nf-grade", !feat("grade"));
-  GRADE = { a: Number(st.gradeA), b: Math.min(Number(st.gradeB), Number(st.gradeA)) };
-  SW = { ...SW_DEF, ...(st.scoreW || {}) };
+  GR = grNorm(st.gradeRules);
   if (st.theme === "system") delete r.dataset.theme;
   else r.dataset.theme = st.theme;
   const a = ACCENTS.find(x => x[0] === st.accent) || ACCENTS[0];
@@ -153,9 +150,7 @@ function applySettings() {
         accent2: st.accent2,
         period: st.period,
         periodSt: st.periodSt,
-        gradeA: st.gradeA,
-        gradeB: st.gradeB,
-        scoreW: st.scoreW,
+        gradeRules: st.gradeRules,
       })
     );
   } catch {}
@@ -195,69 +190,91 @@ $("#sAccent2").innerHTML = ACCENTS2.map(
   ([k, l, c]) =>
     `<label title="${l}"><input type="radio" name="saccent2" value="${k}" aria-label="${l}"><span style="background:${c}"></span></label>`
 ).join("");
-const SW_ROWS = [
-  ["Weekly"],
-  ["ms", "Weekly MS", "With", "Against"],
-  ["msr", "Weekly MS against, ranging", 2],
-  ["trend", "Market trend"],
-  ["fibc", "FC"],
-  ["fiba", "Fib active"],
-  ["ic", "IC"],
-  ["pattern", "Pattern"],
-  ["whl", "High / Low"],
-  ["sd", "S&D zone"],
-  ["pz", "Proven zone"],
-  ["lcc", "Last CC"],
-  ["Daily"],
-  ["dMs", "Daily MS", "With", "Against"],
-  ["d:fc", "FC", 1],
-  ["d:dcc", "Last CC", 1],
-  ["d:sd", "S&D zone", 1],
-  ["4H"],
-  ["hMs", "4H MS", "With", "Against"],
-  ["Structure"],
-  ["outer", "Outer", 1],
-  ["inner", "Inner", 1],
-];
-function swRender() {
-  const inp = (k, i) =>
-    `<input type="number" step="0.5" inputmode="decimal" data-sw="${k}" data-i="${i}" value="${SW[k][i]}" aria-label="${k} ${i ? "con" : "pro"}">`;
-  $("#sScore").innerHTML =
-    `<div class="swh"><span></span><span>Pro</span><span>Con</span></div>` +
-    SW_ROWS.map(r =>
-      r.length === 1
-        ? `<div class="swg">${r[0]}</div>`
-        : `<div class="swr"><span>${esc(r[1])}</span>${r[2] === 2 ? '<span class="swna">—</span>' : inp(r[0], 0)}${r[2] === 1 ? '<span class="swna">—</span>' : inp(r[0], 1)}</div>`
-    ).join("");
-}
-function swSave(w) {
+/* ---------- grade rules editor (Settings → Forex) ---------- */
+let grPh = "2",
+  grSet = "plan";
+function grSave(rules) {
   const cur = docs.find(x => x.id === "settings") || { id: "settings", kind: "settings" };
-  saveDoc({ ...cur, scoreW: w });
+  saveDoc({ ...cur, gradeRules: rules });
   applySettings();
+  grRender();
   render();
 }
-document.addEventListener("change", e => {
-  const el = e.target.closest("[data-sw]");
-  if (!el) return;
-  const k = el.dataset.sw,
-    i = +el.dataset.i;
-  let v = Number(el.value);
-  if (!isFinite(v)) v = SW_DEF[k][i];
-  const w = { ...SW };
-  w[k] = [...w[k]];
-  w[k][i] = v;
-  swSave(w);
-});
-document.addEventListener("click", e => {
-  if (e.target.id !== "swReset") return;
-  swSave(null);
-  setTimeout(swRender, 0);
-});
-function gcHint() {
-  const a = Number($("#sGA").value),
-    b = Number($("#sGB").value);
-  $("#sGC").textContent = isFinite(a) && isFinite(b) ? `${b - 1} or less` : "";
+// how the current rules grade your own trades: per grade the count, average R, total R and win rate
+function grPreview() {
+  const T = docs.filter(
+    t =>
+      !t.kind &&
+      mktOf(t) === "fx" &&
+      t.status === "taken" &&
+      typeof t.r === "number" &&
+      (grSet === "all" || (grSet === "plan" ? t.evaluation === "plan" : t.mode === "backtest"))
+  );
+  const rows = GRADES.map(g => {
+    const L = T.filter(t => tGrade(t) === g),
+      tot = L.reduce((a, t) => a + t.r, 0),
+      w = L.filter(t => (t.outcome || (t.r > 0 ? "win" : "")) === "win").length;
+    return `<tr><td><b class="grade g${g}">${g}</b></td><td class="num">${L.length}</td><td class="num ${tot / (L.length || 1) > 0 ? "pos" : tot < 0 ? "neg" : ""}">${L.length ? fmtR(tot / L.length) : "—"}</td><td class="num ${tot > 0 ? "pos" : tot < 0 ? "neg" : ""}">${L.length ? fmtR(tot) : "—"}</td><td class="num">${L.length ? Math.round((w / L.length) * 100) + "%" : "—"}</td></tr>`;
+  }).join("");
+  const none = T.filter(t => !tGrade(t)).length;
+  return `<div class="grprev"><div class="row spread" style="gap:8px;align-items:center"><b class="eyebrow" style="margin:0">How your trades grade</b><div class="segs" id="seg-grset"></div></div>
+    <table class="grtab"><thead><tr><th>Grade</th><th class="num">Trades</th><th class="num">Avg R</th><th class="num">Total</th><th class="num">Win</th></tr></thead><tbody>${rows}</tbody></table>
+    <p class="hint" style="margin:6px 0 0">${T.length} taken trades${none ? `, ${none} without a phase or analysis (no grade)` : ""}. Changes apply right away.</p></div>`;
 }
+function grRender() {
+  const box = $("#grEd");
+  if (!box) return;
+  const P = GR[grPh],
+    chips = (kind, sel) =>
+      `<div class="grchips">${GR_CRIT.map(([k, l]) => `<button type="button" class="grchip${sel.includes(k) ? " on" : ""}" data-gr="${kind}" data-k="${k}" aria-pressed="${sel.includes(k)}">${esc(l)}</button>`).join("")}</div>`;
+  box.innerHTML = `<div class="segs" id="seg-grph"></div>
+    <div class="grblk"><b>Required <span class="grade gX">X</span></b><small>Every one of these must be with you, otherwise the trade is X.</small>${chips("req", P.req)}</div>
+    <div class="grblk"><b>Red flags <span class="grade gC">C</span></b><small>Any of these marked against makes it C.</small>${chips("flags", P.flags)}</div>
+    <div class="grblk"><b>Extras <span class="grade gA">A</span></b><small>With at least <input type="number" id="grMin" min="0" max="9" step="1" value="${P.min}" aria-label="Extras needed for A"> of these with you it's A, otherwise B.</small>${chips("extras", P.extras)}</div>
+    <label class="grinner"><input type="checkbox" id="grInner" ${P.innerB ? "checked" : ""}> Inner structure: at most B</label>
+    ${grPreview()}
+    <button type="button" class="btn small ghost" id="grReset">Reset all phases to default</button>`;
+  seg(
+    "seg-grph",
+    "grph",
+    ["1", "2", "3", "4"].map(p => [p, "Phase " + p])
+  );
+  setRadio("grph", grPh);
+  seg("seg-grset", "grset", [
+    ["plan", "On plan"],
+    ["bt", "Backtests"],
+    ["all", "All"],
+  ]);
+  setRadio("grset", grSet);
+}
+const grUpd = patch => {
+  const cur = getSet().gradeRules || {},
+    r = grNorm(cur);
+  r[grPh] = { ...r[grPh], ...patch };
+  grSave(r);
+};
+document.addEventListener("click", e => {
+  const b = e.target.closest && e.target.closest("[data-gr]");
+  if (b) {
+    const kind = b.dataset.gr,
+      k = b.dataset.k,
+      sel = GR[grPh][kind];
+    grUpd({ [kind]: sel.includes(k) ? sel.filter(x => x !== k) : [...sel, k] });
+    return;
+  }
+  if (e.target.id === "grReset") grSave(null);
+});
+document.addEventListener("change", e => {
+  const t = e.target;
+  if (t.name === "grph") {
+    grPh = t.value;
+    grRender();
+  } else if (t.name === "grset") {
+    grSet = t.value;
+    grRender();
+  } else if (t.id === "grMin") grUpd({ min: Math.max(0, Math.round(+t.value || 0)) });
+  else if (t.id === "grInner") grUpd({ innerB: t.checked });
+});
 let setTab = "look";
 function showSetTab(k) {
   setTab = k;
@@ -403,13 +420,10 @@ function openSettings() {
   setRadio("saccent2", st.accent2);
   setRadio("speriod", st.period);
   setRadio("speriod2", st.periodSt);
-  $("#sGA").value = st.gradeA;
-  $("#sGB").value = st.gradeB;
   $("#sCgtOn").checked = st.cgtOn !== false;
   $("#sCgtRate").value = st.cgtRate;
   $("#sCgtEx").value = st.cgtEx;
-  gcHint();
-  swRender();
+  grRender();
   tplRender();
   $("#setSheet").hidden = false;
 }
@@ -443,19 +457,5 @@ $("#setForm").addEventListener("change", e => {
   else if (n === "saccent2") saveSetting("accent2", e.target.value);
   else if (n === "speriod") saveSetting("period", e.target.value);
   else if (n === "speriod2") saveSetting("periodSt", e.target.value);
-  else if (e.target.id === "sGA" || e.target.id === "sGB") {
-    let a = Math.round(Number($("#sGA").value)),
-      b = Math.round(Number($("#sGB").value));
-    if (!isFinite(a)) a = 4;
-    if (!isFinite(b)) b = 2;
-    if (b > a) {
-      b = a;
-      $("#sGB").value = b;
-    }
-    const cur = docs.find(x => x.id === "settings") || { id: "settings", kind: "settings" };
-    saveDoc({ ...cur, gradeA: a, gradeB: b });
-    applySettings();
-    gcHint();
-  }
 });
 matchMedia("(prefers-color-scheme: dark)").addEventListener("change", applySettings);
