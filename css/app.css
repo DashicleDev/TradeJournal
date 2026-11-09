@@ -4877,3 +4877,15 @@ button.pill.simpill {
 .acct .sync {
   margin-left: 0;
 }
+.ms-list li.ms-grp {
+  cursor: default;
+  padding: 10px 10px 4px;
+  font: 700 11px var(--body);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--muted);
+  background: none;
+}
+.ms-list li.ms-grp:first-child {
+  padding-top: 4px;
+}

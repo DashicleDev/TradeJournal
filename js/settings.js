@@ -235,11 +235,18 @@ function grMsHTML(list) {
     other = list === "req" ? P.extras : list === "extras" ? P.req : [],
     open = grMs === list;
   return `<div class="ms grms${open ? " open" : ""}" data-grms="${list}"><button type="button" class="ms-field" aria-haspopup="listbox" aria-expanded="${open}">${sel.length ? sel.map(k => `<span class="chip-sel ${kind}">${esc(grLab(k))}<span class="x" data-grx="${k}" aria-label="Remove ${esc(grLab(k))}">×</span></span>`).join("") : `<span class="ph">${ph}</span>`}<span class="caret">▾</span></button>
-  <ul class="ms-list" role="listbox" aria-multiselectable="true" ${open ? "" : "hidden"}>${GR_CRIT.map(([k, l]) => {
-    const on = sel.includes(k),
-      dis = other.includes(k);
-    return `<li role="option" aria-selected="${on}" aria-disabled="${dis}" data-grk="${k}" class="${dis ? "dis" : ""}"><span class="box ${kind}">${on ? "✓" : ""}</span>${esc(l)}${dis ? `<em>${list === "req" ? "is an extra" : "is required"}</em>` : ""}</li>`;
-  }).join("")}</ul></div>`;
+  <ul class="ms-list" role="listbox" aria-multiselectable="true" ${open ? "" : "hidden"}>${GR_GROUPS.map(
+    ([g, keys]) =>
+      `<li class="ms-grp" role="presentation">${g}</li>` +
+      keys
+        .map(k => {
+          const l = grLab(k).replace(/^(Weekly|Daily|4H) /, ""),
+            on = sel.includes(k),
+            dis = other.includes(k);
+          return `<li role="option" aria-selected="${on}" aria-disabled="${dis}" data-grk="${k}" class="${dis ? "dis" : ""}"><span class="box ${kind}">${on ? "✓" : ""}</span>${esc(l[0].toUpperCase() + l.slice(1))}${dis ? `<em>${list === "req" ? "is an extra" : "is required"}</em>` : ""}</li>`;
+        })
+        .join("")
+  ).join("")}</ul></div>`;
 }
 function grRender() {
   const box = $("#grEd");

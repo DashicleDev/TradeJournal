@@ -30,6 +30,12 @@ const GR_CRIT = [
   ["d:dcc", "Daily last CC"],
   ["d:sd", "Daily S&D zone"],
 ];
+// Groups for the pick lists in the grade rules editor
+const GR_GROUPS = [
+  ["Weekly", ["ms", "trend", "fibc", "fiba", "ic", "pattern", "whl", "sd", "pz", "lcc"]],
+  ["Daily", ["dPat", "dMs", "d:fc", "d:dcc", "d:sd"]],
+  ["4H", ["hMs"]],
+];
 const GR_FLAGS = ["fibc", "fiba", "ic", "pattern", "whl", "sd", "pz", "lcc"];
 const GR_DEF = {
   1: { req: [], extras: ["fibc", "lcc", "pz", "sd"], min: 1, flags: GR_FLAGS, inner: "" },

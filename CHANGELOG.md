@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.1.4 — 2026-11-10
+
+- The pick lists in the grade rules editor are grouped under Weekly, Daily and 4H.
+
 ## 1.1.3 — 2026-11-10
 
 - Grade rules can use **Daily pattern** (every trade concept except Weekly - 4H; Weekly - 4H counts as against) next to **Weekly pattern**.
