@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.0.1 — 2026-11-09
+
+- Project notes grow to fit their text instead of scrolling inside a fixed box.
+
 ## 1.0.0 — 2026-11-09
 
 First numbered release. The code is split into readable files (`css/app.css` and `js/*.js`) with an architecture overview, the database schema and a release script. No changes to how the app works.
