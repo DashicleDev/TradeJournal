@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.1.1 — 2026-11-10
+
+- Grade rules editor laid out like the trade form: Weekly, Daily and 4H sections, and per item a choice of **— / Required / Extra** plus **✗ Against → C**, with a summary per section.
+
 ## 1.1.0 — 2026-11-09
 
 - **New grade system: A / B / C / X from your own rules per weekly phase**, replacing the points score. In Settings → Forex → Grade rules you choose per phase:

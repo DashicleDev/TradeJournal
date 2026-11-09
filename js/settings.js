@@ -221,25 +221,85 @@ function grPreview() {
     <table class="grtab"><thead><tr><th>Grade</th><th class="num">Trades</th><th class="num">Avg R</th><th class="num">Total</th><th class="num">Win</th></tr></thead><tbody>${rows}</tbody></table>
     <p class="hint" style="margin:6px 0 0">${T.length} taken trades${none ? `, ${none} without a phase or analysis (no grade)` : ""}. Changes apply right away.</p></div>`;
 }
+const GR_GROUPS = [
+  [
+    "Weekly",
+    [
+      ["Structure", ["trend", "ms"]],
+      ["Pros & cons", ["fibc", "fiba", "ic", "pattern", "whl", "sd", "pz", "lcc"]],
+    ],
+  ],
+  ["Daily", [["", ["dMs", "d:fc", "d:dcc", "d:sd"]]]],
+  ["4H", [["", ["hMs"]]]],
+];
+let grOpen = new Set(["Weekly"]);
 function grRender() {
   const box = $("#grEd");
   if (!box) return;
   const P = GR[grPh],
-    chips = (kind, sel) =>
-      `<div class="grchips">${GR_CRIT.map(([k, l]) => `<button type="button" class="grchip${sel.includes(k) ? " on" : ""}" data-gr="${kind}" data-k="${k}" aria-pressed="${sel.includes(k)}">${esc(l)}</button>`).join("")}</div>`;
-  box.innerHTML = `<div class="segs" id="seg-grph"></div>
-    <div class="grblk"><b>Required <span class="grade gX">X</span></b><small>Every one of these must be with you, otherwise the trade is X.</small>${chips("req", P.req)}</div>
-    <div class="grblk"><b>Red flags <span class="grade gC">C</span></b><small>Any of these marked against makes it C.</small>${chips("flags", P.flags)}</div>
-    <div class="grblk"><b>Extras <span class="grade gA">A</span></b><small>With at least <input type="number" id="grMin" min="0" max="9" step="1" value="${P.min}" aria-label="Extras needed for A"> of these with you it's A, otherwise B.</small>${chips("extras", P.extras)}</div>
-    <label class="grinner"><input type="checkbox" id="grInner" ${P.innerB ? "checked" : ""}> Inner structure: at most B</label>
+    role = k => (P.req.includes(k) ? "req" : P.extras.includes(k) ? "extra" : ""),
+    segs = (name, opts, cur) =>
+      opts
+        .map(
+          ([v, l, c]) =>
+            `<label class="seg${c ? " " + c : ""}"><input type="radio" name="${name}" value="${v}" ${String(cur) === String(v) ? "checked" : ""}><span>${l}</span></label>`
+        )
+        .join(""),
+    row = k =>
+      `<div class="f grf"><span>${esc({ ms: "Market structure", dMs: "Market structure", hMs: "Market structure", "d:fc": "FC", "d:dcc": "Last CC", "d:sd": "S&D zone" }[k] || grLab(k))}</span><div class="mstf">${segs(
+        "grr-" + k,
+        [
+          ["", "—", "none"],
+          ["req", "Required", "msok"],
+          ["extra", "Extra", "msok"],
+        ],
+        role(k)
+      )}<label class="seg msno"><input type="checkbox" data-grflag="${k}" ${P.flags.includes(k) ? "checked" : ""}><span>✗ Against → C</span></label></div></div>`,
+    sum = keys => {
+      const r = keys.filter(k => P.req.includes(k)).length,
+        e = keys.filter(k => P.extras.includes(k)).length,
+        f = keys.filter(k => P.flags.includes(k)).length;
+      return [r && `${r} required`, e && `${e} extra${e > 1 ? "s" : ""}`, f && `${f} red flag${f > 1 ? "s" : ""}`]
+        .filter(Boolean)
+        .join(" · ");
+    };
+  box.innerHTML = `<div class="f"><span>Rules for weekly phase</span><div class="segs">${segs(
+    "grph",
+    ["1", "2", "3", "4"].map(p => [p, p]),
+    grPh
+  )}</div></div>
+    <p class="hint" style="margin:0"><b>Required</b> must be with you, otherwise the trade is <span class="grade gX">X</span> · <b>Extra</b> counts towards <span class="grade gA">A</span> · <b>✗ Against → C</b> makes it <span class="grade gC">C</span> when that item is marked against · otherwise <span class="grade gB">B</span>.</p>
+    <div class="fields grtop">
+      <div class="f"><span>A needs at least</span><div class="segs">${segs(
+        "grmin",
+        [
+          [1, "1 extra"],
+          [2, "2 extras"],
+          [3, "3 extras"],
+          [0, "Never A"],
+        ],
+        P.min
+      )}</div></div>
+      <div class="f"><span>Inner structure</span><div class="segs">${segs(
+        "grinner",
+        [
+          ["", "Same rules"],
+          ["b", "At most B"],
+        ],
+        P.innerB ? "b" : ""
+      )}</div></div>
+    </div>
+    ${GR_GROUPS.map(([sec, groups]) => {
+      const keys = groups.flatMap(g => g[1]);
+      return `<details class="subsec grsec" data-grsec="${sec}" ${grOpen.has(sec) ? "open" : ""}><summary><span>${sec}</span><span class="sumval">${sum(keys)}</span></summary>${groups
+        .map(
+          ([gl, ks]) =>
+            `<div class="wgrp">${gl ? `<span class="wgl">${gl}</span>` : ""}<div class="grlist">${ks.map(row).join("")}</div></div>`
+        )
+        .join("")}</details>`;
+    }).join("")}
     ${grPreview()}
     <button type="button" class="btn small ghost" id="grReset">Reset all phases to default</button>`;
-  seg(
-    "seg-grph",
-    "grph",
-    ["1", "2", "3", "4"].map(p => [p, "Phase " + p])
-  );
-  setRadio("grph", grPh);
   seg("seg-grset", "grset", [
     ["plan", "On plan"],
     ["bt", "Backtests"],
@@ -247,6 +307,16 @@ function grRender() {
   ]);
   setRadio("grset", grSet);
 }
+document.addEventListener(
+  "toggle",
+  e => {
+    const d = e.target;
+    if (!d.dataset || !d.dataset.grsec) return;
+    if (d.open) grOpen.add(d.dataset.grsec);
+    else grOpen.delete(d.dataset.grsec);
+  },
+  true
+);
 const grUpd = patch => {
   const cur = getSet().gradeRules || {},
     r = grNorm(cur);
@@ -254,26 +324,31 @@ const grUpd = patch => {
   grSave(r);
 };
 document.addEventListener("click", e => {
-  const b = e.target.closest && e.target.closest("[data-gr]");
-  if (b) {
-    const kind = b.dataset.gr,
-      k = b.dataset.k,
-      sel = GR[grPh][kind];
-    grUpd({ [kind]: sel.includes(k) ? sel.filter(x => x !== k) : [...sel, k] });
-    return;
-  }
   if (e.target.id === "grReset") grSave(null);
 });
 document.addEventListener("change", e => {
   const t = e.target;
+  if (!t.closest || !t.closest("#grEd")) return;
   if (t.name === "grph") {
     grPh = t.value;
     grRender();
   } else if (t.name === "grset") {
     grSet = t.value;
     grRender();
-  } else if (t.id === "grMin") grUpd({ min: Math.max(0, Math.round(+t.value || 0)) });
-  else if (t.id === "grInner") grUpd({ innerB: t.checked });
+  } else if (t.name === "grmin") grUpd({ min: +t.value });
+  else if (t.name === "grinner") grUpd({ innerB: t.value === "b" });
+  else if (t.name && t.name.startsWith("grr-")) {
+    const k = t.name.slice(4),
+      P = GR[grPh];
+    grUpd({
+      req: t.value === "req" ? [...P.req.filter(x => x !== k), k] : P.req.filter(x => x !== k),
+      extras: t.value === "extra" ? [...P.extras.filter(x => x !== k), k] : P.extras.filter(x => x !== k),
+    });
+  } else if (t.dataset && t.dataset.grflag) {
+    const k = t.dataset.grflag,
+      P = GR[grPh];
+    grUpd({ flags: t.checked ? [...P.flags.filter(x => x !== k), k] : P.flags.filter(x => x !== k) });
+  }
 });
 let setTab = "look";
 function showSetTab(k) {
