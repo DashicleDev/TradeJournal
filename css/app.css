@@ -4907,3 +4907,8 @@ button.pill.simpill {
   padding: 5px 8px;
   font-size: 13px;
 }
+.grovh {
+  margin: 6px 0 -8px;
+  padding-top: 12px;
+  border-top: 1px dashed var(--line);
+}

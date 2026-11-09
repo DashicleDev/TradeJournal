@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.1.6 — 2026-11-10
+
+- The overview of all phases moved to the bottom of the grade rules editor.
+
 ## 1.1.5 — 2026-11-10
 
 - "How your trades grade" has filters: on plan / off plan / both, live / backtest / both, and a from–to date range.

@@ -266,7 +266,6 @@ function grRender() {
       })
       .join("");
   box.innerHTML = `${grPreview()}
-    <table class="grov"><thead><tr><th>Phase</th><th>X unless with you</th><th>A with</th><th class="num">Red flags</th></tr></thead><tbody>${overview}</tbody></table>
     <div class="grph"><b>Phase ${grPh}</b><div class="segs">${["1", "2", "3", "4"].map(p => `<label class="seg"><input type="radio" name="grph" value="${p}" ${p === grPh ? "checked" : ""}><span>${p}</span></label>`).join("")}</div></div>
     <div class="grline"><span><span class="grade gX">X</span> unless with you</span>${grMsHTML("req")}</div>
     <div class="grline"><span><span class="grade gC">C</span> if marked against</span>${grMsHTML("flags")}</div>
@@ -288,6 +287,8 @@ function grRender() {
       )
       .join("")}</div></div>
     <p class="hint" style="margin:0">Anything else is <span class="grade gB">B</span>.</p>
+    <b class="eyebrow grovh">All phases</b>
+    <table class="grov"><thead><tr><th>Phase</th><th>X unless with you</th><th>A with</th><th class="num">Red flags</th></tr></thead><tbody>${overview}</tbody></table>
     <button type="button" class="btn small ghost" id="grReset">Reset all phases to default</button>`;
   seg("seg-grplan", "grplan", [
     ["plan", "On plan"],
