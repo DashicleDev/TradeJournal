@@ -221,83 +221,58 @@ function grPreview() {
     <table class="grtab"><thead><tr><th>Grade</th><th class="num">Trades</th><th class="num">Avg R</th><th class="num">Total</th><th class="num">Win</th></tr></thead><tbody>${rows}</tbody></table>
     <p class="hint" style="margin:6px 0 0">${T.length} taken trades${none ? `, ${none} without a phase or analysis (no grade)` : ""}. Changes apply right away.</p></div>`;
 }
-const GR_GROUPS = [
-  [
-    "Weekly",
-    [
-      ["Structure", ["trend", "ms"]],
-      ["Pros & cons", ["fibc", "fiba", "ic", "pattern", "whl", "sd", "pz", "lcc"]],
-    ],
-  ],
-  ["Daily", [["", ["dMs", "d:fc", "d:dcc", "d:sd"]]]],
-  ["4H", [["", ["hMs"]]]],
-];
-let grOpen = new Set(["Weekly"]);
+let grMs = ""; // which list is open: "req" | "flags" | "extras"
+const GR_LISTS = {
+  req: { kind: "for", ph: "Nothing required" },
+  flags: { kind: "against", ph: "Nothing" },
+  extras: { kind: "extra", ph: "Nothing, so never A" },
+};
+// the multi-select from the trade form, for one rule list of the open phase
+function grMsHTML(list) {
+  const P = GR[grPh],
+    { kind, ph } = GR_LISTS[list],
+    sel = P[list],
+    other = list === "req" ? P.extras : list === "extras" ? P.req : [],
+    open = grMs === list;
+  return `<div class="ms grms${open ? " open" : ""}" data-grms="${list}"><button type="button" class="ms-field" aria-haspopup="listbox" aria-expanded="${open}">${sel.length ? sel.map(k => `<span class="chip-sel ${kind}">${esc(grLab(k))}<span class="x" data-grx="${k}" aria-label="Remove ${esc(grLab(k))}">×</span></span>`).join("") : `<span class="ph">${ph}</span>`}<span class="caret">▾</span></button>
+  <ul class="ms-list" role="listbox" aria-multiselectable="true" ${open ? "" : "hidden"}>${GR_CRIT.map(([k, l]) => {
+    const on = sel.includes(k),
+      dis = other.includes(k);
+    return `<li role="option" aria-selected="${on}" aria-disabled="${dis}" data-grk="${k}" class="${dis ? "dis" : ""}"><span class="box ${kind}">${on ? "✓" : ""}</span>${esc(l)}${dis ? `<em>${list === "req" ? "is an extra" : "is required"}</em>` : ""}</li>`;
+  }).join("")}</ul></div>`;
+}
 function grRender() {
   const box = $("#grEd");
   if (!box) return;
   const P = GR[grPh],
-    role = k => (P.req.includes(k) ? "req" : P.extras.includes(k) ? "extra" : ""),
-    segs = (name, opts, cur) =>
-      opts
-        .map(
-          ([v, l, c]) =>
-            `<label class="seg${c ? " " + c : ""}"><input type="radio" name="${name}" value="${v}" ${String(cur) === String(v) ? "checked" : ""}><span>${l}</span></label>`
-        )
-        .join(""),
-    row = k =>
-      `<div class="f grf"><span>${esc({ ms: "Market structure", dMs: "Market structure", hMs: "Market structure", "d:fc": "FC", "d:dcc": "Last CC", "d:sd": "S&D zone" }[k] || grLab(k))}</span><div class="mstf">${segs(
-        "grr-" + k,
-        [
-          ["", "—", "none"],
-          ["req", "Required", "msok"],
-          ["extra", "Extra", "msok"],
-        ],
-        role(k)
-      )}<label class="seg msno"><input type="checkbox" data-grflag="${k}" ${P.flags.includes(k) ? "checked" : ""}><span>✗ Against → C</span></label></div></div>`,
-    sum = keys => {
-      const r = keys.filter(k => P.req.includes(k)).length,
-        e = keys.filter(k => P.extras.includes(k)).length,
-        f = keys.filter(k => P.flags.includes(k)).length;
-      return [r && `${r} required`, e && `${e} extra${e > 1 ? "s" : ""}`, f && `${f} red flag${f > 1 ? "s" : ""}`]
-        .filter(Boolean)
-        .join(" · ");
-    };
-  box.innerHTML = `<div class="f"><span>Rules for weekly phase</span><div class="segs">${segs(
-    "grph",
-    ["1", "2", "3", "4"].map(p => [p, p]),
-    grPh
-  )}</div></div>
-    <p class="hint" style="margin:0"><b>Required</b> must be with you, otherwise the trade is <span class="grade gX">X</span> · <b>Extra</b> counts towards <span class="grade gA">A</span> · <b>✗ Against → C</b> makes it <span class="grade gC">C</span> when that item is marked against · otherwise <span class="grade gB">B</span>.</p>
-    <div class="fields grtop">
-      <div class="f"><span>A needs at least</span><div class="segs">${segs(
-        "grmin",
-        [
-          [1, "1 extra"],
-          [2, "2 extras"],
-          [3, "3 extras"],
-          [0, "Never A"],
-        ],
-        P.min
-      )}</div></div>
-      <div class="f"><span>Inner structure</span><div class="segs">${segs(
-        "grinner",
-        [
-          ["", "Same rules"],
-          ["b", "At most B"],
-        ],
-        P.innerB ? "b" : ""
-      )}</div></div>
-    </div>
-    ${GR_GROUPS.map(([sec, groups]) => {
-      const keys = groups.flatMap(g => g[1]);
-      return `<details class="subsec grsec" data-grsec="${sec}" ${grOpen.has(sec) ? "open" : ""}><summary><span>${sec}</span><span class="sumval">${sum(keys)}</span></summary>${groups
-        .map(
-          ([gl, ks]) =>
-            `<div class="wgrp">${gl ? `<span class="wgl">${gl}</span>` : ""}<div class="grlist">${ks.map(row).join("")}</div></div>`
-        )
-        .join("")}</details>`;
-    }).join("")}
+    names = (ks, empty) => (ks.length ? ks.map(grLab).join(", ") : empty),
+    overview = ["1", "2", "3", "4"]
+      .map(ph => {
+        const R = GR[ph];
+        return `<tr class="${ph === grPh ? "on" : ""}" data-grgo="${ph}"><td><b>${ph}</b></td><td>${esc(names(R.req, "—"))}</td><td>${R.min ? `${R.min} of ${esc(names(R.extras, "—"))}` : "never"}${R.innerB ? " · inner at most B" : ""}</td><td class="num">${R.flags.length}</td></tr>`;
+      })
+      .join("");
+  box.innerHTML = `<table class="grov"><thead><tr><th>Phase</th><th>X unless with you</th><th>A with</th><th class="num">Red flags</th></tr></thead><tbody>${overview}</tbody></table>
+    <div class="grph"><b>Phase ${grPh}</b><div class="segs">${["1", "2", "3", "4"].map(p => `<label class="seg"><input type="radio" name="grph" value="${p}" ${p === grPh ? "checked" : ""}><span>${p}</span></label>`).join("")}</div></div>
+    <div class="grline"><span><span class="grade gX">X</span> unless with you</span>${grMsHTML("req")}</div>
+    <div class="grline"><span><span class="grade gC">C</span> if marked against</span>${grMsHTML("flags")}</div>
+    <div class="grline"><span><span class="grade gA">A</span> with at least <select id="grMin" aria-label="Extras needed for A">${[
+      1, 2, 3, 4,
+    ]
+      .map(n => `<option value="${n}" ${P.min === n ? "selected" : ""}>${n}</option>`)
+      .join(
+        ""
+      )}<option value="0" ${P.min === 0 ? "selected" : ""}>no</option></select> of</span>${grMsHTML("extras")}</div>
+    <div class="grline"><span>Inner structure</span><div class="segs">${[
+      ["", "Same rules"],
+      ["b", "At most B"],
+    ]
+      .map(
+        ([v, l]) =>
+          `<label class="seg"><input type="radio" name="grinner" value="${v}" ${(P.innerB ? "b" : "") === v ? "checked" : ""}><span>${l}</span></label>`
+      )
+      .join("")}</div></div>
+    <p class="hint" style="margin:0">Anything else is <span class="grade gB">B</span>.</p>
     ${grPreview()}
     <button type="button" class="btn small ghost" id="grReset">Reset all phases to default</button>`;
   seg("seg-grset", "grset", [
@@ -307,13 +282,46 @@ function grRender() {
   ]);
   setRadio("grset", grSet);
 }
+document.addEventListener("click", e => {
+  const ms = e.target.closest && e.target.closest(".grms");
+  if (grMs && !ms) {
+    grMs = "";
+    grRender();
+  }
+  const go = e.target.closest && e.target.closest("[data-grgo]");
+  if (go) {
+    grPh = go.dataset.grgo;
+    grMs = "";
+    return grRender();
+  }
+  if (!ms) return;
+  const list = ms.dataset.grms,
+    P = GR[grPh],
+    x = e.target.closest("[data-grx]"),
+    li = e.target.closest("[data-grk]");
+  if (x) {
+    grUpd({ [list]: P[list].filter(k => k !== x.dataset.grx) });
+    return;
+  }
+  if (li) {
+    if (li.classList.contains("dis")) return;
+    const k = li.dataset.grk;
+    grUpd({ [list]: P[list].includes(k) ? P[list].filter(v => v !== k) : [...P[list], k] });
+    return;
+  }
+  if (e.target.closest(".ms-field")) {
+    grMs = grMs === list ? "" : list;
+    grRender();
+  }
+});
 document.addEventListener(
-  "toggle",
+  "keydown",
   e => {
-    const d = e.target;
-    if (!d.dataset || !d.dataset.grsec) return;
-    if (d.open) grOpen.add(d.dataset.grsec);
-    else grOpen.delete(d.dataset.grsec);
+    if (e.key === "Escape" && grMs) {
+      e.stopImmediatePropagation();
+      grMs = "";
+      grRender();
+    }
   },
   true
 );
@@ -335,20 +343,8 @@ document.addEventListener("change", e => {
   } else if (t.name === "grset") {
     grSet = t.value;
     grRender();
-  } else if (t.name === "grmin") grUpd({ min: +t.value });
+  } else if (t.id === "grMin") grUpd({ min: +t.value });
   else if (t.name === "grinner") grUpd({ innerB: t.value === "b" });
-  else if (t.name && t.name.startsWith("grr-")) {
-    const k = t.name.slice(4),
-      P = GR[grPh];
-    grUpd({
-      req: t.value === "req" ? [...P.req.filter(x => x !== k), k] : P.req.filter(x => x !== k),
-      extras: t.value === "extra" ? [...P.extras.filter(x => x !== k), k] : P.extras.filter(x => x !== k),
-    });
-  } else if (t.dataset && t.dataset.grflag) {
-    const k = t.dataset.grflag,
-      P = GR[grPh];
-    grUpd({ flags: t.checked ? [...P.flags.filter(x => x !== k), k] : P.flags.filter(x => x !== k) });
-  }
 });
 let setTab = "look";
 function showSetTab(k) {

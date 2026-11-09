@@ -756,8 +756,8 @@ function msRender() {
   });
 }
 document.addEventListener("click", e => {
-  const box = e.target.closest(".ms:not(.exms):not(.rvms)");
-  document.querySelectorAll(".ms.open:not(.exms):not(.rvms)").forEach(b => {
+  const box = e.target.closest(".ms:not(.exms):not(.rvms):not(.grms)");
+  document.querySelectorAll(".ms.open:not(.exms):not(.rvms):not(.grms)").forEach(b => {
     if (b !== box) {
       b.classList.remove("open");
       msRender();
@@ -791,7 +791,7 @@ document.addEventListener("click", e => {
 document.addEventListener(
   "keydown",
   e => {
-    if (e.key === "Escape" && document.querySelector(".ms.open")) {
+    if (e.key === "Escape" && document.querySelector(".ms.open:not(.grms)")) {
       e.stopImmediatePropagation();
       document.querySelectorAll(".ms.open").forEach(b => b.classList.remove("open"));
       msRender();

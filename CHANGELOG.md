@@ -2,7 +2,7 @@
 
 ## 1.1.1 — 2026-11-10
 
-- Grade rules editor laid out like the trade form: Weekly, Daily and 4H sections, and per item a choice of **— / Required / Extra** plus **✗ Against → C**, with a summary per section.
+- Clearer grade rules editor: an overview of all four phases on top (click a phase to edit it), then per phase three lines you can read as a sentence: **X** unless with you…, **C** if marked against…, **A** with at least N of…, each with the same multi-select as Pros and Cons in the trade form.
 
 ## 1.1.0 — 2026-11-09
 

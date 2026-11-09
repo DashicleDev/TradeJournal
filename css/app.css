@@ -1764,56 +1764,104 @@ textarea.prtext {
 }
 .setrow.grrow {
   display: grid;
-  grid-template-columns: 1fr;
+  grid-template-columns: minmax(0, 1fr);
   gap: 12px;
 }
 #grEd {
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
   gap: 14px;
   min-width: 0;
 }
-.grtop {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-  gap: 12px;
+.grov {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+  table-layout: fixed;
 }
-.grlist {
-  display: grid;
-  gap: 2px;
+.grov th:first-child {
+  width: 56px;
 }
-.grf {
-  display: grid;
-  grid-template-columns: minmax(90px, 120px) 1fr;
-  align-items: center;
-  gap: 10px;
-  padding: 6px 0;
+.grov th:last-child {
+  width: 80px;
+}
+.grov td {
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+.grov th {
+  font: 700 11px var(--body);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--muted);
+  text-align: left;
+  padding: 4px 8px;
+}
+.grov td {
+  padding: 7px 8px;
   border-top: 1px solid var(--line);
+  vertical-align: top;
 }
-.grlist .grf:first-child {
-  border-top: 0;
+.grov .num {
+  text-align: right;
 }
-.grf > span {
+.grov tbody tr {
+  cursor: pointer;
+}
+.grov tbody tr:hover td {
+  background: var(--soft);
+}
+.grov tbody tr.on td {
+  background: color-mix(in srgb, var(--accent) 12%, transparent);
+}
+.grov tbody tr.on td:first-child {
+  box-shadow: inset 3px 0 0 var(--accent);
+}
+.grph {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 6px;
+  padding-top: 12px;
+  border-top: 1px dashed var(--line);
+}
+.grph > b {
+  font-size: 16px;
+}
+.grline {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 6px;
+}
+.grline .ms,
+#grEd .grprev {
+  min-width: 0;
+}
+#grEd .grprev .row {
+  flex-wrap: wrap;
+}
+.grline > span {
+  display: flex;
+  align-items: center;
+  gap: 6px;
   font-size: 13.5px;
 }
-#grEd .grf .mstf {
-  flex-wrap: nowrap;
-  gap: 4px;
+.grline select {
+  width: auto;
+  padding: 2px 4px;
+  font: inherit;
 }
-#grEd .grf .seg span {
-  padding: 4px 9px;
-  font-size: 12.5px;
-  white-space: nowrap;
+.chip-sel.extra {
+  background: color-mix(in srgb, var(--accent) 16%, transparent);
+  color: var(--ink);
 }
-#grEd .grf .seg.none input:checked + span {
-  background: var(--soft, transparent);
-  border-color: var(--line);
-  color: var(--muted);
-}
-.grsec .wgrp {
-  margin-top: 6px;
+.ms-list li[aria-selected="true"] .box.extra {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
 }
 @media (max-width: 620px) {
-  .grf {
+  .grline {
     grid-template-columns: 1fr;
     gap: 4px;
   }
@@ -4224,15 +4272,13 @@ fieldset.subs-closed .legend-toggle .chev {
   flex-wrap: wrap;
 }
 #stockForm .mstf label.seg.msok input:checked + span,
-#tradeForm2 .mstf label.seg.msok input:checked + span,
-#grEd .mstf label.seg.msok input:checked + span {
+#tradeForm2 .mstf label.seg.msok input:checked + span {
   background: var(--good);
   border-color: var(--good);
   color: #fff;
 }
 #stockForm .mstf label.seg.msno input:checked + span,
-#tradeForm2 .mstf label.seg.msno input:checked + span,
-#grEd .mstf label.seg.msno input:checked + span {
+#tradeForm2 .mstf label.seg.msno input:checked + span {
   background: var(--bad);
   border-color: var(--bad);
   color: #fff;
