@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.2.18 — 2026-11-10
+
+- Re-evaluate: choose **Previous analysis: Hidden (blind) or Shown**. Shown fills in what you analysed back then, with the pair and date, so you correct it; the reveal shows what you changed.
+- Re-evaluate: **only trades with** a phase, grade, plan verdict or result you pick, on top of live/backtest, period and not-yet-reviewed.
+
 ## 1.2.17 — 2026-11-10
 
 - Pattern in Pattern is no longer a 4H entry; trades that had it are now Reversal (the weekly and daily Pattern in Pattern stay).

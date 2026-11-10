@@ -108,7 +108,12 @@ function rvPool(o) {
         return (!r.from || (t.date || "") >= r.from) && (!r.to || (t.date || "") <= r.to);
       })() &&
       t.shotLinks &&
-      (t.shotLinks.weekly || t.shotLinks.daily || t.shotLinks.h4)
+      (t.shotLinks.weekly || t.shotLinks.daily || t.shotLinks.h4) &&
+      // optional set filters: phase, grade, plan verdict, result
+      (!o.ph || String(t.fase || "") === o.ph) &&
+      (!o.gr || tGrade(t) === o.gr) &&
+      (!o.pl || (o.pl === "plan" ? t.evaluation === "plan" : !!t.evaluation && t.evaluation !== "plan")) &&
+      (!o.oc || (t.outcome || (t.r > 0 ? "win" : t.r < 0 ? "loss" : "be")) === o.oc)
   );
 }
 function rvOrig(t) {
@@ -176,12 +181,12 @@ const rvMs = (k, v) =>
 const rvSel = (k, opts, v, ph) =>
   `<select data-rks="${k}"><option value="">${ph}</option>${opts.map(o => `<option ${o === v ? "selected" : ""}>${esc(o)}</option>`).join("")}</select>`;
 const rvF = (l, h) => `<div class="f"><span>${l}</span>${h}</div>`;
-function rvChart(t, step) {
+function rvChart(t, step, open) {
   const ln = (t.shotLinks || {})[RV_SLOT[step]],
     img = tvImg(ln);
   if (!ln) return `<div class="rvimg none">No ${step.toLowerCase()} chart saved for this trade.</div>`;
   if (!img) return `<div class="rvimg none">This chart link can't be shown as a picture.</div>`;
-  return `<div class="rvimg" data-rvzoom="${esc(img)}" title="Click to zoom"><img src="${esc(img)}" alt="${step} chart" referrerpolicy="no-referrer" onerror="this.parentNode.classList.add('none');this.parentNode.removeAttribute('data-rvzoom');this.parentNode.textContent='Chart could not load here. It works in the GitHub app.'"><span class="rvmask tl"></span><span class="rvzhint">⤢ Zoom</span></div>`;
+  return `<div class="rvimg${open ? " open" : ""}" data-rvzoom="${esc(img)}" ${open ? 'data-nomask="1"' : ""} title="Click to zoom"><img src="${esc(img)}" alt="${step} chart" referrerpolicy="no-referrer" onerror="this.parentNode.classList.add('none');this.parentNode.removeAttribute('data-rvzoom');this.parentNode.textContent='Chart could not load here. It works in the GitHub app.'">${open ? "" : '<span class="rvmask tl"></span>'}<span class="rvzhint">⤢ Zoom</span></div>`;
 }
 let rvOpen = "";
 function rvMsBox(key, label, kind, CR, get) {
@@ -916,8 +921,22 @@ function rvGameRender() {
     ];
     box.innerHTML = `${shown ? rvResultHTML(shown) : ""}
       ${L.length ? `<div class="panel"><span class="eyebrow">Ongoing</span><h2>Your review sessions</h2><div class="rvlist">${L.map(x => `<div class="rvsess"><div><b>${esc(x.name || "Review session")}</b><small class="hint" style="margin:0;display:block">${x.i} of ${x.queue.length} reviewed · last used ${esc(fmtD(isoD(new Date(x.touched || x.started || Date.now()))))}</small></div><div class="rvbar"><i style="width:${Math.round((x.i / x.queue.length) * 100)}%"></i></div><div class="row" style="gap:6px"><button type="button" class="btn small ghost" data-rvdel="${x.id}">Delete</button><button type="button" class="btn small primary" data-rvres="${x.id}">Resume</button></div></div>`).join("")}</div></div>` : ""}
-      <div class="panel rvsetup"><span class="eyebrow">New session</span><h2>Re-analyse old trades blind</h2>
-      <p class="hint">You see the weekly, daily and 4H chart one by one, without pair or result, and fill in your analysis. At the end it shows what you filled in back then.</p>
+      <div class="panel rvsetup"><span class="eyebrow">New session</span><h2>Re-analyse old trades${o.open ? "" : " blind"}</h2>
+      <p class="hint">${o.open ? "You see the weekly, daily and 4H chart one by one with the pair and the analysis you filled in back then, and correct what you'd judge differently now. At the end it shows what you changed." : "You see the weekly, daily and 4H chart one by one, without pair or result, and fill in your analysis. At the end it shows what you filled in back then."}</p>
+      <div class="fields" style="margin-bottom:12px">
+      ${rvF(
+        "Previous analysis",
+        `<div class="segs">${[
+          ["", "Hidden (blind)"],
+          ["1", "Shown"],
+        ]
+          .map(
+            ([v, l]) =>
+              `<button type="button" class="rvb${(o.open || "") === v ? " on" : ""}" data-ro="open" data-rv="${v}">${l}</button>`
+          )
+          .join("")}</div>`
+      )}
+      </div>
       <div class="fields">${rvF(
         "Trades",
         `<div class="segs">${[
@@ -945,6 +964,53 @@ function rvGameRender() {
           )
           .join("")}</div>`
       )}</div>
+      <div class="fields rvfilt"><span class="eyebrow rvfh">Only trades with</span>
+      ${(() => {
+        // set filters: one row of choices each, "Any" clears it
+        const fseg = (k, opts) =>
+          `<div class="segs">${[["", "Any"], ...opts]
+            .map(
+              ([v, l]) =>
+                `<button type="button" class="rvb${(o[k] || "") === v ? " on" : ""}" data-ro="${k}" data-rv="${v}">${l}</button>`
+            )
+            .join("")}</div>`;
+        return (
+          rvF(
+            "Phase",
+            fseg("ph", [
+              ["1", "1"],
+              ["2", "2"],
+              ["3", "3"],
+              ["4", "4"],
+            ])
+          ) +
+          (feat("grade")
+            ? rvF(
+                "Grade",
+                fseg(
+                  "gr",
+                  GRADES.map(g => [g, g])
+                )
+              )
+            : "") +
+          rvF(
+            "According to plan",
+            fseg("pl", [
+              ["plan", "Yes"],
+              ["off", "No"],
+            ])
+          ) +
+          rvF(
+            "Result",
+            fseg("oc", [
+              ["win", "Win"],
+              ["be", "BE"],
+              ["loss", "Loss"],
+            ])
+          )
+        );
+      })()}
+      </div>
       <div class="f" style="margin-top:12px"><span>Period</span><div class="segs">${per.map(([v, l]) => `<button type="button" class="rvb${o.per === v ? " on" : ""}" data-ro="per" data-rv="${v}">${l}</button>`).join("")}</div></div>
       ${o.per === "custom" ? `<div class="fields" style="margin-top:10px">${rvF("From", `<input type="date" data-ros="from" value="${esc(o.from || "")}">`)}${rvF("To", `<input type="date" data-ros="to" value="${esc(o.to || "")}">`)}</div>` : o.per === "all" ? "" : `<div class="rvper"><button type="button" class="btn small" data-rvshift="-1" aria-label="Previous">‹</button><b>${esc(R.label)}</b><button type="button" class="btn small" data-rvshift="1" aria-label="Next">›</button>${o.anchor && o.anchor !== isoD(new Date()) ? `<button type="button" class="btn small ghost" data-rvshift="0">Today</button>` : ""}</div>`}
       <div class="row" style="gap:10px;align-items:center;margin-top:16px"><button type="button" class="btn primary" id="rvStart" ${n ? "" : "disabled"}>Start review</button><span class="hint" style="margin:0">${n} trade${n === 1 ? "" : "s"} with charts${R.from || R.to ? " in " + esc(R.label) : ""}, in random order${(() => {
@@ -960,14 +1026,15 @@ function rvGameRender() {
     rvSave();
     return rvRender();
   }
-  const a = S.cur || (S.cur = rvBlank()),
+  // open session: start from what you filled in back then
+  const a = S.cur || (S.cur = S.open ? JSON.parse(JSON.stringify(rvOrig(t))) : rvBlank()),
     step = S.step || 0,
     prog = `Trade ${S.i + 1} of ${S.queue.length}`;
   if (step < 3) {
     const st = RV_STEPS[step];
-    box.innerHTML = `<div class="panel rvstep"><div class="row spread"><div><span class="eyebrow">${prog} · step ${step + 1} of 3</span><h2>${st}</h2></div><div class="row" style="gap:6px"><button type="button" class="btn small ghost" id="rvEnd">End session</button><button type="button" class="btn small ghost" id="rvPause">Pause</button></div></div>
+    box.innerHTML = `<div class="panel rvstep"><div class="row spread"><div><span class="eyebrow">${prog} · step ${step + 1} of 3</span><h2>${st}${S.open ? ` <span class="hint" style="margin:0;font-size:15px">· ${esc(t.pair || "")} ${esc(fmtD(t.date))}</span>` : ""}</h2></div><div class="row" style="gap:6px"><button type="button" class="btn small ghost" id="rvEnd">End session</button><button type="button" class="btn small ghost" id="rvPause">Pause</button></div></div>
       <div class="rvdots">${RV_STEPS.map((x, i) => `<span class="${i < step ? "done" : i === step ? "on" : ""}">${x}</span>`).join("")}<span>Reveal</span></div>
-      ${rvChart(t, st)}${rvStepHTML(a, st)}
+      ${S.open ? `<p class="hint" style="margin:6px 0 10px">Filled in with your analysis from back then. Change what you'd judge differently now.</p>` : ""}${rvChart(t, st, S.open)}${rvStepHTML(a, st)}
       <div class="row spread" style="margin-top:16px"><button type="button" class="btn" id="rvBack" ${step ? "" : "disabled"}>← Back</button><button type="button" class="btn primary" id="rvNext">${step < 2 ? "Next: " + RV_STEPS[step + 1] + " →" : "Reveal →"}</button></div></div>`;
     return;
   }
@@ -1098,12 +1165,13 @@ $("#rvBox").addEventListener("click", e => {
     rvActive = "rv_" + Date.now().toString(36);
     rvLocal = {
       id: rvActive,
-      name: `${who} · ${R.label}`,
+      name: `${who} · ${R.label}${o.open ? " · open" : ""}`,
       opts: o,
+      open: !!o.open, // previous analysis shown and pre-filled instead of blind
       queue: ids,
       i: 0,
       step: 0,
-      cur: rvBlank(),
+      cur: o.open ? null : rvBlank(),
       plan: "",
       repl: "",
       started: Date.now(),
@@ -1221,7 +1289,7 @@ $("#rvBox").addEventListener("click", e => {
     }
     S.i++;
     S.step = 0;
-    S.cur = rvBlank();
+    S.cur = S.open ? null : rvBlank();
     S.plan = "";
     S.repl = "";
     rvSave();
@@ -1357,7 +1425,7 @@ function zClose() {
 document.addEventListener("click", e => {
   const im = e.target.closest("[data-rvzoom]");
   if (im) {
-    zOpen(im.dataset.rvzoom);
+    zOpen(im.dataset.rvzoom, !im.dataset.nomask);
     return;
   }
   const pv = e.target.closest("a.shotprev,a.tvwrap,a.vzoom,a[id^='slp-']");
