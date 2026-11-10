@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.2.12 — 2026-11-10
+
+- Trade form: a **View charts** button at the top of the analysis opens all of the trade's charts in the zoom, with ‹ › arrows, arrow keys or swiping to click through the timeframes, without opening each section.
+
 ## 1.2.11 — 2026-11-10
 
 - Shared page and Copy analysis name the setup by its timeframes: "Weekly - Daily - 4H" when there is a daily pattern, "Weekly - 4H" when not. The daily pattern itself (e.g. Continuation, 100 level) is listed under Daily.

@@ -1616,6 +1616,13 @@ const F2SLOTS = [
 ];
 function renderF2Shots() {
   if (typeof f2Summaries === "function") setTimeout(f2Summaries);
+  {
+    // all of this trade's charts in the zoom, ‹ › to click through them
+    const n = vGallery({ shots: f2Shots, shotLinks: f2Links }).length,
+      b = $("#f2ViewCharts");
+    b.hidden = !n;
+    b.textContent = `View charts (${n}) ›`;
+  }
   F2SLOTS.forEach(([k, sel, l]) => {
     if (k === "ltf" && radio("f2ectf")) l = radio("f2ectf").toUpperCase() + " chart";
     const id = f2Shots[k],
@@ -1709,6 +1716,10 @@ function vGallery(t) {
     }))
     .filter(g => g.src && g.src !== BLANK);
 }
+$("#f2ViewCharts").onclick = () => {
+  const gal = vGallery({ shots: f2Shots, shotLinks: f2Links });
+  if (gal.length) zOpen(gal[0].src, false, gal, 0);
+};
 function tvImg(u) {
   const m = /tradingview\.com\/x\/([A-Za-z0-9]+)/.exec(u || "");
   return m ? `https://s3.tradingview.com/snapshots/${m[1][0].toLowerCase()}/${m[1]}.png` : "";
