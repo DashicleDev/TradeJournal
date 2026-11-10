@@ -1364,7 +1364,11 @@ document.addEventListener("keydown", e => {
 });
 
 /* ---------- share links: a read-only page per trade (share.html) ---------- */
-const shareUrl = tok => new URL("share.html?t=" + tok, location.href).href;
+// With a share worker set in config.js (worker/share-worker.js) links get a trade preview in chat apps.
+const shareUrl = tok =>
+  window.TJ_CONFIG && TJ_CONFIG.shareBase
+    ? TJ_CONFIG.shareBase.replace(/\/$/, "") + "/t/" + tok
+    : new URL("share.html?t=" + tok, location.href).href;
 async function f2ShareShow(id, tok) {
   const bar = $("#f2ShareBar");
   bar.hidden = true;

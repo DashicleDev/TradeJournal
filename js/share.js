@@ -12,7 +12,8 @@
     );
   const fail = msg =>
     (box.innerHTML = `<div class="shr-card"><h2>Trade not found</h2><p class="hint">${msg}</p></div>`);
-  const tok = new URLSearchParams(location.search).get("t") || "";
+  const tok =
+    new URLSearchParams(location.search).get("t") || (/\/t\/([a-f0-9]{32})/.exec(location.pathname) || [])[1] || "";
   if (!/^[a-f0-9]{32}$/.test(tok)) return fail("This share link is incomplete.");
   const CFG = window.TJ_CONFIG;
   const SB = window.supabase.createClient(CFG.url, CFG.anonKey, {
