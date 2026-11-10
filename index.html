@@ -605,7 +605,11 @@
               </legend>
               <p class="scoreline" id="f2Score"></p>
               <div class="fields">
-                <label class="f"
+                <div class="f">
+                  <span>Setup</span>
+                  <div class="segs" id="seg-f2setup"></div>
+                </div>
+                <label class="f" hidden
                   ><span>Trade concept</span
                   ><select id="f2Concept">
                     <option value="">Choose…</option>
@@ -700,8 +704,19 @@
               <details class="subsec">
                 <summary><span>Daily</span><span class="sumval" id="f2SumD"></span></summary>
                 <div class="fields">
+                  <label class="f" id="f2DPatField" hidden
+                    ><span>Daily pattern</span
+                    ><select id="f2DPat">
+                      <option value="">Choose…</option>
+                      <option>Continuation</option>
+                      <option>Reversal</option>
+                      <option>Pattern in Pattern</option>
+                      <option>Daily Retrace</option>
+                      <option>Push IC Push</option>
+                    </select></label
+                  >
                   <label class="f" id="f2VarField" hidden
-                    ><span>Daily variant <em class="opt">optional</em></span
+                    ><span>Pattern variant <em class="opt">optional</em></span
                     ><select id="f2Variant">
                       <option value="">Pick a trade concept first</option>
                     </select></label

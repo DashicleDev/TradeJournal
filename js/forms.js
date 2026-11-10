@@ -688,6 +688,34 @@ function f2FillVariant() {
   sel.innerHTML = '<option value="">None</option>' + v.map(x => `<option>${esc(x)}</option>`).join("");
 }
 $("#f2Concept").addEventListener("change", f2FillVariant);
+/* Setup: Weekly - Daily - 4H (with a daily pattern) or Weekly - 4H. Both write the stored
+   concept field (#f2Concept): the daily pattern's name, or "Weekly - 4H". */
+seg("seg-f2setup", "f2setup", [
+  ["wd4", "Weekly - Daily - 4H"],
+  ["w4", "Weekly - 4H"],
+]);
+function f2SetupShow() {
+  const c = $("#f2Concept").value;
+  setRadio("f2setup", !c ? "" : c === "Weekly - 4H" ? "w4" : "wd4");
+  $("#f2DPat").value = c && c !== "Weekly - 4H" ? c : "";
+  $("#f2DPatField").hidden = radio("f2setup") !== "wd4";
+}
+function f2SetConcept(v) {
+  const c = $("#f2Concept");
+  c.value = v;
+  c.dispatchEvent(new Event("change", { bubbles: true }));
+}
+$("#seg-f2setup").addEventListener("change", () => {
+  const s = radio("f2setup");
+  $("#f2DPatField").hidden = s !== "wd4";
+  if (s === "w4") f2SetConcept("Weekly - 4H");
+  else {
+    f2SetConcept($("#f2DPat").value);
+    const d = $("#f2DPat").closest("details");
+    if (d && !d.open) d.open = true;
+  }
+});
+$("#f2DPat").addEventListener("change", () => f2SetConcept($("#f2DPat").value));
 $("#f2WPat").addEventListener("change", () => {
   const v = $("#f2WPat").value;
   if (v && v !== "?") wcSel.pattern = "for";
@@ -902,7 +930,11 @@ function f2Summaries() {
       .join(" · ") + n("weekly");
   const msl = n => (radio(n) ? (radio(n) === "for" ? "MS ✓" : "MS ✗") : "");
   $("#f2SumD").textContent =
-    [$("#f2Variant").value, msl("f2dms"), ...DCRIT.filter(([k]) => dSel[k]).map(([, l]) => l)]
+    [
+      radio("f2setup") === "wd4" ? [$("#f2DPat").value, $("#f2Variant").value].filter(Boolean).join(" · ") : "",
+      msl("f2dms"),
+      ...DCRIT.filter(([k]) => dSel[k]).map(([, l]) => l),
+    ]
       .filter(Boolean)
       .join(" · ") + n("daily");
   const e = $("#f2Entry").value,
@@ -1125,6 +1157,7 @@ function openSheet2(t, dup) {
   setTimeout(f2RR);
   renderF2Shots();
   f2FillVariant();
+  f2SetupShow();
   if (t) f2Fill(t);
   $("#f2Dup").hidden = $("#f2Del").hidden = !t || !!dup;
   $("#f2Share").hidden = $("#f2CopyAn").hidden = !t || !!dup || !feat("share");
@@ -1154,6 +1187,7 @@ function f2Fill(t) {
   acFill("#f2Account", "fx", t.account || "");
   setRadio("f2dir", t.dir || "");
   $("#f2Concept").value = t.concept || "";
+  f2SetupShow();
   f2FillVariant();
   $("#f2Variant").value = t.sub && t.sub !== "—" ? t.sub : "";
   setRadio("f2fase", t.fase || "");
