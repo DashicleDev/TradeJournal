@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.2.15 — 2026-11-10
+
+- Shared invest page: each exit shows which part of the position it closed (e.g. 66.7%), and the ROI is at the top: the final return once closed, or the return on the whole position from the exits so far while it's still open. Still no number of shares or amounts.
+
 ## 1.2.14 — 2026-11-10
 
 - Shared invest page: each exit shows its price, with the date and how on their own small lines under it.

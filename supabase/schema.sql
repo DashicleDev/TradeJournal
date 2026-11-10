@@ -130,14 +130,24 @@ language sql stable security definer set search_path to '' as $$
           where e.key = any (array['market','mode','status','pair','dir','date','closeDate','fase','wStruct','wPat','wPatSub',
             'weekly','concept','sub','dMs','dPros','dailyFib','hMs','entry4h','struct','room','ecTf','scaleIn','outcome','r','maxR',
             'exitReason','evaluation','notes','shots','shotLinks',
-            -- invest: analysis, prices and % return; never shares, amounts, P&L or exchange rates
+            -- invest: analysis, prices and percentages; never shares, amounts, P&L or exchange rates
             'ticker','sPhase','s12Ms','s12bm','s12ret','s6Ms','s6bm','s6ret','s3Ms','s3bm','s3room','s3roomB',
             's1Ms','s1room','s1cc','swMs','swPat','sEntry','sStop','sCur','retPct']))
          || jsonb_build_object('owner', s.user_id)
-         || case when jsonb_typeof(d.data->'sExits') = 'array'
-              then jsonb_build_object('sExits', coalesce((select jsonb_agg(jsonb_build_object('date', x->'date', 'price', x->'price', 'how', x->'how'))
-                                                          from jsonb_array_elements(d.data->'sExits') x), '[]'::jsonb))
-              else '{}'::jsonb end
+         || case when jsonb_typeof(d.data->'sExits') = 'array' then jsonb_build_object(
+              -- each exit with the share of the position it closed (%), not the number of shares
+              'sExits', coalesce((select jsonb_agg(jsonb_build_object('date', x->'date', 'price', x->'price', 'how', x->'how',
+                  'part', case when (d.data->>'sShares') ~ '^[0-9.]+$' and (d.data->>'sShares')::numeric > 0 and (x->>'shares') ~ '^[0-9.]+$'
+                               then round((x->>'shares')::numeric / (d.data->>'sShares')::numeric * 100, 1) end))
+                from jsonb_array_elements(d.data->'sExits') x), '[]'::jsonb),
+              -- return on the whole position from the exits so far, in % (price only, no exchange rates)
+              'roi', (select case when (d.data->>'sShares') ~ '^[0-9.]+$' and (d.data->>'sShares')::numeric > 0
+                                   and (d.data->>'sEntry') ~ '^[0-9.]+$' and (d.data->>'sEntry')::numeric > 0
+                             then round(sum(((x->>'price')::numeric - (d.data->>'sEntry')::numeric) * (x->>'shares')::numeric)
+                                        / ((d.data->>'sEntry')::numeric * (d.data->>'sShares')::numeric) * 100, 2) end
+                      from jsonb_array_elements(d.data->'sExits') x
+                      where (x->>'price') ~ '^[0-9.]+$' and (x->>'shares') ~ '^[0-9.]+$'))
+            else '{}'::jsonb end
   from public.shares s join public.docs d on d.user_id = s.user_id and d.id = s.doc_id
   where s.token = tok $$;
 revoke all on function public.shared_trade(text) from public;

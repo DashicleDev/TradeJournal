@@ -87,6 +87,9 @@
     return h ? `<section class="shr-card"><span class="eyebrow">${title}</span>${h}</section>` : "";
   };
   const exits = (t.sExits || []).filter(x => x.price || x.date || x.how);
+  // ROI: the final % return once closed, otherwise the return on the whole position from the exits so far
+  const sold = exits.reduce((a, x) => a + (x.part || 0), 0),
+    roiTxt = oc && t.retPct != null ? pct(t.retPct) : t.roi != null && sold ? pct(t.roi) + " so far" : "";
   const invGrid = () =>
     [
       card("12 Monthly", [
@@ -111,13 +114,13 @@
       ]),
       card("Weekly", [row("Market structure", ms(t.swMs)), row("Pattern", esc(t.swPat || ""))]),
       card("Result", [
-        row("Return", oc ? esc(pct(t.retPct)) || "—" : "Open"),
+        row("ROI", roiTxt || (oc ? "—" : "Open")),
         row("Entry", px(t.sEntry)),
         row("Stop", px(t.sStop)),
         // each exit: price on the row, date and how in small type under it
         ...exits.map(
           (x, i) =>
-            `<div class="shr-row shr-exit"><span>${exits.length > 1 ? "Exit " + (i + 1) : "Exit"}</span><b>${px(x.price) || "—"}${x.date ? `<small>${esc(fmtD(x.date))}</small>` : ""}${x.how ? `<small>${esc(x.how)}</small>` : ""}</b></div>`
+            `<div class="shr-row shr-exit"><span>${exits.length > 1 ? "Exit " + (i + 1) : "Exit"}</span><b>${px(x.price) || "—"}${x.part != null ? `<small>${esc(String(x.part).replace(/\.0$/, ""))}% of the position</small>` : ""}${x.date ? `<small>${esc(fmtD(x.date))}</small>` : ""}${x.how ? `<small>${esc(x.how)}</small>` : ""}</b></div>`
         ),
       ]),
     ].join("");
@@ -129,7 +132,7 @@
         · ${esc(fmtD(t.date))}${t.closeDate && t.closeDate !== t.date ? " → " + esc(fmtD(t.closeDate)) : ""}</p>
         ${INV && ph ? `<p class="shr-concept"><span>Phase</span> ${esc(ph)}</p>` : ""}
         ${!INV && t.concept ? `<p class="shr-concept"><span>Concept</span> ${t.concept === "Weekly - 4H" ? "Weekly - 4H" : "Weekly - Daily - 4H"}</p>` : ""}</div>
-      ${oc ? `<span class="restag ${oc} shr-res">${{ win: "Win", loss: "Loss", be: "BE", open: "Open" }[oc]}${oc === "open" ? "" : `<b class="num">${INV ? pct(t.retPct) : fmtR(t.r)}</b>`}</span>` : INV && t.status !== "missed" ? `<span class="restag open shr-res">Open</span>` : ""}
+      ${oc ? `<span class="restag ${oc} shr-res">${{ win: "Win", loss: "Loss", be: "BE", open: "Open" }[oc]}${oc === "open" ? "" : `<b class="num">${INV ? pct(t.retPct) : fmtR(t.r)}</b>`}</span>` : INV && t.status !== "missed" ? `<span class="restag open shr-res">Open${t.roi != null && sold ? `<b class="num">${pct(t.roi)}</b>` : ""}</span>` : ""}
     </div>
     <div class="shr-grid">${
       INV
