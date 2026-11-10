@@ -49,7 +49,7 @@
         ["weekly", "Weekly"],
         ["daily", "Daily"],
         ["h4", "4H"],
-        ["ltf", "1H/2H"],
+        ["ltf", t.ecTf ? t.ecTf.toUpperCase() : "1H/2H"],
       ];
   const fmtR = r => (r == null || r === "" ? "—" : (r > 0 ? "+" : "") + Number(r).toFixed(2) + "R");
   const fmtD = d =>

@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.2.22 — 2026-11-10
+
+- The lower-timeframe chart is called by its timeframe (1H or 2H, from the trade) instead of "1H/2H" on the shared page, in Copy analysis, the chart viewer and the zoom.
+
 ## 1.2.21 — 2026-11-10
 
 - Filter descriptions say "To plan" / "Not to plan" instead of "According to plan: Yes / No".

@@ -1503,7 +1503,7 @@ function analysisText(t, link) {
       t.channel ? "Channel" : "",
       t.hMs ? ok("MS", t.hMs) : "",
     ]),
-    block("1h/2h", L.ltf, []),
+    block(t.ecTf ? t.ecTf : "1h/2h", L.ltf, []),
     t.notes || "",
     link ? "Full trade: " + link : "",
   ];
@@ -1647,6 +1647,8 @@ const LSLOTS = [
   ["h4", "4H"],
   ["ltf", "1H/2H"],
 ];
+// the lower-timeframe chart is named after its timeframe (1H or 2H) when the trade says which
+const slotLab = (t, k, l) => (k === "ltf" && t && t.ecTf ? t.ecTf.toUpperCase() : l);
 const hasShot = (t, k) => !!((t.shots && t.shots[k]) || (t.shotLinks && t.shotLinks[k]));
 const shotCount = t => LSLOTS.filter(([k]) => hasShot(t, k)).length;
 async function uploadShot(k, file, store, rerender) {
@@ -1693,7 +1695,7 @@ function renderF2Shots() {
   if (typeof f2Summaries === "function") setTimeout(f2Summaries);
   {
     // all of this trade's charts in the zoom, ‹ › to click through them
-    const n = vGallery({ shots: f2Shots, shotLinks: f2Links }).length,
+    const n = vGallery({ shots: f2Shots, shotLinks: f2Links, ecTf: radio("f2ectf") }).length,
       b = $("#f2ViewCharts");
     b.hidden = !n;
     b.textContent = `View charts (${n}) ›`;
@@ -1746,7 +1748,7 @@ function openViewer(id) {
   $("#viewerTabs").innerHTML = LSLOTS.filter(([k]) => hasShot(t, k))
     .map(
       ([k, l]) =>
-        `<label class="seg"><input type="radio" name="vtab" value="${k}" data-vtab="${k}"><span>${l}</span></label>`
+        `<label class="seg"><input type="radio" name="vtab" value="${k}" data-vtab="${k}"><span>${slotLab(t, k, l)}</span></label>`
     )
     .join("");
   {
@@ -1771,7 +1773,7 @@ function openImage(id, label) {
 function showVTab(k) {
   if (!viewTrade || !k) return;
   document.querySelectorAll('input[name="vtab"]').forEach(i => (i.checked = i.value === k));
-  const l = LSLOTS.find(s => s[0] === k)[1],
+  const l = slotLab(viewTrade, k, LSLOTS.find(s => s[0] === k)[1]),
     id = viewTrade.shots && viewTrade.shots[k],
     ln = viewTrade.shotLinks && viewTrade.shotLinks[k];
   $("#viewerImg").innerHTML = id
@@ -1786,13 +1788,13 @@ function vGallery(t) {
   return LSLOTS.filter(([k]) => hasShot(t, k))
     .map(([k, l]) => ({
       k,
-      label: l,
+      label: slotLab(t, k, l),
       src: t.shots && t.shots[k] ? shotSrc(t.shots[k]) : tvImg(t.shotLinks && t.shotLinks[k]),
     }))
     .filter(g => g.src && g.src !== BLANK);
 }
 $("#f2ViewCharts").onclick = () => {
-  const gal = vGallery({ shots: f2Shots, shotLinks: f2Links });
+  const gal = vGallery({ shots: f2Shots, shotLinks: f2Links, ecTf: radio("f2ectf") });
   if (gal.length) zOpen(gal[0].src, false, gal, 0);
 };
 function tvImg(u) {
