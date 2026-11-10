@@ -69,7 +69,7 @@
       <div><h2>${esc(t.pair || "Trade")} ${arrow(t.dir)}</h2>
         <p class="hint">${esc([t.dir ? (t.dir === "long" ? "Long" : "Short") : "", t.mode === "backtest" ? "Backtest" : "Live", t.status === "missed" ? "Missed" : ""].filter(Boolean).join(" · "))}
         · ${esc(fmtD(t.date))}${t.closeDate && t.closeDate !== t.date ? " → " + esc(fmtD(t.closeDate)) : ""}</p></div>
-      ${oc ? `<span class="restag ${oc} shr-res">${{ win: "Win", loss: "Loss", be: "BE" }[oc]}<b class="num">${fmtR(t.r)}</b></span>` : ""}
+      ${oc ? `<span class="restag ${oc} shr-res">${{ win: "Win", loss: "Loss", be: "BE", open: "Open" }[oc]}${oc === "open" ? "" : `<b class="num">${fmtR(t.r)}</b>`}</span>` : ""}
     </div>
     <div class="shr-grid">
       <section class="shr-card"><span class="eyebrow">Weekly</span>
@@ -91,7 +91,7 @@
         ${row("Scale-in", t.scaleIn ? "Yes" : "")}
       </section>
       <section class="shr-card"><span class="eyebrow">Result</span>
-        ${row("Result", oc ? esc(fmtR(t.r)) : "Open")}
+        ${row("Result", oc && oc !== "open" ? esc(fmtR(t.r)) : "Open")}
         ${row("Max reached", t.maxR != null ? esc(fmtR(t.maxR)) : "")}
         ${row("Exit", esc(t.exitReason || ""))}
         ${row("According to plan", t.evaluation ? (t.evaluation === "plan" ? "Yes" : "No") : "")}

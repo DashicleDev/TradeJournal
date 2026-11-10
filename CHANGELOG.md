@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.2.4 — 2026-11-10
+
+- **Open** as a trade outcome next to Win / BE / Loss, for trades that are still running. It clears the R, shows as "Open" in the tables, reviews, shared page and copied analysis, and open trades stay out of the R statistics until you close them. Analyze can filter on it.
+
 ## 1.2.3 — 2026-11-10
 
 - **Copy analysis** on a forex trade copies the analysis per timeframe (weekly, daily, 4H, 1H/2H) with its TradingView chart links, the result, your notes and a link to the shared trade page, ready to paste in Discord, where the chart links show as previews.

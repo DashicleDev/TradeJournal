@@ -260,9 +260,9 @@ let SPLITS = {
   outcome: [
     "Outcome",
     t =>
-      ({ win: "Win", be: "BE", loss: "Loss" })[t.outcome] ||
+      ({ win: "Win", be: "BE", loss: "Loss", open: "Open" })[t.outcome] ||
       (t.r > 0 ? "Win" : t.r < 0 ? "Loss" : t.r === 0 ? "BE" : null),
-    ["Win", "BE", "Loss"],
+    ["Win", "BE", "Loss", "Open"],
   ],
   evaluation: ["According to plan", t => (t.evaluation === "plan" ? "Yes" : t.evaluation ? "No" : null), ["Yes", "No"]],
   exit: ["Exit reason", t => t.exitReason || null, PLAN.exits],
@@ -597,6 +597,7 @@ let FDEF = [
       ["win", "Win"],
       ["be", "BE"],
       ["loss", "Loss"],
+      ["open", "Open"],
     ],
     t => t.outcome || (t.r > 0 ? "win" : t.r < 0 ? "loss" : t.r === 0 ? "be" : ""),
   ],
@@ -864,6 +865,7 @@ const ST_DEFS = {
         ["win", "Win"],
         ["be", "BE"],
         ["loss", "Loss"],
+        ["open", "Open"],
       ],
       t => t.outcome || "",
     ],
@@ -901,7 +903,11 @@ const ST_DEFS = {
     pair: ["Ticker", t => t.ticker || t.pair || null],
     account: ["Account", t => acKey(t)],
     status: ["Status", t => (t.status === "missed" ? "Missed" : "Taken"), ["Taken", "Missed"]],
-    outcome: ["Outcome", t => ({ win: "Win", be: "BE", loss: "Loss" })[t.outcome] || null, ["Win", "BE", "Loss"]],
+    outcome: [
+      "Outcome",
+      t => ({ win: "Win", be: "BE", loss: "Loss", open: "Open" })[t.outcome] || null,
+      ["Win", "BE", "Loss", "Open"],
+    ],
     month: ["Entry month", t => (t.date ? t.date.slice(0, 7) : null)],
     btmonth: ["Backtested in (month)", t => (t.mode === "backtest" && t.btDate ? t.btDate.slice(0, 7) : null)],
   },

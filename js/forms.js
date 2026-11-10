@@ -705,6 +705,7 @@ seg("seg-f2out", "f2out", [
   ["win", "Win"],
   ["be", "BE"],
   ["loss", "Loss"],
+  ["open", "Open"],
 ]);
 $("#f2Exit").innerHTML += PLAN.exits
   .filter(x => x !== "Invalid, cancelled")
@@ -713,6 +714,7 @@ $("#f2Exit").innerHTML += PLAN.exits
 $("#seg-f2out").addEventListener("change", () => {
   const o = radio("f2out"),
     r = $("#f2R");
+  if (o === "open") r.value = "";
   if (o === "be" && r.value === "") r.value = "0";
   if (o === "loss" && r.value !== "" && +r.value > 0) r.value = -r.value;
   if (o === "win" && r.value !== "" && +r.value < 0) r.value = -r.value;
@@ -1304,7 +1306,7 @@ $("#tradeForm2").onsubmit = e => {
     dPros: DCRIT.map(([k]) => k).filter(k => dSel[k]),
     dailyFib: dSel.fc ? "ja" : "nee",
     outcome: radio("f2out"),
-    r: num("f2R"),
+    r: radio("f2out") === "open" ? null : num("f2R"),
     maxR: num("f2MaxR"),
     wRange: $("#f2Range").checked,
     notes: $("#f2Notes").value.trim(),
@@ -1452,7 +1454,7 @@ function analysisText(t, link) {
     ]),
     block("1h/2h", L.ltf, []),
     oc
-      ? `Result: ${{ win: "Win", loss: "Loss", be: "BE" }[oc]} ${fmtR(t.r)}${t.exitReason ? " (" + t.exitReason + ")" : ""}`
+      ? `Result: ${{ win: "Win", loss: "Loss", be: "BE", open: "Open" }[oc]}${oc === "open" ? "" : " " + fmtR(t.r)}${t.exitReason ? " (" + t.exitReason + ")" : ""}`
       : "",
     t.notes || "",
     link ? "Full trade: " + link : "",
