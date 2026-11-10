@@ -705,7 +705,7 @@ function describe(f) {
           ? "Daily pro: " + l
           : k === "con"
             ? "Con: " + l
-            : ["fase", "pair", "concept", "sub", "outcome", "eval", "status", "sphase", "swpat", "sstate"].includes(k)
+            : ["fase", "pair", "concept", "sub", "outcome", "status", "sphase", "swpat", "sstate"].includes(k)
               ? l
               : label + ": " + l
     );

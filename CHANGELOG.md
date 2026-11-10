@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.2.20 — 2026-11-10
+
+- Filter descriptions say "According to plan: Yes" instead of just "Yes" (review sessions and Analyze set names).
+
 ## 1.2.19 — 2026-11-10
 
 - Review sessions in progress show more: blind or previous analysis shown, the filters ("Only: Phase 2 · …"), when started and last used, and how it's going so far (same as back then, plan verdicts changed, analyses replaced).
