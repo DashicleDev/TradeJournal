@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.2.5 — 2026-11-10
+
+- Copy analysis leaves the result out: just the analysis, chart links, notes and the link to the trade.
+
 ## 1.2.4 — 2026-11-10
 
 - **Open** as a trade outcome next to Win / BE / Loss, for trades that are still running. It clears the R, shows as "Open" in the tables, reviews, shared page and copied analysis, and open trades stay out of the R statistics until you close them. Analyze can filter on it.

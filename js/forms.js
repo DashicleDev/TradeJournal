@@ -1426,7 +1426,6 @@ function analysisText(t, link) {
     if (!link && !items.length) return "";
     return [title + ":", link || "", ...items.map(i => "- " + i)].filter(Boolean).join("\n");
   };
-  const oc = t.outcome || (t.r > 0 ? "win" : t.r < 0 ? "loss" : t.r === 0 ? "be" : "");
   const head = [
     `**${t.pair || "Trade"}${t.dir ? " " + (t.dir === "long" ? "Long" : "Short") : ""}**`,
     t.fase ? "Phase " + t.fase : "",
@@ -1453,9 +1452,6 @@ function analysisText(t, link) {
       { bos: "Break of structure", som: "Switch of momentum" }[t.struct] || "",
     ]),
     block("1h/2h", L.ltf, []),
-    oc
-      ? `Result: ${{ win: "Win", loss: "Loss", be: "BE", open: "Open" }[oc]}${oc === "open" ? "" : " " + fmtR(t.r)}${t.exitReason ? " (" + t.exitReason + ")" : ""}`
-      : "",
     t.notes || "",
     link ? "Full trade: " + link : "",
   ];
