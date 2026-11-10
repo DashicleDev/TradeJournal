@@ -55,7 +55,7 @@
       : "";
 
   const w = t.weekly || {};
-  const wChips = WCRIT.filter(([k]) => w[k])
+  const wChips = WCRIT.filter(([k]) => w[k] && k !== "ms" && k !== "trend")
     .map(([k, l]) => chip(l, w[k]))
     .join("");
   const dPros = Array.isArray(t.dPros) ? t.dPros : t.dailyFib === "ja" ? ["fc"] : [];
@@ -77,6 +77,8 @@
         ${row("Phase", t.fase ? esc(t.fase) : "")}
         ${row("Structure", t.wStruct ? (t.wStruct === "inner" ? "Inner" : "Outer") : "")}
         ${row("Pattern", t.wPat ? esc(t.wPat + (t.wPatSub ? " · " + t.wPatSub : "")) : "")}
+        ${row("Market structure", ms(w.ms))}
+        ${row("Market trend", ms(w.trend))}
         ${wChips ? `<div class="shr-chips">${wChips}</div>` : ""}
       </section>
       <section class="shr-card"><span class="eyebrow">Daily</span>
@@ -85,11 +87,11 @@
         ${dPros.length ? `<div class="shr-chips">${dPros.map(k => chip(DCRIT[k] || k, "for")).join("")}</div>` : ""}
       </section>
       <section class="shr-card"><span class="eyebrow">4H</span>
-        ${row("Market structure", ms(t.hMs))}
         ${row("Entry", t.entry4h ? esc(t.entry4h + (t.ecTf ? " · " + t.ecTf.toUpperCase() : "")) : "")}
         ${row("Confirmation", esc(struct))}
         ${row("4H room", t.room === "ja" ? "Yes" : t.room === "nee" ? "No" : "")}
         ${row("Scale-in", t.scaleIn ? "Yes" : "")}
+        ${row("Market structure", ms(t.hMs))}
       </section>
       <section class="shr-card"><span class="eyebrow">Result</span>
         ${row("Result", oc && oc !== "open" ? esc(fmtR(t.r)) : "Open")}

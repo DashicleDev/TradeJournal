@@ -2,7 +2,8 @@
 
 ## 1.2.9 — 2026-11-10
 
-- Copy analysis: on the 4H the confirmation (break of structure / switch of momentum) now follows the entry directly, with MS after it.
+- Copy analysis is plain text, so it pastes cleanly in Discord, WhatsApp and elsewhere (no ** around the pair). On the 4H the confirmation now follows the entry directly, with MS after it.
+- Shared page: market structure is a row on every timeframe (weekly with market trend under it), always after that timeframe's setup, instead of a chip on the weekly.
 
 ## 1.2.8 — 2026-11-10
 

@@ -1405,7 +1405,7 @@ $("#f2Share").onclick = async () => {
     $("#f2ShareUrl").select();
   }
 };
-/* copy analysis: the trade as text with its TradingView links and the share link, ready to paste in Discord */
+/* copy analysis: the trade as text with its TradingView links and the share link, ready to paste in Discord, WhatsApp or anywhere else (plain text, no markdown) */
 function analysisText(t, link) {
   const w = t.weekly || {},
     L = t.shotLinks || {},
@@ -1429,7 +1429,7 @@ function analysisText(t, link) {
     return [title + ":", link || "", ...items.map(i => "- " + i)].filter(Boolean).join("\n");
   };
   const head = [
-    `**${t.pair || "Trade"}${t.dir ? " " + (t.dir === "long" ? "Long" : "Short") : ""}**`,
+    `${t.pair || "Trade"}${t.dir ? " " + (t.dir === "long" ? "Long" : "Short") : ""}`,
     t.fase ? "Phase " + t.fase : "",
     t.mode === "backtest" ? "Backtest" : "",
     t.date ? fmtD(t.date) : "",
@@ -1465,7 +1465,7 @@ $("#f2CopyAn").onclick = async () => {
   if (!tok) return;
   try {
     await navigator.clipboard.writeText(analysisText(t, shareUrl(tok)));
-    toast("Analysis copied, paste it in Discord");
+    toast("Analysis copied");
   } catch {
     toast("Couldn't copy to the clipboard.");
   }
