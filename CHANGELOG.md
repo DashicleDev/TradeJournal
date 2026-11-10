@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.2.1 — 2026-11-10
+
+- Share links get a preview in WhatsApp, Discord and other chat apps: pair, direction, result, phase, concept and a chart. Links you shared before keep working, without the preview.
+
 ## 1.2.0 — 2026-11-10
 
 - **Share trades.** A Share button on forex trades makes a read-only link to a page with the trade, its weekly/daily/4H analysis, result, notes and charts. Anyone with the link can view it without signing in, nobody can edit it. The account and project are never shown. Stop sharing turns the link off. Turn it on per role with the new "Share trades" feature.
