@@ -114,21 +114,10 @@
         row("Return", oc ? esc(pct(t.retPct)) || "—" : "Open"),
         row("Entry", px(t.sEntry)),
         row("Stop", px(t.sStop)),
-        ...exits.map((x, i) =>
-          row(
-            exits.length > 1 ? "Exit " + (i + 1) : "Exit",
-            esc(
-              [
-                fmtD(x.date),
-                x.price
-                  ? Number(x.price).toLocaleString("en-GB", { maximumFractionDigits: 4 }) + (t.sCur ? " " + t.sCur : "")
-                  : "",
-                x.how,
-              ]
-                .filter(Boolean)
-                .join(" · ")
-            )
-          )
+        // each exit: price on the row, date and how in small type under it
+        ...exits.map(
+          (x, i) =>
+            `<div class="shr-row shr-exit"><span>${exits.length > 1 ? "Exit " + (i + 1) : "Exit"}</span><b>${px(x.price) || "—"}${x.date ? `<small>${esc(fmtD(x.date))}</small>` : ""}${x.how ? `<small>${esc(x.how)}</small>` : ""}</b></div>`
         ),
       ]),
     ].join("");
