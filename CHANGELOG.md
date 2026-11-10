@@ -2,11 +2,11 @@
 
 ## 1.2.21 — 2026-11-10
 
-- Filter descriptions say "To plan" / "Not to plan".
+- Filter descriptions say "To plan" / "Not to plan" instead of "According to plan: Yes / No".
 
 ## 1.2.20 — 2026-11-10
 
-- Filter descriptions say "To plan" / "Not to plan" instead of just "Yes" / "No" (review sessions and Analyze set names).
+- Filter descriptions say "According to plan: Yes" instead of just "Yes" (review sessions and Analyze set names).
 
 ## 1.2.19 — 2026-11-10
 
