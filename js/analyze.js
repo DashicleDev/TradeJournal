@@ -699,15 +699,17 @@ function describe(f) {
       })
       .join(k === "fase" ? " & " : " / ");
     p.push(
-      k === "pro"
-        ? "Pro: " + l
-        : k === "dpro"
-          ? "Daily pro: " + l
-          : k === "con"
-            ? "Con: " + l
-            : ["fase", "pair", "concept", "sub", "outcome", "status", "sphase", "swpat", "sstate"].includes(k)
-              ? l
-              : label + ": " + l
+      k === "eval"
+        ? vs.map(v => (v === "plan" ? "To plan" : "Not to plan")).join(" / ")
+        : k === "pro"
+          ? "Pro: " + l
+          : k === "dpro"
+            ? "Daily pro: " + l
+            : k === "con"
+              ? "Con: " + l
+              : ["fase", "pair", "concept", "sub", "outcome", "status", "sphase", "swpat", "sstate"].includes(k)
+                ? l
+                : label + ": " + l
     );
   });
   if (f.from || f.to) p.push((f.from || "…") + " → " + (f.to || "…"));
