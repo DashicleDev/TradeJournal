@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.2.17 — 2026-11-10
+
+- Pattern in Pattern is no longer a 4H entry; trades that had it are now Reversal (the weekly and daily Pattern in Pattern stay).
+
 ## 1.2.16 — 2026-11-10
 
 - **Channel** as an extra confirmation on a Reversal entry (4H). It doesn't change the take / invalid check; it shows in the 4H summary, the shared page and Copy analysis, can be used in the grade rules (4H → Channel) and in Analyze (filter and split "Channel (reversal)"). The extension asks it too (1.4.5).
