@@ -4,6 +4,7 @@
 
 - Copy analysis is plain text, so it pastes cleanly in Discord, WhatsApp and elsewhere (no ** around the pair). On the 4H the confirmation now follows the entry directly, with MS after it.
 - Shared page: market structure is a row on every timeframe (weekly with market trend under it), always after that timeframe's setup, instead of a chip on the weekly.
+- The trade concept is no longer listed under Daily: it sits under the trade's heading on the shared page and right under the heading in Copy analysis.
 
 ## 1.2.8 — 2026-11-10
 

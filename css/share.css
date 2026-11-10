@@ -194,3 +194,12 @@ body {
 .shz-side[hidden] {
   display: none;
 }
+.shr-concept {
+  margin: 8px 0 0;
+  font: 600 15px var(--body);
+}
+.shr-concept span {
+  color: var(--muted);
+  font-weight: 500;
+  margin-right: 4px;
+}

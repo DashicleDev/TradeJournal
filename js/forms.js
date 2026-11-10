@@ -1437,14 +1437,13 @@ function analysisText(t, link) {
     .filter(Boolean)
     .join(" · ");
   const parts = [
-    head,
+    head + (t.concept ? "\nConcept: " + t.concept + (t.sub && t.sub !== "—" ? " (" + t.sub + ")" : "") : ""),
     block("Weekly", L.weekly, [
       t.wStruct ? (t.wStruct === "inner" ? "Inner" : "Outer") + " structure" : "",
       t.wPat ? t.wPat + " pattern" + (t.wPatSub ? " (" + t.wPatSub + ")" : "") : "",
       ...WK.filter(([k]) => w[k]).map(([k, l]) => ok(l, w[k])),
     ]),
     block("Daily", L.daily, [
-      t.concept ? t.concept + (t.sub && t.sub !== "—" ? " (" + t.sub + ")" : "") : "",
       t.dMs ? ok("MS", t.dMs) : "",
       ...(Array.isArray(t.dPros) ? t.dPros : []).map(k => "✓ " + (DK[k] || k)),
     ]),
