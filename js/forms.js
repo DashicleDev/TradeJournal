@@ -1124,7 +1124,7 @@ function openSheet2(t, dup) {
   f2FillVariant();
   if (t) f2Fill(t);
   $("#f2Dup").hidden = $("#f2Del").hidden = !t || !!dup;
-  $("#f2Share").hidden = !t || !!dup || !feat("share");
+  $("#f2Share").hidden = $("#f2CopyAn").hidden = !t || !!dup || !feat("share");
   f2ShareShow(t && !dup && feat("share") ? t.id : null);
   {
     const b = $("#f2Del");
@@ -1382,19 +1382,92 @@ async function f2ShareShow(id, tok) {
   $("#f2ShareUrl").value = shareUrl(tok);
   bar.hidden = false;
 }
-$("#f2Share").onclick = async () => {
-  const id = editingId;
-  if (!id) return;
-  if (!ME) return toast("Sign in to share trades.");
+// the trade's share token, made on first use
+async function shareToken(id) {
+  if (!ME) return toast("Sign in to share trades."), null;
   let { data, error } = await SB.from("shares").select("token").eq("doc_id", id).maybeSingle();
   if (!error && !data) ({ data, error } = await SB.from("shares").insert({ doc_id: id }).select("token").single());
-  if (error || !data) return toast("Couldn't make a share link. Try again.");
+  if (error || !data) return toast("Couldn't make a share link. Try again."), null;
   await f2ShareShow(id, data.token);
+  return data.token;
+}
+$("#f2Share").onclick = async () => {
+  const id = editingId,
+    tok = id && (await shareToken(id));
+  if (!tok) return;
   try {
-    await navigator.clipboard.writeText(shareUrl(data.token));
+    await navigator.clipboard.writeText(shareUrl(tok));
     toast("Share link copied");
   } catch {
     $("#f2ShareUrl").select();
+  }
+};
+/* copy analysis: the trade as text with its TradingView links and the share link, ready to paste in Discord */
+function analysisText(t, link) {
+  const w = t.weekly || {},
+    L = t.shotLinks || {},
+    ok = (l, v) => (v === "for" ? "✓ " : v === "against" ? "✗ " : "") + l;
+  const WK = [
+    ["ms", "MS"],
+    ["trend", "Trend"],
+    ["fibc", "FC"],
+    ["fiba", "Fib active"],
+    ["ic", "IC"],
+    ["whl", "High / Low"],
+    ["sd", "S&D zone"],
+    ["pz", "Proven zone"],
+    ["lcc", "Last CC"],
+  ];
+  const DK = { fc: "FC", dcc: "Last CC", sd: "S&D zone" };
+  const block = (title, link, items) => {
+    items = items.filter(Boolean);
+    if (!link && !items.length) return "";
+    return [title + ":", link || "", ...items.map(i => "- " + i)].filter(Boolean).join("\n");
+  };
+  const oc = t.outcome || (t.r > 0 ? "win" : t.r < 0 ? "loss" : t.r === 0 ? "be" : "");
+  const head = [
+    `**${t.pair || "Trade"}${t.dir ? " " + (t.dir === "long" ? "Long" : "Short") : ""}**`,
+    t.fase ? "Phase " + t.fase : "",
+    t.mode === "backtest" ? "Backtest" : "",
+    t.date ? fmtD(t.date) : "",
+  ]
+    .filter(Boolean)
+    .join(" · ");
+  const parts = [
+    head,
+    block("Weekly", L.weekly, [
+      t.wStruct ? (t.wStruct === "inner" ? "Inner" : "Outer") + " structure" : "",
+      t.wPat ? t.wPat + " pattern" + (t.wPatSub ? " (" + t.wPatSub + ")" : "") : "",
+      ...WK.filter(([k]) => w[k]).map(([k, l]) => ok(l, w[k])),
+    ]),
+    block("Daily", L.daily, [
+      t.concept ? t.concept + (t.sub && t.sub !== "—" ? " (" + t.sub + ")" : "") : "",
+      t.dMs ? ok("MS", t.dMs) : "",
+      ...(Array.isArray(t.dPros) ? t.dPros : []).map(k => "✓ " + (DK[k] || k)),
+    ]),
+    block("4h", L.h4, [
+      t.entry4h ? t.entry4h + (t.ecTf ? " " + t.ecTf.toUpperCase() : "") : "",
+      t.hMs ? ok("MS", t.hMs) : "",
+      { bos: "Break of structure", som: "Switch of momentum" }[t.struct] || "",
+    ]),
+    block("1h/2h", L.ltf, []),
+    oc
+      ? `Result: ${{ win: "Win", loss: "Loss", be: "BE" }[oc]} ${fmtR(t.r)}${t.exitReason ? " (" + t.exitReason + ")" : ""}`
+      : "",
+    t.notes || "",
+    link ? "Full trade: " + link : "",
+  ];
+  return parts.filter(Boolean).join("\n\n");
+}
+$("#f2CopyAn").onclick = async () => {
+  const t = docs.find(d => d.id === editingId),
+    tok = t && (await shareToken(t.id));
+  if (!tok) return;
+  try {
+    await navigator.clipboard.writeText(analysisText(t, shareUrl(tok)));
+    toast("Analysis copied, paste it in Discord");
+  } catch {
+    toast("Couldn't copy to the clipboard.");
   }
 };
 $("#f2ShareCopy").onclick = async () => {

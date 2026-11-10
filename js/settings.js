@@ -55,7 +55,7 @@ const FEATS = [
   [
     "share",
     "Share trades",
-    "A Share button on forex trades that makes a read-only link to the trade, its analysis and screenshots.",
+    "Share and Copy analysis buttons on forex trades: a read-only link to the trade, its analysis and screenshots, and the analysis as text with chart links for Discord.",
   ],
   [
     "cgt",

@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.2.3 — 2026-11-10
+
+- **Copy analysis** on a forex trade copies the analysis per timeframe (weekly, daily, 4H, 1H/2H) with its TradingView chart links, the result, your notes and a link to the shared trade page, ready to paste in Discord, where the chart links show as previews.
+- Share links point straight to the trade page again (the Cloudflare preview is switched off for now).
+
 ## 1.2.2 — 2026-11-10
 
 - Shared trade page: charts in one viewer you click through (Weekly / Daily / 4H / 1H tabs, ‹ › buttons, arrow keys, swipe on phones), so the analysis stays on top.
