@@ -1450,8 +1450,8 @@ function analysisText(t, link) {
     ]),
     block("4h", L.h4, [
       t.entry4h ? t.entry4h + (t.ecTf ? " " + t.ecTf.toUpperCase() : "") : "",
-      t.hMs ? ok("MS", t.hMs) : "",
       { bos: "Break of structure", som: "Switch of momentum" }[t.struct] || "",
+      t.hMs ? ok("MS", t.hMs) : "",
     ]),
     block("1h/2h", L.ltf, []),
     t.notes || "",

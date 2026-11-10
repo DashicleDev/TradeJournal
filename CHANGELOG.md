@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.2.9 — 2026-11-10
+
+- Copy analysis: on the 4H the confirmation (break of structure / switch of momentum) now follows the entry directly, with MS after it.
+
 ## 1.2.8 — 2026-11-10
 
 - **Engulfing candle** in the weekly Pros and Cons. It also works in the grade rules, Analyze, the blind review, the shared page, Copy analysis and the TradingView extension.
