@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.2.10 — 2026-11-10
+
+- Copy analysis heading reads "NZDJPY - Short".
+
 ## 1.2.9 — 2026-11-10
 
 - Copy analysis is plain text, so it pastes cleanly in Discord, WhatsApp and elsewhere (no ** around the pair). On the 4H the confirmation now follows the entry directly, with MS after it.

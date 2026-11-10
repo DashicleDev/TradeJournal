@@ -1429,7 +1429,7 @@ function analysisText(t, link) {
     return [title + ":", link || "", ...items.map(i => "- " + i)].filter(Boolean).join("\n");
   };
   const head = [
-    `${t.pair || "Trade"}${t.dir ? " " + (t.dir === "long" ? "Long" : "Short") : ""}`,
+    `${t.pair || "Trade"}${t.dir ? " - " + (t.dir === "long" ? "Long" : "Short") : ""}`,
     t.fase ? "Phase " + t.fase : "",
     t.mode === "backtest" ? "Backtest" : "",
     t.date ? fmtD(t.date) : "",
