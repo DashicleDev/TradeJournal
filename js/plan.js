@@ -24,6 +24,7 @@ const GR_CRIT = [
   ["sd", "S&D zone"],
   ["pz", "Proven zone"],
   ["lcc", "Last CC"],
+  ["ec", "Weekly engulfing candle"],
   ["dMs", "Daily MS"],
   ["hMs", "4H MS"],
   ["d:fc", "Daily FC"],
@@ -32,13 +33,13 @@ const GR_CRIT = [
 ];
 // Groups for the pick lists in the grade rules editor
 const GR_GROUPS = [
-  ["Weekly", ["ms", "trend", "fibc", "fiba", "ic", "pattern", "whl", "sd", "pz", "lcc"]],
+  ["Weekly", ["ms", "trend", "fibc", "fiba", "ic", "pattern", "whl", "sd", "pz", "lcc", "ec"]],
   ["Daily", ["dPat", "dMs", "d:fc", "d:dcc", "d:sd"]],
   ["4H", ["hMs"]],
 ];
 const GR_FLAGS = ["fibc", "fiba", "ic", "whl", "sd", "pz", "lcc"];
 // criteria a trade can have marked "against" (weekly pattern and the daily pros are only ever "with")
-const GR_CAN_AGAINST = new Set(["ms", "trend", "fibc", "fiba", "ic", "whl", "sd", "pz", "lcc", "dPat", "dMs", "hMs"]);
+const GR_CAN_AGAINST = new Set(["ms", "trend", "fibc", "fiba", "ic", "whl", "sd", "pz", "lcc", "ec", "dPat", "dMs", "hMs"]);
 const GR_DEF = {
   1: { req: [], extras: ["fibc", "lcc", "pz", "sd"], min: 1, flags: GR_FLAGS, inner: "" },
   2: { req: ["ms", "fiba"], extras: ["fibc", "lcc", "pz", "sd"], min: 1, flags: GR_FLAGS, inner: "" },

@@ -33,6 +33,7 @@
     ["sd", "S&D zone"],
     ["pz", "Proven zone"],
     ["lcc", "Last CC"],
+    ["ec", "Engulfing candle"],
   ];
   const DCRIT = { fc: "FC", dcc: "Last CC", sd: "S&D zone" };
   const SLOTS = [

@@ -729,6 +729,7 @@ const WCRIT = [
   ["sd", "S&D zone"],
   ["pz", "Proven zone"],
   ["lcc", "Last CC"],
+  ["ec", "Engulfing candle"],
 ];
 let wcSel = {}; /* key -> "for"|"against" */
 function msRender() {
@@ -1419,6 +1420,7 @@ function analysisText(t, link) {
     ["sd", "S&D zone"],
     ["pz", "Proven zone"],
     ["lcc", "Last CC"],
+    ["ec", "Engulfing candle"],
   ];
   const DK = { fc: "FC", dcc: "Last CC", sd: "S&D zone" };
   const block = (title, link, items) => {

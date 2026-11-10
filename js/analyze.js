@@ -134,8 +134,9 @@ const WLAB = k =>
     sd: "S&D zone",
     lcc: "Last CC",
     pz: "Proven zone",
+    ec: "Engulfing candle",
   })[k] || k;
-const WKEYS = ["ms", "trend", "fibc", "fiba", "ic", "pattern", "whl", "sd", "pz", "lcc"];
+const WKEYS = ["ms", "trend", "fibc", "fiba", "ic", "pattern", "whl", "sd", "pz", "lcc", "ec"];
 const hasStruct = e => e === "Reversal" || e === "Continuation" || e === "Pattern in Pattern";
 const structOf = t => t.struct || (t.bos === "ja" ? "bos" : t.bos === "nee" && hasStruct(t.entry4h) ? "som" : "");
 const rrOf = t => (t.slPips > 0 && t.tpPips != null ? t.tpPips / t.slPips : null);

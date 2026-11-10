@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.2.8 — 2026-11-10
+
+- **Engulfing candle** in the weekly Pros and Cons. It also works in the grade rules, Analyze, the blind review, the shared page, Copy analysis and the TradingView extension.
+
 ## 1.2.7 — 2026-11-10
 
 - Chart viewer in the app: click the chart to zoom, then switch timeframe with the ‹ › arrows, arrow keys or a swipe, without leaving the zoom.
