@@ -155,6 +155,7 @@
         ${row("Entry", t.entry4h ? esc(t.entry4h + (t.ecTf ? " · " + t.ecTf.toUpperCase() : "")) : "")}
         ${row("Confirmation", esc(struct))}
         ${row("4H room", t.room === "ja" ? "Yes" : t.room === "nee" ? "No" : "")}
+        ${row("Channel", t.channel ? "Yes" : "")}
         ${row("Scale-in", t.scaleIn ? "Yes" : "")}
         ${row("Market structure", ms(t.hMs))}
       </section>

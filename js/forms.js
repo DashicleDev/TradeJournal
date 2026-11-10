@@ -904,6 +904,10 @@ function f2Check() {
     $("#f2Room").checked = false;
   }
   $("#f2RoomL").hidden = v.room === "";
+  // Channel: an extra confirmation on a Reversal entry (no effect on the take / invalid check)
+  const rev = e === "Reversal";
+  $("#f2ChanL").hidden = !rev;
+  if (!rev) $("#f2Chan").checked = false;
 }
 function f2Summaries() {
   f2Check();
@@ -948,6 +952,7 @@ function f2Summaries() {
       radio("f2struct") && !$("#f2StructF").hidden ? radio("f2struct").replace("bos", "BoS").replace("som", "SoM") : "",
       ...[
         ["#f2Room", "Room"],
+        ["#f2Chan", "Channel"],
         ["#f2Scale", "Scale-in"],
       ]
         .filter(([id]) => $(id).checked && !$(id).closest("[hidden]"))
@@ -1210,6 +1215,7 @@ function f2Fill(t) {
   setRadio("f2struct", t.struct || (t.bos === "ja" ? "bos" : t.bos === "nee" ? "som" : ""));
   $("#f2Room").checked = t.room === "ja";
   $("#f2Scale").checked = !!t.scaleIn;
+  $("#f2Chan").checked = !!t.channel;
   $("#f2PlanEntry").value = t.planEntry ?? "";
   $("#f2SlPips").value = t.slPips ?? "";
   $("#f2TpPips").value = t.tpPips ?? "";
@@ -1336,6 +1342,7 @@ $("#tradeForm2").onsubmit = e => {
     wPat: $("#f2WPat").value === "?" ? "" : $("#f2WPat").value,
     wPatSub: $("#f2WPat").value && $("#f2WPat").value !== "?" ? $("#f2WPatSub").value : "",
     scaleIn: $("#f2Scale").checked,
+    channel: $("#f2Entry").value === "Reversal" && $("#f2Chan").checked,
     dMs: radio("f2dms") || "",
     hMs: radio("f2hms") || "",
     weekly: wcVals(),
@@ -1491,6 +1498,7 @@ function analysisText(t, link) {
     block("4h", L.h4, [
       t.entry4h ? t.entry4h + (t.ecTf ? " " + t.ecTf.toUpperCase() : "") : "",
       { bos: "Break of structure", som: "Switch of momentum" }[t.struct] || "",
+      t.channel ? "Channel" : "",
       t.hMs ? ok("MS", t.hMs) : "",
     ]),
     block("1h/2h", L.ltf, []),

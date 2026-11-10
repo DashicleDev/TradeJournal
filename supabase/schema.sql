@@ -129,7 +129,7 @@ language sql stable security definer set search_path to '' as $$
   select (select jsonb_object_agg(e.key, e.value) from jsonb_each(d.data) e
           where e.key = any (array['market','mode','status','pair','dir','date','closeDate','fase','wStruct','wPat','wPatSub',
             'weekly','concept','sub','dMs','dPros','dailyFib','hMs','entry4h','struct','room','ecTf','scaleIn','outcome','r','maxR',
-            'exitReason','evaluation','notes','shots','shotLinks',
+            'exitReason','evaluation','notes','shots','shotLinks','channel',
             -- invest: analysis, prices and percentages; never shares, amounts, P&L or exchange rates
             'ticker','sPhase','s12Ms','s12bm','s12ret','s6Ms','s6bm','s6ret','s3Ms','s3bm','s3room','s3roomB',
             's1Ms','s1room','s1cc','swMs','swPat','sEntry','sStop','sCur','retPct']))

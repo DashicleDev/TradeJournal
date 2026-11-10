@@ -211,6 +211,11 @@ let SPLITS = {
     ["3/3 with", "2/3 with", "1/3 with", "0/3 with", "2/2 with", "1/2 with", "0/2 with", "1/1 with", "0/1 with"],
   ],
   scale: ["Scale-in", t => (t.scaleIn ? "Scale-in" : "Not a scale-in"), ["Scale-in", "Not a scale-in"]],
+  chan: [
+    "Channel (reversal)",
+    t => (t.entry4h === "Reversal" ? (t.channel ? "Channel" : "No channel") : null),
+    ["Channel", "No channel"],
+  ],
   dms: [
     "Daily market structure",
     t => (t.dMs === "for" ? "With" : t.dMs === "against" ? "Against" : null),
@@ -342,7 +347,7 @@ const blankSet = mode => ({
 let SPLITGROUPS = [
   ["Weekly", ["fase", "wpat", "wpatsub", "wstruct", "wms", "wtrend", "wrange", "align", "wpro", "wcon", "wscore"]],
   ["Daily", ["dms", "concept", "sub", "dpro"]],
-  ["4H", ["hms", "entry4h", "struct", "room", "scale", "ectf", "rr", "sl"]],
+  ["4H", ["hms", "entry4h", "struct", "room", "chan", "scale", "ectf", "rr", "sl"]],
   [
     "Context",
     ["grade", "pair", "dir", "status", "weekday", "month", "account", "actype", "project", "btmonth", "btlag"],
@@ -503,6 +508,16 @@ let FDEF = [
       ["no", "Not a scale-in"],
     ],
     t => (t.scaleIn ? "yes" : "no"),
+  ],
+  [
+    "chan",
+    "Channel (reversal)",
+    () => [
+      ["", "Any"],
+      ["yes", "Channel"],
+      ["no", "No channel"],
+    ],
+    t => (t.entry4h === "Reversal" ? (t.channel ? "yes" : "no") : ""),
   ],
   [
     "dms",
@@ -701,7 +716,7 @@ function describe(f) {
 let FGROUPS = [
   ["Weekly", ["fase", "wpat", "wstruct", "wms", "wtrend", "wrange", "align", "pro", "con"]],
   ["Daily", ["dms", "concept", "sub", "dpro"]],
-  ["4H", ["hms", "entry4h", "struct", "room", "scale", "ectf"]],
+  ["4H", ["hms", "entry4h", "struct", "room", "chan", "scale", "ectf"]],
   ["Context", ["status", "grade", "pair", "dir", "account", "actype", "dates"]],
   ["Result", ["outcome", "eval", "rev", "exit"]],
 ];

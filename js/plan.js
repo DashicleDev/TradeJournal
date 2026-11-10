@@ -27,6 +27,7 @@ const GR_CRIT = [
   ["ec", "Weekly engulfing candle"],
   ["dMs", "Daily MS"],
   ["hMs", "4H MS"],
+  ["chan", "4H channel"],
   ["d:fc", "Daily FC"],
   ["d:dcc", "Daily last CC"],
   ["d:sd", "Daily S&D zone"],
@@ -35,11 +36,25 @@ const GR_CRIT = [
 const GR_GROUPS = [
   ["Weekly", ["ms", "trend", "fibc", "fiba", "ic", "pattern", "whl", "sd", "pz", "lcc", "ec"]],
   ["Daily", ["dPat", "dMs", "d:fc", "d:dcc", "d:sd"]],
-  ["4H", ["hMs"]],
+  ["4H", ["hMs", "chan"]],
 ];
 const GR_FLAGS = ["fibc", "fiba", "ic", "whl", "sd", "pz", "lcc"];
 // criteria a trade can have marked "against" (weekly pattern and the daily pros are only ever "with")
-const GR_CAN_AGAINST = new Set(["ms", "trend", "fibc", "fiba", "ic", "whl", "sd", "pz", "lcc", "ec", "dPat", "dMs", "hMs"]);
+const GR_CAN_AGAINST = new Set([
+  "ms",
+  "trend",
+  "fibc",
+  "fiba",
+  "ic",
+  "whl",
+  "sd",
+  "pz",
+  "lcc",
+  "ec",
+  "dPat",
+  "dMs",
+  "hMs",
+]);
 const GR_DEF = {
   1: { req: [], extras: ["fibc", "lcc", "pz", "sd"], min: 1, flags: GR_FLAGS, inner: "" },
   2: { req: ["ms", "fiba"], extras: ["fibc", "lcc", "pz", "sd"], min: 1, flags: GR_FLAGS, inner: "" },
@@ -75,15 +90,19 @@ const critV = (t, k) =>
         ? "against"
         : "for"
       : ""
-    : k === "dMs"
-      ? t.dMs || ""
-      : k === "hMs"
-        ? t.hMs || ""
-        : k.startsWith("d:")
-          ? dProsOf(t).includes(k.slice(2))
-            ? "for"
-            : ""
-          : (t.weekly || {})[k] || "";
+    : k === "chan"
+      ? t.channel
+        ? "for"
+        : ""
+      : k === "dMs"
+        ? t.dMs || ""
+        : k === "hMs"
+          ? t.hMs || ""
+          : k.startsWith("d:")
+            ? dProsOf(t).includes(k.slice(2))
+              ? "for"
+              : ""
+            : (t.weekly || {})[k] || "";
 // { g: "A" | "B" | "C" | "X", why } or null when grades are off or the trade has no phase / analysis
 function gradeOf(t, rules) {
   if (!feat("grade")) return null;
