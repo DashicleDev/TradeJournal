@@ -20,6 +20,24 @@
       <p class="shr-brand">Trade <span>Journal</span> · shared trade</p>
       <div id="shr"><p class="hint">Loading…</p></div>
     </main>
+    <div id="rvZoom" class="nomask" hidden>
+      <div class="rvzbar">
+        <button type="button" class="btn small ghost" data-z="prev" aria-label="Previous timeframe">‹</button
+        ><span id="shzTf"></span
+        ><button type="button" class="btn small ghost" data-z="next" aria-label="Next timeframe">›</button
+        ><span class="shz-gap"></span
+        ><button type="button" class="btn small" data-z="out" aria-label="Zoom out">−</button
+        ><span id="rvzPct">100%</span><button type="button" class="btn small" data-z="in" aria-label="Zoom in">+</button
+        ><button type="button" class="btn small ghost" data-z="reset">Fit</button
+        ><button type="button" class="btn small" data-z="close" aria-label="Close">✕ Close</button>
+      </div>
+      <div class="rvzstage" id="rvzStage">
+        <div class="rvzinner" id="rvzInner"><img alt="Chart" referrerpolicy="no-referrer" /></div>
+      </div>
+      <button type="button" class="shz-side l" data-z="prev" aria-label="Previous timeframe">‹</button>
+      <button type="button" class="shz-side r" data-z="next" aria-label="Next timeframe">›</button>
+      <p class="rvzhelp">Scroll or pinch to zoom · drag to move · ← → to switch timeframe · Esc to close</p>
+    </div>
     <script src="supabase.js"></script>
     <script src="config.js"></script>
     <script src="js/share.js"></script>

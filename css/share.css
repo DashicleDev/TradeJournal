@@ -156,3 +156,41 @@ body {
   object-fit: contain;
   background: var(--surface);
 }
+.shr-zoom {
+  cursor: zoom-in;
+}
+.shz-gap {
+  width: 14px;
+  min-width: 0 !important;
+}
+#shzTf {
+  min-width: 64px;
+  font-family: var(--body);
+  font-weight: 700;
+}
+.shz-side {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 2;
+  width: 46px;
+  height: 64px;
+  border: 0;
+  border-radius: 10px;
+  background: rgba(0, 0, 0, 0.45);
+  color: #fff;
+  font: 400 34px/1 var(--body);
+  cursor: pointer;
+}
+.shz-side:hover {
+  background: rgba(0, 0, 0, 0.7);
+}
+.shz-side.l {
+  left: 10px;
+}
+.shz-side.r {
+  right: 10px;
+}
+.shz-side[hidden] {
+  display: none;
+}

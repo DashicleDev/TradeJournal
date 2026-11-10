@@ -127,11 +127,179 @@
       src = urls[k] || (!(t.shots && t.shots[k]) && tvImg(t.shotLinks && t.shotLinks[k]));
     const ln = t.shotLinks && t.shotLinks[k];
     el.innerHTML = src
-      ? `<a href="${esc(ln && !urls[k] ? ln : src)}" target="_blank" rel="noopener" title="Open full size"><img src="${esc(src)}" alt="${l} chart for ${esc(t.pair || "trade")}"></a>`
+      ? `<a href="${esc(ln && !urls[k] ? ln : src)}" target="_blank" rel="noopener" class="shr-zoom" data-zi="${shots.findIndex(x => x[0] === k)}" title="Click to zoom"><img src="${esc(src)}" alt="${l} chart for ${esc(t.pair || "trade")}"></a>`
       : ln
         ? `<a class="btn" href="${esc(ln)}" target="_blank" rel="noopener">Open ${l} chart in TradingView ↗</a>`
         : `<p class="hint">This chart couldn't be loaded.</p>`;
   });
+
+  // Chart zoom (same as in the app's reviews), with ‹ › to switch timeframe.
+  const ZO = document.getElementById("rvZoom"),
+    st = document.getElementById("rvzStage"),
+    inner = document.getElementById("rvzInner"),
+    zimg = inner.querySelector("img"),
+    Z = { s: 1, x: 0, y: 0, pts: new Map(), pinch: null, drag: null };
+  const zApply = () => {
+    inner.style.transform = `translate(${Z.x}px,${Z.y}px) scale(${Z.s})`;
+    document.getElementById("rvzPct").textContent = Math.round(Z.s * 100) + "%";
+  };
+  const zFit = () => {
+    const ar = zimg.naturalWidth && zimg.naturalHeight ? zimg.naturalWidth / zimg.naturalHeight : 1.62;
+    inner.style.width = Math.min(st.clientWidth, st.clientHeight * ar) + "px";
+    Z.s = 1;
+    Z.x = (st.clientWidth - inner.offsetWidth) / 2;
+    Z.y = Math.max(0, (st.clientHeight - inner.offsetHeight) / 2);
+    zApply();
+  };
+  const zAt = (ns, cx, cy) => {
+    ns = Math.min(8, Math.max(1, ns));
+    const r = st.getBoundingClientRect(),
+      px = cx - r.left,
+      py = cy - r.top;
+    Z.x = px - ((px - Z.x) * ns) / Z.s;
+    Z.y = py - ((py - Z.y) * ns) / Z.s;
+    Z.s = ns;
+    if (ns === 1) return zFit();
+    zApply();
+  };
+  const zSrcs = () => figs.map(f => (f.querySelector(".shr-zoom img") || {}).src || "");
+  let zi = 0;
+  const zShow = i => {
+    const S = zSrcs(),
+      n = S.length;
+    for (let k = 0; k < n; k++) {
+      const j = (((i + k * (i < zi ? -1 : 1)) % n) + n) % n;
+      if (S[j]) {
+        zi = j;
+        break;
+      }
+    }
+    document.getElementById("shzTf").textContent = shots[zi][1];
+    show(zi);
+    zimg.onload = zFit;
+    zimg.src = S[zi];
+    if (zimg.complete) zFit();
+  };
+  const zOpen = i => {
+    ZO.hidden = false;
+    document.body.style.overflow = "hidden";
+    ZO.querySelectorAll("[data-z=prev],[data-z=next]").forEach(b => (b.hidden = zSrcs().filter(Boolean).length < 2));
+    zi = i;
+    zShow(i);
+  };
+  const zClose = () => {
+    ZO.hidden = true;
+    document.body.style.overflow = "";
+  };
+  box.addEventListener("click", e => {
+    const a = e.target.closest(".shr-zoom");
+    if (!a || e.metaKey || e.ctrlKey) return;
+    e.preventDefault();
+    zOpen(+a.dataset.zi);
+  });
+  ZO.addEventListener("click", e => {
+    const z = e.target.closest("[data-z]");
+    if (!z) return;
+    const r = st.getBoundingClientRect(),
+      cx = r.left + r.width / 2,
+      cy = r.top + r.height / 2;
+    ({
+      in: () => zAt(Z.s * 1.5, cx, cy),
+      out: () => zAt(Z.s / 1.5, cx, cy),
+      reset: zFit,
+      prev: () => zShow(zi - 1),
+      next: () => zShow(zi + 1),
+      close: zClose,
+    })[z.dataset.z]();
+  });
+  document.addEventListener("keydown", e => {
+    if (ZO.hidden) return;
+    if (e.key === "Escape") zClose();
+    else if (e.key === "ArrowRight") zShow(zi + 1);
+    else if (e.key === "ArrowLeft") zShow(zi - 1);
+    else if (e.key === "+" || e.key === "=") zAt(Z.s * 1.5, innerWidth / 2, innerHeight / 2);
+    else if (e.key === "-") zAt(Z.s / 1.5, innerWidth / 2, innerHeight / 2);
+  });
+  st.addEventListener(
+    "wheel",
+    e => {
+      e.preventDefault();
+      zAt(Z.s * Math.exp(-e.deltaY * 0.0015), e.clientX, e.clientY);
+    },
+    { passive: false }
+  );
+  st.addEventListener("dblclick", e => zAt(Z.s < 2 ? 2.5 : 1, e.clientX, e.clientY));
+  ["gesturestart", "gesturechange", "gestureend"].forEach(t => ZO.addEventListener(t, e => e.preventDefault()));
+  ZO.addEventListener("touchmove", e => e.preventDefault(), { passive: false });
+  const mid = () => {
+    const [a, b] = [...Z.pts.values()];
+    return { x: (a.x + b.x) / 2, y: (a.y + b.y) / 2, d: Math.hypot(a.x - b.x, a.y - b.y) || 1 };
+  };
+  let tap = { t: 0, x: 0, y: 0 },
+    moved = false,
+    sw = null;
+  st.addEventListener("pointerdown", e => {
+    try {
+      st.setPointerCapture(e.pointerId);
+    } catch {}
+    Z.pts.set(e.pointerId, { x: e.clientX, y: e.clientY });
+    moved = false;
+    sw = Z.pts.size === 1 ? { x: e.clientX, y: e.clientY } : null;
+    if (Z.pts.size === 2) {
+      const m = mid(),
+        r = st.getBoundingClientRect();
+      Z.pinch = { d: m.d, s: Z.s, cx: (m.x - r.left - Z.x) / Z.s, cy: (m.y - r.top - Z.y) / Z.s };
+      Z.drag = null;
+    } else if (Z.pts.size === 1) Z.drag = { x: e.clientX, y: e.clientY, ox: Z.x, oy: Z.y };
+  });
+  st.addEventListener("pointermove", e => {
+    if (!Z.pts.has(e.pointerId)) return;
+    const p0 = Z.pts.get(e.pointerId);
+    if (Math.hypot(e.clientX - p0.x, e.clientY - p0.y) > 4) moved = true;
+    Z.pts.set(e.pointerId, { x: e.clientX, y: e.clientY });
+    if (Z.pts.size >= 2 && Z.pinch) {
+      const m = mid(),
+        r = st.getBoundingClientRect(),
+        ns = Math.min(8, Math.max(1, (Z.pinch.s * m.d) / Z.pinch.d));
+      Z.s = ns;
+      Z.x = m.x - r.left - Z.pinch.cx * ns;
+      Z.y = m.y - r.top - Z.pinch.cy * ns;
+      zApply();
+    } else if (Z.drag && Z.s > 1) {
+      Z.x = Z.drag.ox + e.clientX - Z.drag.x;
+      Z.y = Z.drag.oy + e.clientY - Z.drag.y;
+      zApply();
+    }
+  });
+  const zUp = e => {
+    const was = Z.pts.size;
+    Z.pts.delete(e.pointerId);
+    if (Z.pts.size < 2 && Z.pinch) {
+      Z.pinch = null;
+      if (Z.s <= 1.02) zFit();
+    }
+    if (!Z.pts.size) {
+      Z.drag = null;
+      // swipe left/right at fit size switches timeframe on touch screens
+      if (was === 1 && sw && Z.s <= 1.02 && e.pointerType !== "mouse" && e.type === "pointerup") {
+        const dx = e.clientX - sw.x;
+        if (Math.abs(dx) > 60 && Math.abs(dx) > Math.abs(e.clientY - sw.y)) return zShow(zi + (dx < 0 ? 1 : -1));
+      }
+      if (was === 1 && !moved && e.type === "pointerup" && e.pointerType !== "mouse") {
+        const now = Date.now();
+        if (now - tap.t < 320 && Math.hypot(e.clientX - tap.x, e.clientY - tap.y) < 30) {
+          zAt(Z.s < 2 ? 2.5 : 1, e.clientX, e.clientY);
+          tap.t = 0;
+        } else tap = { t: now, x: e.clientX, y: e.clientY };
+      }
+    } else {
+      const p = [...Z.pts.values()][0];
+      Z.drag = { x: p.x, y: p.y, ox: Z.x, oy: Z.y };
+    }
+  };
+  st.addEventListener("pointerup", zUp);
+  st.addEventListener("pointercancel", zUp);
+  addEventListener("resize", () => !ZO.hidden && zFit());
 
   // Click through the charts: tabs, ‹ › buttons, arrow keys and swiping.
   const figs = [...box.querySelectorAll(".shr-shot")];
@@ -147,6 +315,7 @@
     if (b) show(cur + +b.dataset.step);
   });
   document.addEventListener("keydown", e => {
+    if (!ZO.hidden) return;
     if (figs.length > 1 && (e.key === "ArrowRight" || e.key === "ArrowLeft"))
       show(cur + (e.key === "ArrowRight" ? 1 : -1));
   });

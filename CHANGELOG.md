@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.2.6 — 2026-11-10
+
+- Shared trade page: click a chart to open it full screen with the same zoom as in the app (scroll or pinch to zoom, drag to move, Fit), and ‹ › arrows, arrow keys or swiping to switch timeframe.
+
 ## 1.2.5 — 2026-11-10
 
 - Copy analysis leaves the result out: just the analysis, chart links, notes and the link to the trade.
