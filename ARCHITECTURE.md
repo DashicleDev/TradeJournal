@@ -110,6 +110,8 @@ Grades come from rules per weekly phase (`gradeOf` in `js/plan.js`), which the u
 
 A forex trade can be shared as a read-only page, `share.html?t=<token>`. The `shares` table holds one random token per shared trade (owner-only RLS). The page needs no sign-in: it calls `shared_trade(token)`, a security definer function that returns only the fields meant for viewing (analysis, result, notes, screenshots; never the account or project), and a storage policy lets anyone read screenshots that belong to a shared trade. Stop sharing deletes the token, so the old link stops working; the trade itself is untouched.
 
+Chat apps build link previews from `og:` tags and don't run JavaScript, so links go through a small Cloudflare Worker (`worker/share-worker.js`, address in `config.js` as `shareBase`). For `/t/<token>` it fetches `share.html` from GitHub Pages and adds preview tags for that trade (pair, direction, result, phase, concept, a chart image). The Worker code is pasted into the Cloudflare dashboard by hand; it uses only the public anon key.
+
 ## News calendar
 
 A GitHub Action runs `scripts/ff_ics.py` every three hours. It reads the Forex Factory weekly feed for the major currencies, classifies events (Heavy = rate decisions, NFP, headline CPI, and central bank statements and press conferences; then High and Medium) and writes `.ics` files to `news/`, keeping the past eight weeks. Calendar apps subscribe to those files on GitHub Pages; the app's Settings → News builds the subscribe links.
