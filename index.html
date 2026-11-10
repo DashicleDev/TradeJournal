@@ -70,7 +70,12 @@
       </main>
       <div id="rvZoom" hidden>
         <div class="rvzbar">
-          <button type="button" class="btn small" data-z="out" aria-label="Zoom out">−</button
+          <button type="button" class="btn small ghost zgal" data-z="prev" aria-label="Previous timeframe" hidden>
+            ‹</button
+          ><span id="zTf" class="zgal" hidden></span
+          ><button type="button" class="btn small ghost zgal" data-z="next" aria-label="Next timeframe" hidden>›</button
+          ><span class="zgap zgal" hidden></span
+          ><button type="button" class="btn small" data-z="out" aria-label="Zoom out">−</button
           ><span id="rvzPct">100%</span
           ><button type="button" class="btn small" data-z="in" aria-label="Zoom in">+</button
           ><button type="button" class="btn small ghost" data-z="reset">Fit</button
@@ -81,6 +86,8 @@
             <img alt="Chart" referrerpolicy="no-referrer" /><span class="rvmask tl"></span>
           </div>
         </div>
+        <button type="button" class="zside l zgal" data-z="prev" aria-label="Previous timeframe" hidden>‹</button>
+        <button type="button" class="zside r zgal" data-z="next" aria-label="Next timeframe" hidden>›</button>
         <p class="rvzhelp">Scroll or pinch to zoom · drag to move · double-click to zoom in · Esc to close</p>
       </div>
       <main id="view-accounts" hidden>
@@ -195,7 +202,7 @@
           </div>
           <div class="viewimg" id="viewerImg"></div>
           <div class="viewnotes" id="viewerNotes" hidden></div>
-          <p class="hint" style="margin: 10px 0 0">Click the image to open it full size in a new tab.</p>
+          <p class="hint vhint" style="margin: 10px 0 0">Click the chart to zoom. Use ‹ › there to switch timeframe.</p>
         </div>
       </div>
       <div class="sheet" id="sheetS" hidden>

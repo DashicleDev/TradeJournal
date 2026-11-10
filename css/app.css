@@ -4931,3 +4931,87 @@ button.pill.simpill {
   font: 500 12.5px var(--mono);
   padding: 6px 8px;
 }
+/* Zoom: switch between a trade's timeframes */
+#zTf {
+  min-width: 64px;
+  font-family: var(--body);
+  font-weight: 700;
+}
+.zgap {
+  width: 14px;
+  min-width: 0 !important;
+}
+.zside {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 2;
+  width: 46px;
+  height: 64px;
+  border: 0;
+  border-radius: 10px;
+  background: rgba(0, 0, 0, 0.45);
+  color: #fff;
+  font: 400 34px/1 var(--body);
+  cursor: pointer;
+}
+.zside:hover {
+  background: rgba(0, 0, 0, 0.7);
+}
+.zside.l {
+  left: 10px;
+}
+.zside.r {
+  right: 10px;
+}
+#rvZoom .zgal[hidden] {
+  display: none;
+}
+/* Phones: pinch replaces − / + so the bar fits on one line */
+@media (max-width: 640px) {
+  #rvZoom [data-z="in"],
+  #rvZoom [data-z="out"],
+  #rvzPct,
+  #rvZoom .zgap,
+  #rvZoom .shz-gap {
+    display: none !important;
+  }
+  .zside,
+  .shz-side {
+    width: 38px;
+    height: 54px;
+    font-size: 28px;
+    left: auto;
+  }
+  .zside.l,
+  .shz-side.l {
+    left: 4px;
+  }
+  .zside.r,
+  .shz-side.r {
+    right: 4px;
+  }
+}
+/* Chart viewer on phones: title and Close on one line, timeframe tabs below */
+@media (max-width: 640px) {
+  #viewer .formhead {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px;
+  }
+  #viewer .formhead h3 {
+    flex: 1;
+    min-width: 0;
+    margin: 0;
+    font-size: 20px;
+  }
+  #viewer .formhead .closex {
+    order: 2;
+    margin: 0;
+  }
+  #viewer #viewerTabs {
+    order: 3;
+    width: 100%;
+  }
+}

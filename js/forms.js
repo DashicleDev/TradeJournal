@@ -1654,11 +1654,21 @@ function showVTab(k) {
     id = viewTrade.shots && viewTrade.shots[k],
     ln = viewTrade.shotLinks && viewTrade.shotLinks[k];
   $("#viewerImg").innerHTML = id
-    ? `<a href="${shotSrc(id)}" target="_blank" rel="noopener" title="Open full size in a new tab"><img src="${shotSrc(id)}" alt="${l} chart for ${esc(viewTrade.pair || "trade")}"></a>`
+    ? `<a class="vzoom" href="${shotSrc(id)}" target="_blank" rel="noopener" title="Click to zoom"><img src="${shotSrc(id)}" alt="${l} chart for ${esc(viewTrade.pair || "trade")}"></a>`
     : (tvImg(ln)
         ? `<a class="tvwrap" href="${esc(ln)}" target="_blank" rel="noopener" title="Open in TradingView"><img src="${tvImg(ln)}" alt="${l} chart for ${esc(viewTrade.pair || "trade")}" onerror="this.closest('.tvwrap').hidden=true;this.closest('.tvwrap').nextElementSibling.hidden=false"></a><div hidden>`
         : "<div>") +
       `<div class="linkcard"><span class="eyebrow">${l} chart</span><p class="hint" style="margin:0">This chart is a TradingView snapshot link.</p><a class="btn" href="${esc(ln)}" target="_blank" rel="noopener">Open in TradingView ↗</a><code>${esc(ln)}</code></div></div>`;
+}
+// the trade's charts as a zoom gallery: [{k, label, src}]
+function vGallery(t) {
+  return LSLOTS.filter(([k]) => hasShot(t, k))
+    .map(([k, l]) => ({
+      k,
+      label: l,
+      src: t.shots && t.shots[k] ? shotSrc(t.shots[k]) : tvImg(t.shotLinks && t.shotLinks[k]),
+    }))
+    .filter(g => g.src && g.src !== BLANK);
 }
 function tvImg(u) {
   const m = /tradingview\.com\/x\/([A-Za-z0-9]+)/.exec(u || "");

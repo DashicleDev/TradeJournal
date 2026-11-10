@@ -1324,8 +1324,13 @@ function zAt(ns, cx, cy) {
   if (ns === 1) return zFit();
   zApply();
 }
-function zOpen(src, mask = true) {
+// gal: optional [{src, label}] to switch between with ‹ › (the trade's timeframes), i = where to start
+function zOpen(src, mask = true, gal = null, i = 0) {
   const o = $("#rvZoom");
+  Z.gal = gal && gal.length > 1 ? gal : null;
+  Z.gi = i;
+  o.querySelectorAll(".zgal").forEach(b => (b.hidden = !Z.gal));
+  if (Z.gal) $("#zTf").textContent = Z.gal[i].label;
   o.classList.toggle("nomask", !mask);
   o.querySelector("img").src = src;
   o.hidden = false;
@@ -1333,6 +1338,17 @@ function zOpen(src, mask = true) {
   const img = o.querySelector("img");
   if (img.complete) zFit();
   else img.onload = zFit;
+}
+function zGo(d) {
+  if (!Z.gal) return;
+  Z.gi = (Z.gi + d + Z.gal.length) % Z.gal.length;
+  const g = Z.gal[Z.gi],
+    img = $("#rvZoom img");
+  $("#zTf").textContent = g.label;
+  if (g.k && viewTrade) showVTab(g.k);
+  img.onload = zFit;
+  img.src = g.src;
+  if (img.complete) zFit();
 }
 function zClose() {
   $("#rvZoom").hidden = true;
@@ -1344,10 +1360,23 @@ document.addEventListener("click", e => {
     zOpen(im.dataset.rvzoom);
     return;
   }
-  const pv = e.target.closest("a.shotprev,a.tvwrap,a[id^='slp-']");
+  const pv = e.target.closest("a.shotprev,a.tvwrap,a.vzoom,a[id^='slp-']");
   if (pv && pv.querySelector("img") && !e.metaKey && !e.ctrlKey) {
     e.preventDefault();
-    zOpen(pv.querySelector("img").src, false);
+    // from the chart viewer: the trade's other timeframes are one ‹ › away
+    const gal = pv.closest("#viewerImg") && viewTrade ? vGallery(viewTrade) : null,
+      k = document.querySelector('input[name="vtab"]:checked');
+    zOpen(
+      pv.querySelector("img").src,
+      false,
+      gal,
+      gal
+        ? Math.max(
+            0,
+            gal.findIndex(g => g.k === (k && k.value))
+          )
+        : 0
+    );
     return;
   }
   const z = e.target.closest("#rvZoom [data-z]");
@@ -1358,6 +1387,8 @@ document.addEventListener("click", e => {
   if (z.dataset.z === "in") zAt(Z.s * 1.5, cx, cy);
   else if (z.dataset.z === "out") zAt(Z.s / 1.5, cx, cy);
   else if (z.dataset.z === "reset") zFit();
+  else if (z.dataset.z === "prev") zGo(-1);
+  else if (z.dataset.z === "next") zGo(1);
   else zClose();
 });
 document.addEventListener(
@@ -1368,7 +1399,8 @@ document.addEventListener(
     if (e.key === "Escape") {
       e.preventDefault();
       zClose();
-    } else if (e.key === "+" || e.key === "=") $("#rvZoom [data-z=in]").click();
+    } else if (e.key === "ArrowRight" || e.key === "ArrowLeft") zGo(e.key === "ArrowRight" ? 1 : -1);
+    else if (e.key === "+" || e.key === "=") $("#rvZoom [data-z=in]").click();
     else if (e.key === "-") $("#rvZoom [data-z=out]").click();
   },
   true
@@ -1393,12 +1425,14 @@ document.addEventListener(
   };
   let tap = { t: 0, x: 0, y: 0 },
     moved = false;
+  let sw = null;
   st.addEventListener("pointerdown", e => {
     try {
       st.setPointerCapture(e.pointerId);
     } catch {}
     Z.pts.set(e.pointerId, { x: e.clientX, y: e.clientY });
     moved = false;
+    sw = Z.pts.size === 1 ? { x: e.clientX, y: e.clientY } : null;
     if (Z.pts.size === 2) {
       const m = mid(),
         r = st.getBoundingClientRect();
@@ -1434,6 +1468,11 @@ document.addEventListener(
     }
     if (!Z.pts.size) {
       Z.drag = null;
+      // swipe left/right at fit size switches timeframe (touch)
+      if (Z.gal && was === 1 && sw && Z.s <= 1.02 && e.pointerType !== "mouse" && e.type === "pointerup") {
+        const dx = e.clientX - sw.x;
+        if (Math.abs(dx) > 60 && Math.abs(dx) > Math.abs(e.clientY - sw.y)) return zGo(dx < 0 ? 1 : -1);
+      }
       if (was === 1 && !moved && e.type === "pointerup" && e.pointerType !== "mouse") {
         const now = Date.now();
         if (now - tap.t < 320 && Math.hypot(e.clientX - tap.x, e.clientY - tap.y) < 30) {

@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.2.7 — 2026-11-10
+
+- Chart viewer in the app: click the chart to zoom, then switch timeframe with the ‹ › arrows, arrow keys or a swipe, without leaving the zoom.
+- Cleaner on phones: the viewer has its title and Close on one line, and the zoom bar drops − / + (pinch instead) so it fits on one line, here and on the shared page.
+
 ## 1.2.6 — 2026-11-10
 
 - Shared trade page: click a chart to open it full screen with the same zoom as in the app (scroll or pinch to zoom, drag to move, Fit), and ‹ › arrows, arrow keys or swiping to switch timeframe.
