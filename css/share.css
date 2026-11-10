@@ -128,3 +128,31 @@ body {
     font-size: 24px;
   }
 }
+.shr-charts {
+  margin-top: 24px;
+}
+.shr-chead {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+.shr-chead .shr-h {
+  margin: 0 6px 0 0;
+}
+.shr-nav {
+  margin-left: auto;
+  display: inline-flex;
+  gap: 6px;
+}
+.shr-nav .btn {
+  font-size: 18px;
+  line-height: 1;
+  padding: 4px 12px;
+}
+.shr-img img {
+  max-height: 78vh;
+  object-fit: contain;
+  background: var(--surface);
+}

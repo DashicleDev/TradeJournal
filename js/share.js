@@ -98,7 +98,14 @@
       </section>
     </div>
     ${t.notes ? `<section class="shr-card shr-notes"><span class="eyebrow">Notes</span><p>${esc(t.notes)}</p></section>` : ""}
-    ${shots.length ? `<h3 class="shr-h">Charts</h3>${shots.map(([k, l]) => `<figure class="shr-shot" data-k="${k}"><figcaption class="eyebrow">${l}</figcaption><div class="shr-img"><p class="hint">Loading chart…</p></div></figure>`).join("")}` : ""}
+    ${
+      shots.length
+        ? `<section class="shr-charts"><div class="shr-chead"><h3 class="shr-h">Charts</h3>
+      <div class="segs" role="tablist">${shots.map(([k, l], i) => `<label class="seg"><input type="radio" name="shrtab" value="${i}" ${i ? "" : "checked"}><span>${l}</span></label>`).join("")}</div>
+      ${shots.length > 1 ? `<span class="shr-nav"><button type="button" class="btn small ghost" data-step="-1" aria-label="Previous chart">‹</button><button type="button" class="btn small ghost" data-step="1" aria-label="Next chart">›</button></span>` : ""}</div>
+      ${shots.map(([k, l], i) => `<figure class="shr-shot" data-k="${k}" ${i ? "hidden" : ""}><div class="shr-img"><p class="hint">Loading ${l} chart…</p></div></figure>`).join("")}</section>`
+        : ""
+    }
     <p class="hint shr-foot">Read-only view. Shared from Trade Journal.</p>`;
 
   // Screenshots: uploaded ones through signed URLs, TradingView snapshot links as their image.
@@ -124,5 +131,33 @@
       : ln
         ? `<a class="btn" href="${esc(ln)}" target="_blank" rel="noopener">Open ${l} chart in TradingView ↗</a>`
         : `<p class="hint">This chart couldn't be loaded.</p>`;
+  });
+
+  // Click through the charts: tabs, ‹ › buttons, arrow keys and swiping.
+  const figs = [...box.querySelectorAll(".shr-shot")];
+  let cur = 0;
+  const show = i => {
+    cur = (i + figs.length) % figs.length;
+    figs.forEach((f, j) => (f.hidden = j !== cur));
+    box.querySelectorAll('input[name="shrtab"]').forEach(r => (r.checked = +r.value === cur));
+  };
+  box.addEventListener("change", e => e.target.name === "shrtab" && show(+e.target.value));
+  box.addEventListener("click", e => {
+    const b = e.target.closest("[data-step]");
+    if (b) show(cur + +b.dataset.step);
+  });
+  document.addEventListener("keydown", e => {
+    if (figs.length > 1 && (e.key === "ArrowRight" || e.key === "ArrowLeft"))
+      show(cur + (e.key === "ArrowRight" ? 1 : -1));
+  });
+  let x0 = null;
+  box.addEventListener("touchstart", e => e.target.closest(".shr-shot") && (x0 = e.touches[0].clientX), {
+    passive: true,
+  });
+  box.addEventListener("touchend", e => {
+    if (x0 == null) return;
+    const dx = e.changedTouches[0].clientX - x0;
+    x0 = null;
+    if (Math.abs(dx) > 50) show(cur + (dx < 0 ? 1 : -1));
   });
 })();

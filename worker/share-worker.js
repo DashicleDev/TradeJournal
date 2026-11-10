@@ -50,15 +50,47 @@ function preview(t) {
   const title = [t.pair || "Trade", t.dir ? (t.dir === "long" ? "Long" : "Short") : "", "·", res]
     .filter(Boolean)
     .join(" ");
+  // The analysis first, one line per timeframe (Discord shows the line breaks, WhatsApp the start).
+  const w = t.weekly || {};
+  const mark = v => (v === "for" ? "✓" : v === "against" ? "✗" : "");
+  const WK = [
+    ["ms", "MS"],
+    ["trend", "Trend"],
+    ["fibc", "FC"],
+    ["fiba", "Fib active"],
+    ["ic", "IC"],
+    ["whl", "High/Low"],
+    ["sd", "S&D"],
+    ["pz", "Proven zone"],
+    ["lcc", "Last CC"],
+  ];
+  const DK = { fc: "FC", dcc: "Last CC", sd: "S&D" };
+  const line = (...p) => p.filter(Boolean).join(" · ");
   const desc = [
-    t.fase ? "Phase " + t.fase : "",
-    t.concept,
-    t.entry4h,
-    t.mode === "backtest" ? "Backtest" : "Live",
-    fmtD(t.date),
+    line(
+      t.fase ? "Phase " + t.fase : "",
+      t.wStruct ? (t.wStruct === "inner" ? "Inner" : "Outer") + " structure" : "",
+      t.wPat
+    ),
+    WK.filter(([k]) => w[k]).length
+      ? "Weekly: " +
+        WK.filter(([k]) => w[k])
+          .map(([k, l]) => mark(w[k]) + " " + l)
+          .join("  ")
+      : "",
+    line(
+      t.concept ? "Daily: " + t.concept + (t.sub && t.sub !== "—" ? " (" + t.sub + ")" : "") : "",
+      t.dMs ? mark(t.dMs) + " MS" : "",
+      ...(Array.isArray(t.dPros) ? t.dPros : []).map(k => "✓ " + (DK[k] || k))
+    ),
+    line(
+      t.hMs || t.entry4h ? "4H:" + (t.hMs ? " " + mark(t.hMs) + " MS" : "") : "",
+      t.entry4h ? t.entry4h + (t.ecTf ? " " + t.ecTf.toUpperCase() : "") : ""
+    ),
+    line(t.mode === "backtest" ? "Backtest" : "Live", fmtD(t.date), t.exitReason ? "Exit: " + t.exitReason : ""),
   ]
     .filter(Boolean)
-    .join(" · ");
+    .join("\n");
   return { title, desc };
 }
 

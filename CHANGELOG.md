@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.2.2 — 2026-11-10
+
+- Shared trade page: charts in one viewer you click through (Weekly / Daily / 4H / 1H tabs, ‹ › buttons, arrow keys, swipe on phones), so the analysis stays on top.
+- Chat previews show the analysis per timeframe (phase, weekly criteria, daily concept and MS, 4H entry) instead of one summary line.
+
 ## 1.2.1 — 2026-11-10
 
 - Share links get a preview in WhatsApp, Discord and other chat apps: pair, direction, result, phase, concept and a chart. Links you shared before keep working, without the preview.
