@@ -70,7 +70,7 @@
       <div><h2>${esc(t.pair || "Trade")} ${arrow(t.dir)}</h2>
         <p class="hint">${esc([t.dir ? (t.dir === "long" ? "Long" : "Short") : "", t.mode === "backtest" ? "Backtest" : "Live", t.status === "missed" ? "Missed" : ""].filter(Boolean).join(" · "))}
         · ${esc(fmtD(t.date))}${t.closeDate && t.closeDate !== t.date ? " → " + esc(fmtD(t.closeDate)) : ""}</p>
-        ${t.concept ? `<p class="shr-concept"><span>Concept</span> ${esc(t.concept + (t.sub && t.sub !== "—" ? " · " + t.sub : ""))}</p>` : ""}</div>
+        ${t.concept ? `<p class="shr-concept"><span>Concept</span> ${t.concept === "Weekly - 4H" ? "Weekly - 4H" : "Weekly - Daily - 4H"}</p>` : ""}</div>
       ${oc ? `<span class="restag ${oc} shr-res">${{ win: "Win", loss: "Loss", be: "BE", open: "Open" }[oc]}${oc === "open" ? "" : `<b class="num">${fmtR(t.r)}</b>`}</span>` : ""}
     </div>
     <div class="shr-grid">
@@ -83,6 +83,7 @@
         ${wChips ? `<div class="shr-chips">${wChips}</div>` : ""}
       </section>
       <section class="shr-card"><span class="eyebrow">Daily</span>
+        ${row("Pattern", t.concept && t.concept !== "Weekly - 4H" ? esc(t.concept + (t.sub && t.sub !== "—" ? " · " + t.sub : "")) : "")}
         ${row("Market structure", ms(t.dMs))}
         ${dPros.length ? `<div class="shr-chips">${dPros.map(k => chip(DCRIT[k] || k, "for")).join("")}</div>` : ""}
       </section>

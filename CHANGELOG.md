@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.2.11 — 2026-11-10
+
+- Shared page and Copy analysis name the setup by its timeframes: "Weekly - Daily - 4H" when there is a daily pattern, "Weekly - 4H" when not. The daily pattern itself (e.g. Continuation, 100 level) is listed under Daily.
+
 ## 1.2.10 — 2026-11-10
 
 - Copy analysis heading reads "NZDJPY - Short".
