@@ -495,6 +495,8 @@ function openStock(t, dup) {
   sSimOn();
   exRender();
   $("#sDup").hidden = $("#sDel").hidden = !t || !!dup;
+  $("#sShare").hidden = $("#sCopyAn").hidden = !t || !!dup || !feat("share");
+  f2ShareShow(t && !dup && feat("share") ? t.id : null, undefined, "s");
   {
     const b = $("#sDel");
     delete b.dataset.armed;
@@ -1406,8 +1408,9 @@ const shareUrl = tok =>
   window.TJ_CONFIG && TJ_CONFIG.shareBase
     ? TJ_CONFIG.shareBase.replace(/\/$/, "") + "/t/" + tok
     : new URL("share.html?t=" + tok, location.href).href;
-async function f2ShareShow(id, tok) {
-  const bar = $("#f2ShareBar");
+// p = which form: "f2" (forex) or "s" (invest); each has its own share bar
+async function f2ShareShow(id, tok, p = "f2") {
+  const bar = $("#" + p + "ShareBar");
   bar.hidden = true;
   bar.dataset.id = id || "";
   if (!id || !ME) return;
@@ -1416,16 +1419,16 @@ async function f2ShareShow(id, tok) {
     tok = data && data.token;
   }
   if (bar.dataset.id !== id || !tok) return;
-  $("#f2ShareUrl").value = shareUrl(tok);
+  $("#" + p + "ShareUrl").value = shareUrl(tok);
   bar.hidden = false;
 }
 // the trade's share token, made on first use
-async function shareToken(id) {
+async function shareToken(id, p = "f2") {
   if (!ME) return toast("Sign in to share trades."), null;
   let { data, error } = await SB.from("shares").select("token").eq("doc_id", id).maybeSingle();
   if (!error && !data) ({ data, error } = await SB.from("shares").insert({ doc_id: id }).select("token").single());
   if (error || !data) return toast("Couldn't make a share link. Try again."), null;
-  await f2ShareShow(id, data.token);
+  await f2ShareShow(id, data.token, p);
   return data.token;
 }
 $("#f2Share").onclick = async () => {
@@ -1507,20 +1510,82 @@ $("#f2CopyAn").onclick = async () => {
     toast("Couldn't copy to the clipboard.");
   }
 };
-$("#f2ShareCopy").onclick = async () => {
+["f2", "s"].forEach(p => {
+  $("#" + p + "ShareCopy").onclick = async () => {
+    try {
+      await navigator.clipboard.writeText($("#" + p + "ShareUrl").value);
+      toast("Share link copied");
+    } catch {
+      $("#" + p + "ShareUrl").select();
+    }
+  };
+  $("#" + p + "ShareOff").onclick = async () => {
+    const id = $("#" + p + "ShareBar").dataset.id;
+    const { error } = await SB.from("shares").delete().eq("doc_id", id);
+    if (error) return toast("Couldn't turn the link off. Try again.");
+    $("#" + p + "ShareBar").hidden = true;
+    toast("Link turned off");
+  };
+});
+/* invest: the same Share and Copy analysis buttons */
+function investText(t, link) {
+  const L = t.shotLinks || {},
+    ph = t.sPhase,
+    ms = v => (v === "for" ? "✓ MS" : v === "against" ? "✗ MS" : ""),
+    block = (title, link, items) => {
+      items = items.filter(Boolean);
+      if (!link && !items.length) return "";
+      return [title + ":", link || "", ...items.map(i => "- " + i)].filter(Boolean).join("\n");
+    };
+  const head =
+    [t.ticker || t.pair || "Trade", t.mode === "backtest" ? "Backtest" : "", t.date ? fmtD(t.date) : ""]
+      .filter(Boolean)
+      .join(" · ") + (ph ? "\nPhase " + ph : "");
+  return [
+    head,
+    block("12M", L.m12, [
+      ms(t.s12Ms),
+      t.s12Ms === "for" && t.s12bm ? t.s12bm : "",
+      t.s12Ms === "against" && t.s12ret ? "Back to " + t.s12ret : "",
+    ]),
+    block("6M", L.m6, [
+      ms(t.s6Ms),
+      ph === "A" && t.s6bm ? "BM " + t.s6bm : "",
+      ph === "B" && t.s6ret ? "Back to " + t.s6ret : "",
+    ]),
+    block("3M", L.m3, [
+      ms(t.s3Ms),
+      ph === "A" && t.s3bm ? "BM" : "",
+      (ph === "A" && t.s3room) || (ph === "B" && t.s3roomB) ? "Room" : "",
+    ]),
+    block("Monthly", L.mo, [ms(t.s1Ms), ph === "A" && t.s1room ? "Room" : "", t.s1cc ? "Bullish CC" : ""]),
+    block("Weekly", L.wk, [ms(t.swMs), t.swPat || ""]),
+    t.notes || "",
+    link ? "Full trade: " + link : "",
+  ]
+    .filter(Boolean)
+    .join("\n\n");
+}
+$("#sShare").onclick = async () => {
+  const tok = sEditing && (await shareToken(sEditing, "s"));
+  if (!tok) return;
   try {
-    await navigator.clipboard.writeText($("#f2ShareUrl").value);
+    await navigator.clipboard.writeText(shareUrl(tok));
     toast("Share link copied");
   } catch {
-    $("#f2ShareUrl").select();
+    $("#sShareUrl").select();
   }
 };
-$("#f2ShareOff").onclick = async () => {
-  const id = $("#f2ShareBar").dataset.id;
-  const { error } = await SB.from("shares").delete().eq("doc_id", id);
-  if (error) return toast("Couldn't turn the link off. Try again.");
-  $("#f2ShareBar").hidden = true;
-  toast("Link turned off");
+$("#sCopyAn").onclick = async () => {
+  const t = docs.find(d => d.id === sEditing),
+    tok = t && (await shareToken(t.id, "s"));
+  if (!tok) return;
+  try {
+    await navigator.clipboard.writeText(investText(t, shareUrl(tok)));
+    toast("Analysis copied");
+  } catch {
+    toast("Couldn't copy to the clipboard.");
+  }
 };
 /* ---------- chart screenshots ---------- */
 const SLOTS = [

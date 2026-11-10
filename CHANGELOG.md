@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.2.13 — 2026-11-10
+
+- **Invest trades can be shared too:** Share and Copy analysis in the invest trade form. The shared page shows the phase, the analysis per timeframe (12M, 6M, 3M, Monthly, Weekly), entry, stop, exits with date, price and how, the % return, notes and the charts with zoom. Number of shares, amounts, P&L and exchange rates are never shared.
+
 ## 1.2.12 — 2026-11-10
 
 - Trade form: a **View charts** button at the top of the analysis opens all of the trade's charts in the zoom, with ‹ › arrows, arrow keys or swiping to click through the timeframes, without opening each section.

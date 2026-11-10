@@ -36,12 +36,21 @@
     ["ec", "Engulfing candle"],
   ];
   const DCRIT = { fc: "FC", dcc: "Last CC", sd: "S&D zone" };
-  const SLOTS = [
-    ["weekly", "Weekly"],
-    ["daily", "Daily"],
-    ["h4", "4H"],
-    ["ltf", "1H/2H"],
-  ];
+  const INV = t.market === "stocks";
+  const SLOTS = INV
+    ? [
+        ["m12", "12M"],
+        ["m6", "6M"],
+        ["m3", "3M"],
+        ["mo", "Monthly"],
+        ["wk", "Weekly"],
+      ]
+    : [
+        ["weekly", "Weekly"],
+        ["daily", "Daily"],
+        ["h4", "4H"],
+        ["ltf", "1H/2H"],
+      ];
   const fmtR = r => (r == null || r === "" ? "—" : (r > 0 ? "+" : "") + Number(r).toFixed(2) + "R");
   const fmtD = d =>
     d ? new Date(d + "T12:00:00").toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" }) : "";
@@ -62,18 +71,81 @@
   const oc = t.outcome || (t.r > 0 ? "win" : t.r < 0 ? "loss" : t.r === 0 ? "be" : "");
   const struct = { bos: "Break of structure (BoS)", som: "Switch of momentum (SoM)" }[t.struct] || "";
 
-  document.title = `${t.pair || "Trade"} ${fmtD(t.date)} · Trade Journal`;
+  document.title = `${t.ticker || t.pair || "Trade"} ${fmtD(t.date)} · Trade Journal`;
   const shots = SLOTS.filter(([k]) => (t.shots && t.shots[k]) || (t.shotLinks && t.shotLinks[k]));
+
+  // invest: % return, prices and the analysis per timeframe (never shares or amounts)
+  const pct = v => (v == null || v === "" ? "" : (v > 0 ? "+" : "") + Number(v).toFixed(1) + "%");
+  const px = v =>
+    v == null || v === ""
+      ? ""
+      : esc(Number(v).toLocaleString("en-GB", { maximumFractionDigits: 4 }) + (t.sCur ? " " + t.sCur : ""));
+  const yes = v => (v ? "Yes" : "");
+  const ph = t.sPhase;
+  const card = (title, rows) => {
+    const h = rows.join("");
+    return h ? `<section class="shr-card"><span class="eyebrow">${title}</span>${h}</section>` : "";
+  };
+  const exits = (t.sExits || []).filter(x => x.price || x.date || x.how);
+  const invGrid = () =>
+    [
+      card("12 Monthly", [
+        row("Market structure", ms(t.s12Ms)),
+        row("Pattern", t.s12Ms === "for" ? esc(t.s12bm || "") : ""),
+        row("Back to", t.s12Ms === "against" ? esc(t.s12ret || "") : ""),
+      ]),
+      card("6 Monthly", [
+        row("Market structure", ms(t.s6Ms)),
+        row("BM", ph === "A" ? esc(t.s6bm || "") : ""),
+        row("Back to previous MS", ph === "B" ? esc(t.s6ret || "") : ""),
+      ]),
+      card("3 Monthly", [
+        row("Market structure", ms(t.s3Ms)),
+        row("BM", ph === "A" ? yes(t.s3bm) : ""),
+        row("Room", ph === "A" ? yes(t.s3room) : ph === "B" ? yes(t.s3roomB) : ""),
+      ]),
+      card("Monthly", [
+        row("Market structure", ms(t.s1Ms)),
+        row("Room", ph === "A" ? yes(t.s1room) : ""),
+        row("Bullish CC", yes(t.s1cc)),
+      ]),
+      card("Weekly", [row("Market structure", ms(t.swMs)), row("Pattern", esc(t.swPat || ""))]),
+      card("Result", [
+        row("Return", oc ? esc(pct(t.retPct)) || "—" : "Open"),
+        row("Entry", px(t.sEntry)),
+        row("Stop", px(t.sStop)),
+        ...exits.map((x, i) =>
+          row(
+            exits.length > 1 ? "Exit " + (i + 1) : "Exit",
+            esc(
+              [
+                fmtD(x.date),
+                x.price
+                  ? Number(x.price).toLocaleString("en-GB", { maximumFractionDigits: 4 }) + (t.sCur ? " " + t.sCur : "")
+                  : "",
+                x.how,
+              ]
+                .filter(Boolean)
+                .join(" · ")
+            )
+          )
+        ),
+      ]),
+    ].join("");
 
   box.innerHTML = `
     <div class="shr-head">
-      <div><h2>${esc(t.pair || "Trade")} ${arrow(t.dir)}</h2>
+      <div><h2>${esc(t.ticker || t.pair || "Trade")} ${INV ? "" : arrow(t.dir)}</h2>
         <p class="hint">${esc([t.dir ? (t.dir === "long" ? "Long" : "Short") : "", t.mode === "backtest" ? "Backtest" : "Live", t.status === "missed" ? "Missed" : ""].filter(Boolean).join(" · "))}
         · ${esc(fmtD(t.date))}${t.closeDate && t.closeDate !== t.date ? " → " + esc(fmtD(t.closeDate)) : ""}</p>
-        ${t.concept ? `<p class="shr-concept"><span>Concept</span> ${t.concept === "Weekly - 4H" ? "Weekly - 4H" : "Weekly - Daily - 4H"}</p>` : ""}</div>
-      ${oc ? `<span class="restag ${oc} shr-res">${{ win: "Win", loss: "Loss", be: "BE", open: "Open" }[oc]}${oc === "open" ? "" : `<b class="num">${fmtR(t.r)}</b>`}</span>` : ""}
+        ${INV && ph ? `<p class="shr-concept"><span>Phase</span> ${esc(ph)}</p>` : ""}
+        ${!INV && t.concept ? `<p class="shr-concept"><span>Concept</span> ${t.concept === "Weekly - 4H" ? "Weekly - 4H" : "Weekly - Daily - 4H"}</p>` : ""}</div>
+      ${oc ? `<span class="restag ${oc} shr-res">${{ win: "Win", loss: "Loss", be: "BE", open: "Open" }[oc]}${oc === "open" ? "" : `<b class="num">${INV ? pct(t.retPct) : fmtR(t.r)}</b>`}</span>` : INV && t.status !== "missed" ? `<span class="restag open shr-res">Open</span>` : ""}
     </div>
-    <div class="shr-grid">
+    <div class="shr-grid">${
+      INV
+        ? invGrid()
+        : `
       <section class="shr-card"><span class="eyebrow">Weekly</span>
         ${row("Phase", t.fase ? esc(t.fase) : "")}
         ${row("Structure", t.wStruct ? (t.wStruct === "inner" ? "Inner" : "Outer") : "")}
@@ -99,7 +171,8 @@
         ${row("Max reached", t.maxR != null ? esc(fmtR(t.maxR)) : "")}
         ${row("Exit", esc(t.exitReason || ""))}
         ${row("According to plan", t.evaluation ? (t.evaluation === "plan" ? "Yes" : "No") : "")}
-      </section>
+      </section>`
+    }
     </div>
     ${t.notes ? `<section class="shr-card shr-notes"><span class="eyebrow">Notes</span><p>${esc(t.notes)}</p></section>` : ""}
     ${

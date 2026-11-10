@@ -129,8 +129,15 @@ language sql stable security definer set search_path to '' as $$
   select (select jsonb_object_agg(e.key, e.value) from jsonb_each(d.data) e
           where e.key = any (array['market','mode','status','pair','dir','date','closeDate','fase','wStruct','wPat','wPatSub',
             'weekly','concept','sub','dMs','dPros','dailyFib','hMs','entry4h','struct','room','ecTf','scaleIn','outcome','r','maxR',
-            'exitReason','evaluation','notes','shots','shotLinks']))
+            'exitReason','evaluation','notes','shots','shotLinks',
+            -- invest: analysis, prices and % return; never shares, amounts, P&L or exchange rates
+            'ticker','sPhase','s12Ms','s12bm','s12ret','s6Ms','s6bm','s6ret','s3Ms','s3bm','s3room','s3roomB',
+            's1Ms','s1room','s1cc','swMs','swPat','sEntry','sStop','sCur','retPct']))
          || jsonb_build_object('owner', s.user_id)
+         || case when jsonb_typeof(d.data->'sExits') = 'array'
+              then jsonb_build_object('sExits', coalesce((select jsonb_agg(jsonb_build_object('date', x->'date', 'price', x->'price', 'how', x->'how'))
+                                                          from jsonb_array_elements(d.data->'sExits') x), '[]'::jsonb))
+              else '{}'::jsonb end
   from public.shares s join public.docs d on d.user_id = s.user_id and d.id = s.doc_id
   where s.token = tok $$;
 revoke all on function public.shared_trade(text) from public;

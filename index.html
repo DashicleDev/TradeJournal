@@ -533,8 +533,23 @@
             <div class="formbar">
               <button type="submit" class="btn" id="sSave">Save trade</button
               ><button type="button" class="btn ghost" data-closesheets>Cancel</button><span class="spacer"></span
+              ><button
+                type="button"
+                class="btn ghost"
+                id="sCopyAn"
+                hidden
+                title="Copy the analysis with chart links and the share link, ready to paste anywhere"
+              >
+                Copy analysis</button
+              ><button type="button" class="btn ghost" id="sShare" hidden>Share</button
               ><button type="button" class="btn ghost" id="sDup" hidden>Duplicate</button
               ><button type="button" class="btn ghost danger" id="sDel" hidden>Delete</button>
+            </div>
+            <div class="shrbar" id="sShareBar" hidden>
+              <span>Anyone with this link can view this trade (read-only):</span>
+              <input type="text" id="sShareUrl" readonly aria-label="Share link" />
+              <button type="button" class="btn small" id="sShareCopy">Copy</button
+              ><button type="button" class="btn small ghost danger" id="sShareOff">Stop sharing</button>
             </div>
           </form>
         </div>
