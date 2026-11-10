@@ -962,9 +962,8 @@ function useMarketDefs() {
   if (!SPLITS[split]) split = d.split;
 }
 const flabel = k => (k === "dates" ? "Date range" : FDEF.find(d => d[0] === k)[1]);
-function setControls(st, i) {
-  const f = st.f,
-    k = st.id;
+// the filter chips of one filter object; k is the set id the popover and × buttons act on
+function fchipsOf(f, k) {
   const chips = FDEF.filter(d => fvals(f[d[0]]).length).map(d => {
     const O = d[2](),
       vs = fvals(f[d[0]]);
@@ -980,6 +979,12 @@ function setControls(st, i) {
     chips.push(
       `<span class="fchip"><em>Dates</em>${esc(f.from ? fmtD(f.from) : "…")} – ${esc(f.to ? fmtD(f.to) : "…")}<button type="button" data-rmfilter="dates" data-fset="${k}" aria-label="Remove date filter">×</button></span>`
     );
+  return chips;
+}
+function setControls(st, i) {
+  const f = st.f,
+    k = st.id,
+    chips = fchipsOf(f, k);
   const modes = [
     ["all", "All"],
     ["live", "Live"],
@@ -1025,21 +1030,24 @@ function allBar() {
 }
 function fpopRender() {
   const P = $("#fpop"),
-    st = fpop.set === "__all" ? (sets.length ? { f: allF() } : null) : sets.find(x => x.id === fpop.set);
+    st = fpop.set === "__all" ? (sets.length ? { f: allF() } : null) : fpSet(fpop.set);
   if (!st) {
     P.hidden = true;
     return;
   }
   if (!fpop.field) {
-    P.innerHTML = FGROUPS.map(
-      ([g, ks]) =>
-        `<div class="fpg"><span class="eyebrow">${g}</span>${ks
-          .map(k => {
-            const on = k === "dates" ? st.f.from || st.f.to : fvals(st.f[k]).length;
-            return `<button type="button" class="fpi ${on ? "on" : ""}" data-pickf="${k}">${esc(flabel(k))}<span>›</span></button>`;
-          })
-          .join("")}</div>`
-    ).join("");
+    P.innerHTML = FGROUPS.map(([g, ks]) => [g, fpop.set === "__rv" ? ks.filter(k => !RV_NOF.includes(k)) : ks])
+      .filter(([, ks]) => ks.length)
+      .map(
+        ([g, ks]) =>
+          `<div class="fpg"><span class="eyebrow">${g}</span>${ks
+            .map(k => {
+              const on = k === "dates" ? st.f.from || st.f.to : fvals(st.f[k]).length;
+              return `<button type="button" class="fpi ${on ? "on" : ""}" data-pickf="${k}">${esc(flabel(k))}<span>›</span></button>`;
+            })
+            .join("")}</div>`
+      )
+      .join("");
     return;
   }
   const back = `<button type="button" class="fpback" data-pickf="">‹ ${esc(flabel(fpop.field))}</button>`;
@@ -1062,6 +1070,9 @@ function fpopRender() {
       )}</div><div class="fpfoot"><button type="button" class="btn small primary" data-fpdone>Done</button></div>`;
 }
 let fpop = { set: null, field: null };
+// "__rv" is the re-evaluate game's trade filter (Review tab); everything else is an Analyze set
+const fpSet = id => (id === "__rv" ? { f: rvOpts.f || (rvOpts.f = {}) } : sets.find(x => x.id === id));
+const fpRedraw = id => (id === "__rv" ? rvRender() : renderAnalyze());
 function fpopOpen(btn) {
   fpop = { set: btn.dataset.addf, field: null };
   const P = $("#fpop");
@@ -1107,13 +1118,13 @@ document.addEventListener(
       return;
     }
     if (rm) {
-      const st = sets.find(x => x.id === rm.dataset.fset);
+      const st = fpSet(rm.dataset.fset);
       if (st) {
         if (rm.dataset.rmfilter === "dates") {
           st.f.from = "";
           st.f.to = "";
         } else st.f[rm.dataset.rmfilter] = "";
-        renderAnalyze();
+        fpRedraw(rm.dataset.fset);
       }
       return;
     }
@@ -1158,14 +1169,14 @@ document.addEventListener(
       }
       return;
     }
-    const st = sets.find(x => x.id === fpop.set);
+    const st = fpSet(fpop.set);
     if (!st) return;
     const pv = e.target.closest("[data-pickv]");
     if (pv) {
       const vs = fvals(st.f[fpop.field]),
         v = pv.dataset.pickv;
       st.f[fpop.field] = vs.includes(v) ? vs.filter(x => x !== v) : [...vs, v];
-      renderAnalyze();
+      fpRedraw(fpop.set);
       fpopRender();
       return;
     }
@@ -1177,7 +1188,7 @@ document.addEventListener(
       st.f.from = $("#fpFrom").value;
       st.f.to = $("#fpTo").value;
       fpopClose();
-      renderAnalyze();
+      fpRedraw(fpop.set);
     }
   },
   true

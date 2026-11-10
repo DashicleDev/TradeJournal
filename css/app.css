@@ -5023,19 +5023,7 @@ button.pill.simpill {
   padding-top: 12px;
   border-top: 1px dashed var(--line);
 }
-.rvfh {
-  grid-column: 1 / -1;
-  margin: 0;
-}
-.rvfilt {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 12px 22px;
-  align-items: flex-start;
-}
-.rvfilt .rvfh {
-  flex-basis: 100%;
-}
-.rvfilt .segs {
-  flex-wrap: nowrap;
+.rvfilt .eyebrow {
+  display: block;
+  margin: 0 0 8px;
 }

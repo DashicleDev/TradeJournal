@@ -4,7 +4,7 @@
 /* ---------- Review: blind re-analysis of old forex trades ---------- */
 let rvActive = null,
   rvLocal = null,
-  rvOpts = { mode: "live", acct: "", proj: "", per: "month", anchor: "", from: "", to: "" };
+  rvOpts = { mode: "live", acct: "", proj: "", per: "month", anchor: "", from: "", to: "", f: {} };
 const rvSessions = () =>
   docs
     .filter(d => d.kind === "review" && Array.isArray(d.queue) && d.queue.length && d.i < d.queue.length)
@@ -109,13 +109,12 @@ function rvPool(o) {
       })() &&
       t.shotLinks &&
       (t.shotLinks.weekly || t.shotLinks.daily || t.shotLinks.h4) &&
-      // optional set filters: phase, grade, plan verdict, result
-      (!o.ph || String(t.fase || "") === o.ph) &&
-      (!o.gr || tGrade(t) === o.gr) &&
-      (!o.pl || (o.pl === "plan" ? t.evaluation === "plan" : !!t.evaluation && t.evaluation !== "plan")) &&
-      (!o.oc || (t.outcome || (t.r > 0 ? "win" : t.r < 0 ? "loss" : "be")) === o.oc)
+      // the same filters as Analyze (phase, grade, pros, result, …)
+      applySet({ mode: "all", project: "all", ...(o.f || {}) }, [t]).length > 0
   );
 }
+// Analyze filters that don't apply here (the session has its own trades, period and status choices)
+const RV_NOF = ["dates", "status", "account"];
 function rvOrig(t) {
   const w = { ...(t.weekly || {}) },
     wms = w.ms || "";
@@ -896,6 +895,7 @@ function rvGameRender() {
     box.innerHTML = `<div class="panel"><span class="eyebrow">Review</span><h2>Forex only for now</h2><p class="hint">Switch to Forex at the top to review trades.</p></div>`;
     return;
   }
+  useMarketDefs(); // the Analyze filter definitions for forex, used by "Only trades with"
   if (!S || !S.queue || S.i >= S.queue.length) {
     const o = rvOpts,
       R = rvRange(o),
@@ -964,53 +964,7 @@ function rvGameRender() {
           )
           .join("")}</div>`
       )}</div>
-      <div class="fields rvfilt"><span class="eyebrow rvfh">Only trades with</span>
-      ${(() => {
-        // set filters: one row of choices each, "Any" clears it
-        const fseg = (k, opts) =>
-          `<div class="segs">${[["", "Any"], ...opts]
-            .map(
-              ([v, l]) =>
-                `<button type="button" class="rvb${(o[k] || "") === v ? " on" : ""}" data-ro="${k}" data-rv="${v}">${l}</button>`
-            )
-            .join("")}</div>`;
-        return (
-          rvF(
-            "Phase",
-            fseg("ph", [
-              ["1", "1"],
-              ["2", "2"],
-              ["3", "3"],
-              ["4", "4"],
-            ])
-          ) +
-          (feat("grade")
-            ? rvF(
-                "Grade",
-                fseg(
-                  "gr",
-                  GRADES.map(g => [g, g])
-                )
-              )
-            : "") +
-          rvF(
-            "According to plan",
-            fseg("pl", [
-              ["plan", "Yes"],
-              ["off", "No"],
-            ])
-          ) +
-          rvF(
-            "Result",
-            fseg("oc", [
-              ["win", "Win"],
-              ["be", "BE"],
-              ["loss", "Loss"],
-            ])
-          )
-        );
-      })()}
-      </div>
+      <div class="rvfilt"><span class="eyebrow">Only trades with</span><div class="fchips">${fchipsOf(o.f || {}, "__rv").join("")}<button type="button" class="addf" data-addf="__rv">+ Add filter</button></div></div>
       <div class="f" style="margin-top:12px"><span>Period</span><div class="segs">${per.map(([v, l]) => `<button type="button" class="rvb${o.per === v ? " on" : ""}" data-ro="per" data-rv="${v}">${l}</button>`).join("")}</div></div>
       ${o.per === "custom" ? `<div class="fields" style="margin-top:10px">${rvF("From", `<input type="date" data-ros="from" value="${esc(o.from || "")}">`)}${rvF("To", `<input type="date" data-ros="to" value="${esc(o.to || "")}">`)}</div>` : o.per === "all" ? "" : `<div class="rvper"><button type="button" class="btn small" data-rvshift="-1" aria-label="Previous">‹</button><b>${esc(R.label)}</b><button type="button" class="btn small" data-rvshift="1" aria-label="Next">›</button>${o.anchor && o.anchor !== isoD(new Date()) ? `<button type="button" class="btn small ghost" data-rvshift="0">Today</button>` : ""}</div>`}
       <div class="row" style="gap:10px;align-items:center;margin-top:16px"><button type="button" class="btn primary" id="rvStart" ${n ? "" : "disabled"}>Start review</button><span class="hint" style="margin:0">${n} trade${n === 1 ? "" : "s"} with charts${R.from || R.to ? " in " + esc(R.label) : ""}, in random order${(() => {
