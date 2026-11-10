@@ -62,6 +62,7 @@ The scripts are plain (non-module) scripts loaded in order from `index.html`; th
 | `js/accounts.js` | Trading accounts and balances |
 | `js/journal.js` | Journal and Backtest views: charts, tables, Belgian capital gains tax, projects and invest simulation |
 | `js/forms.js` | Forex trade form (weekly → daily → 4H), invest trade form with multiple exits, screenshots |
+| `share.html`, `js/share.js`, `css/share.css` | The public read-only page for one shared trade |
 | `js/app.js` | CSV export, demo data, navigation, click handling; runs last and renders the app |
 | `sw.js` | Service worker: network first, cached copy only when offline |
 | `config.js` | Supabase URL and anon key (public by design) |
@@ -97,12 +98,17 @@ Each user has one role (`app_members`). A role (`app_roles`) is a name plus a se
 | `ext` | Settings → Extension tab with the install guide |
 | `cgt` | Belgian capital gains tax on invest accounts |
 | `grade` | A/B/C/X setup grades everywhere, and the grade rules editor |
+| `share` | Share button on forex trades (read-only links) |
 
 Admins open **Admin** from the header to create roles, pick their features and assign roles. Usage is recorded as one row per user per day they open the app (`app_activity`); the admin list shows last active day, active days in the last 30 and the number of trades, never the trades themselves.
 
 ## Setup grades
 
 Grades come from rules per weekly phase (`gradeOf` in `js/plan.js`), which the user edits in Settings → Forex and which are stored in the `settings` document as `gradeRules`. For the trade's phase: a missing requirement gives **X**, a red-flag criterion marked against gives **C**, enough extras give **A**, otherwise **B**. The editor shows live how the user's own trades grade under the current rules.
+
+## Share links
+
+A forex trade can be shared as a read-only page, `share.html?t=<token>`. The `shares` table holds one random token per shared trade (owner-only RLS). The page needs no sign-in: it calls `shared_trade(token)`, a security definer function that returns only the fields meant for viewing (analysis, result, notes, screenshots; never the account or project), and a storage policy lets anyone read screenshots that belong to a shared trade. Stop sharing deletes the token, so the old link stops working; the trade itself is untouched.
 
 ## News calendar
 

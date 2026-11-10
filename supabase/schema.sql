@@ -107,3 +107,43 @@ grant execute on function public.touch_seen(), public.admin_usage(), public.admi
 -- Legacy, still in the live project but unused by the app since 1.0.0:
 -- tables app_flags, app_users; functions admin_users(), admin_set_user(), admin_members().
 -- ---------------------------------------------------------------------------
+
+-- ---------------------------------------------------------------------------
+-- Share links (share.html)
+-- ---------------------------------------------------------------------------
+-- Read-only share links for trades: one link per trade, anyone with the token can view it.
+create table if not exists public.shares (
+  token      text primary key default replace(gen_random_uuid()::text, '-', ''),
+  user_id    uuid not null default auth.uid() references auth.users(id) on delete cascade,
+  doc_id     text not null,
+  created_at timestamptz not null default now(),
+  unique (user_id, doc_id)
+);
+alter table public.shares enable row level security;
+create policy "own shares" on public.shares for all to authenticated
+  using ((select auth.uid()) = user_id) with check ((select auth.uid()) = user_id);
+
+-- Public: the shared trade, only the fields meant for viewing (no account, project or ids).
+create or replace function public.shared_trade(tok text) returns jsonb
+language sql stable security definer set search_path to '' as $$
+  select (select jsonb_object_agg(e.key, e.value) from jsonb_each(d.data) e
+          where e.key = any (array['market','mode','status','pair','dir','date','closeDate','fase','wStruct','wPat','wPatSub',
+            'weekly','concept','sub','dMs','dPros','dailyFib','hMs','entry4h','struct','room','ecTf','scaleIn','outcome','r','maxR',
+            'exitReason','evaluation','notes','shots','shotLinks']))
+         || jsonb_build_object('owner', s.user_id)
+  from public.shares s join public.docs d on d.user_id = s.user_id and d.id = s.doc_id
+  where s.token = tok $$;
+revoke all on function public.shared_trade(text) from public;
+grant execute on function public.shared_trade(text) to anon, authenticated;
+
+-- Storage: a screenshot may be read by anyone when it belongs to a shared trade.
+create or replace function public.is_shared_shot(obj text) returns boolean
+language sql stable security definer set search_path to '' as $$
+  select exists (
+    select 1 from public.shares s join public.docs d on d.user_id = s.user_id and d.id = s.doc_id
+    where s.user_id::text = split_part(obj, '/', 1)
+      and exists (select 1 from jsonb_each_text(coalesce(d.data->'shots', '{}'::jsonb)) v where v.value = split_part(obj, '/', 2))) $$;
+revoke all on function public.is_shared_shot(text) from public;
+grant execute on function public.is_shared_shot(text) to anon, authenticated;
+create policy "shared shots read" on storage.objects for select to anon, authenticated
+  using (bucket_id = 'shots' and public.is_shared_shot(name));

@@ -1124,6 +1124,8 @@ function openSheet2(t, dup) {
   f2FillVariant();
   if (t) f2Fill(t);
   $("#f2Dup").hidden = $("#f2Del").hidden = !t || !!dup;
+  $("#f2Share").hidden = !t || !!dup || !feat("share");
+  f2ShareShow(t && !dup && feat("share") ? t.id : null);
   {
     const b = $("#f2Del");
     delete b.dataset.armed;
@@ -1361,6 +1363,51 @@ document.addEventListener("keydown", e => {
   if (!$("#sheet2").hidden) closeSheet2();
 });
 
+/* ---------- share links: a read-only page per trade (share.html) ---------- */
+const shareUrl = tok => new URL("share.html?t=" + tok, location.href).href;
+async function f2ShareShow(id, tok) {
+  const bar = $("#f2ShareBar");
+  bar.hidden = true;
+  bar.dataset.id = id || "";
+  if (!id || !ME) return;
+  if (tok === undefined) {
+    const { data } = await SB.from("shares").select("token").eq("doc_id", id).maybeSingle();
+    tok = data && data.token;
+  }
+  if (bar.dataset.id !== id || !tok) return;
+  $("#f2ShareUrl").value = shareUrl(tok);
+  bar.hidden = false;
+}
+$("#f2Share").onclick = async () => {
+  const id = editingId;
+  if (!id) return;
+  if (!ME) return toast("Sign in to share trades.");
+  let { data, error } = await SB.from("shares").select("token").eq("doc_id", id).maybeSingle();
+  if (!error && !data) ({ data, error } = await SB.from("shares").insert({ doc_id: id }).select("token").single());
+  if (error || !data) return toast("Couldn't make a share link. Try again.");
+  await f2ShareShow(id, data.token);
+  try {
+    await navigator.clipboard.writeText(shareUrl(data.token));
+    toast("Share link copied");
+  } catch {
+    $("#f2ShareUrl").select();
+  }
+};
+$("#f2ShareCopy").onclick = async () => {
+  try {
+    await navigator.clipboard.writeText($("#f2ShareUrl").value);
+    toast("Share link copied");
+  } catch {
+    $("#f2ShareUrl").select();
+  }
+};
+$("#f2ShareOff").onclick = async () => {
+  const id = $("#f2ShareBar").dataset.id;
+  const { error } = await SB.from("shares").delete().eq("doc_id", id);
+  if (error) return toast("Couldn't turn the link off. Try again.");
+  $("#f2ShareBar").hidden = true;
+  toast("Link turned off");
+};
 /* ---------- chart screenshots ---------- */
 const SLOTS = [
   ["weekly", "Weekly"],

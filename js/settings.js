@@ -53,6 +53,11 @@ const FEATS = [
     "The A/B/C/X grade on forex trades (from your grade rules per phase), in the trade form, tables and reviews, as Analyze filters and splits, and the grade rules editor in settings.",
   ],
   [
+    "share",
+    "Share trades",
+    "A Share button on forex trades that makes a read-only link to the trade, its analysis and screenshots.",
+  ],
+  [
     "cgt",
     "Capital gains",
     "The capital gains overview under Invest → Accounts, the exchange rates and taxable gain per sale in the trade form, and the capital gains tax settings.",

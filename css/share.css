@@ -1,0 +1,130 @@
+/* share.css — the public read-only trade page (share.html). Colours and fonts come from app.css. */
+body {
+  background: var(--paper);
+  color: var(--ink);
+}
+.shr {
+  max-width: 980px;
+  padding-top: 22px;
+  padding-bottom: 40px;
+}
+.shr-brand {
+  margin: 0 0 18px;
+  font: 600 13px var(--body);
+  color: var(--muted);
+}
+.shr-brand span {
+  color: var(--accent);
+}
+.shr-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+.shr-head h2 {
+  margin: 0;
+  font: 800 30px var(--display);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.shr-head .hint {
+  margin: 4px 0 0;
+}
+.shr-res {
+  font-size: 13px;
+  padding: 6px 10px;
+}
+.shr-res b {
+  font-size: 15px;
+}
+.shr-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+  gap: 12px;
+}
+.shr-card {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 14px 16px;
+  min-width: 0;
+}
+.shr-card .eyebrow {
+  display: block;
+  margin: 0 0 8px;
+}
+.shr-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 5px 0;
+  border-bottom: 1px dashed var(--line);
+  font-size: 14px;
+}
+.shr-row:last-of-type {
+  border-bottom: 0;
+}
+.shr-row span {
+  color: var(--muted);
+}
+.shr-row b {
+  font-weight: 600;
+  text-align: right;
+}
+.shr-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 10px;
+}
+.shr-chip {
+  font: 600 12.5px var(--body);
+  padding: 3px 8px;
+  border-radius: 6px;
+}
+.shr-chip.ok {
+  background: color-mix(in srgb, var(--good) 15%, transparent);
+  color: var(--good);
+}
+.shr-chip.no {
+  background: color-mix(in srgb, var(--bad) 15%, transparent);
+  color: var(--bad);
+}
+.shr-notes {
+  margin-top: 12px;
+}
+.shr-notes p {
+  margin: 0;
+  white-space: pre-wrap;
+  line-height: 1.5;
+}
+.shr-h {
+  margin: 26px 0 10px;
+  font: 700 18px var(--display);
+}
+.shr-shot {
+  margin: 0 0 16px;
+}
+.shr-shot .eyebrow {
+  display: block;
+  margin-bottom: 6px;
+}
+.shr-img img {
+  display: block;
+  width: 100%;
+  height: auto;
+  border-radius: 10px;
+  border: 1px solid var(--line);
+}
+.shr-foot {
+  margin-top: 24px;
+  text-align: center;
+}
+@media (max-width: 560px) {
+  .shr-head h2 {
+    font-size: 24px;
+  }
+}
