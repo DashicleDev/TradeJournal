@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.2.19 — 2026-11-10
+
+- Review sessions in progress show more: blind or previous analysis shown, the filters ("Only: Phase 2 · …"), when started and last used, and how it's going so far (same as back then, plan verdicts changed, analyses replaced).
+- Re-evaluate with previous analysis shown: the setup grade with its reason is shown under the steps and updates as you change answers, like in the trade form.
+- Fixed: the reveal's "grade then → now" and the trade form's grade now also take the phase's daily pattern and channel rules into account.
+
 ## 1.2.18 — 2026-11-10
 
 - Re-evaluate: choose **Previous analysis: Hidden (blind) or Shown**. Shown fills in what you analysed back then, with the pair and date, so you correct it; the reveal shows what you changed.

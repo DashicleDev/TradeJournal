@@ -976,6 +976,8 @@ function f2Summaries() {
           dPros: Object.keys(dSel),
           wStruct: radio("f2wstruct") || "",
           fase: radio("f2fase") || "",
+          concept: $("#f2Concept").value,
+          channel: $("#f2Entry").value === "Reversal" && $("#f2Chan").checked,
         },
         g = gradeOf(tt);
       $("#f2Score").innerHTML = g

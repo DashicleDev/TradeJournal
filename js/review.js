@@ -146,6 +146,8 @@ const rvAsTrade = a => ({
   hMs: a.hMs,
   dPros: a.dPros,
   wStruct: a.wStruct,
+  fase: a.fase, // the grade rules are per phase
+  concept: a.concept,
 });
 const rvBlank = () => ({
   dir: "",
@@ -888,6 +890,34 @@ function rvRender() {
   if (rvMode === "period") return prRender();
   return rvGameRender();
 }
+// details under an ongoing session: blind or shown, filters, progress and how it's going so far
+function rvSessInfo(x) {
+  const f = (x.opts && x.opts.f) || {},
+    fl = FDEF.some(([k]) => fvals(f[k]).length)
+      ? describe({ mode: "all", project: "all", ...f }).replace(/^All trades( · )?/, "")
+      : "",
+    L = x.log || [],
+    d = t => esc(fmtD(isoD(new Date(t)))),
+    same = L.filter(l => !l.diffs.length).length,
+    pc = L.filter(l => l.planThen && l.planThen !== l.planNow).length,
+    line = (...p) => `<small class="hint" style="margin:0;display:block">${p.filter(Boolean).join(" · ")}</small>`;
+  return (
+    line(
+      x.open ? "Previous analysis shown" : "Blind",
+      `${x.i} of ${x.queue.length} reviewed`,
+      x.started ? "started " + d(x.started) : "",
+      "last used " + d(x.touched || x.started || Date.now())
+    ) +
+    (fl ? line("Only: " + esc(fl)) : "") +
+    (L.length
+      ? line(
+          `So far: ${same} of ${L.length} the same as back then`,
+          `${pc} plan verdict${pc === 1 ? "" : "s"} changed`,
+          `${L.filter(l => l.repl).length} replaced`
+        )
+      : "")
+  );
+}
 function rvGameRender() {
   const box = $("#rvBox"),
     S = rvState();
@@ -920,7 +950,7 @@ function rvGameRender() {
       ["custom", "Custom"],
     ];
     box.innerHTML = `${shown ? rvResultHTML(shown) : ""}
-      ${L.length ? `<div class="panel"><span class="eyebrow">Ongoing</span><h2>Your review sessions</h2><div class="rvlist">${L.map(x => `<div class="rvsess"><div><b>${esc(x.name || "Review session")}</b><small class="hint" style="margin:0;display:block">${x.i} of ${x.queue.length} reviewed · last used ${esc(fmtD(isoD(new Date(x.touched || x.started || Date.now()))))}</small></div><div class="rvbar"><i style="width:${Math.round((x.i / x.queue.length) * 100)}%"></i></div><div class="row" style="gap:6px"><button type="button" class="btn small ghost" data-rvdel="${x.id}">Delete</button><button type="button" class="btn small primary" data-rvres="${x.id}">Resume</button></div></div>`).join("")}</div></div>` : ""}
+      ${L.length ? `<div class="panel"><span class="eyebrow">Ongoing</span><h2>Your review sessions</h2><div class="rvlist">${L.map(x => `<div class="rvsess"><div><b>${esc(x.name || "Review session")}</b>${rvSessInfo(x)}</div><div class="rvbar"><i style="width:${Math.round((x.i / x.queue.length) * 100)}%"></i></div><div class="row" style="gap:6px"><button type="button" class="btn small ghost" data-rvdel="${x.id}">Delete</button><button type="button" class="btn small primary" data-rvres="${x.id}">Resume</button></div></div>`).join("")}</div></div>` : ""}
       <div class="panel rvsetup"><span class="eyebrow">New session</span><h2>Re-analyse old trades${o.open ? "" : " blind"}</h2>
       <p class="hint">${o.open ? "You see the weekly, daily and 4H chart one by one with the pair and the analysis you filled in back then, and correct what you'd judge differently now. At the end it shows what you changed." : "You see the weekly, daily and 4H chart one by one, without pair or result, and fill in your analysis. At the end it shows what you filled in back then."}</p>
       <div class="fields" style="margin-bottom:12px">
@@ -988,7 +1018,14 @@ function rvGameRender() {
     const st = RV_STEPS[step];
     box.innerHTML = `<div class="panel rvstep"><div class="row spread"><div><span class="eyebrow">${prog} · step ${step + 1} of 3</span><h2>${st}${S.open ? ` <span class="hint" style="margin:0;font-size:15px">· ${esc(t.pair || "")} ${esc(fmtD(t.date))}</span>` : ""}</h2></div><div class="row" style="gap:6px"><button type="button" class="btn small ghost" id="rvEnd">End session</button><button type="button" class="btn small ghost" id="rvPause">Pause</button></div></div>
       <div class="rvdots">${RV_STEPS.map((x, i) => `<span class="${i < step ? "done" : i === step ? "on" : ""}">${x}</span>`).join("")}<span>Reveal</span></div>
-      ${S.open ? `<p class="hint" style="margin:6px 0 10px">Filled in with your analysis from back then. Change what you'd judge differently now.</p>` : ""}${rvChart(t, st, S.open)}${rvStepHTML(a, st)}
+      ${
+        S.open
+          ? `<p class="hint" style="margin:6px 0 10px">Filled in with your analysis from back then. Change what you'd judge differently now.</p>${(() => {
+              const g = gradeOf(rvAsTrade(a));
+              return `<p class="scoreline">${g ? `Setup grade <span class="grade g${g.g}">${g.g}</span> <span class="hint" style="margin:0">${esc(g.why)}</span>` : "Setup grade: pick the weekly phase and fill in the analysis"}</p>`;
+            })()}`
+          : ""
+      }${rvChart(t, st, S.open)}${rvStepHTML(a, st)}
       <div class="row spread" style="margin-top:16px"><button type="button" class="btn" id="rvBack" ${step ? "" : "disabled"}>← Back</button><button type="button" class="btn primary" id="rvNext">${step < 2 ? "Next: " + RV_STEPS[step + 1] + " →" : "Reveal →"}</button></div></div>`;
     return;
   }
