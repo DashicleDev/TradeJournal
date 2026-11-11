@@ -164,3 +164,12 @@ revoke all on function public.is_shared_shot(text) from public;
 grant execute on function public.is_shared_shot(text) to anon, authenticated;
 create policy "shared shots read" on storage.objects for select to anon, authenticated
   using (bucket_id = 'shots' and public.is_shared_shot(name));
+
+-- View counter on share links: one view per browser per link, the owner's own opens don't count (share.js)
+alter table public.shares add column if not exists views integer not null default 0;
+alter table public.shares add column if not exists last_view timestamptz;
+create or replace function public.share_view(tok text) returns void
+language sql volatile security definer set search_path to '' as $$
+  update public.shares set views = views + 1, last_view = now() where token = tok $$;
+revoke all on function public.share_view(text) from public;
+grant execute on function public.share_view(text) to anon, authenticated;

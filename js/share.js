@@ -23,6 +23,19 @@
   if (error) return fail("It couldn't be loaded. Try again in a moment.");
   if (!t) return fail("The link was turned off by its owner, or the trade was deleted.");
 
+  // View counter: once per browser per link, and not when the owner opens their own link
+  try {
+    const me = Object.keys(localStorage)
+        .filter(k => /^sb-.*-auth-token$/.test(k))
+        .map(k => (JSON.parse(localStorage.getItem(k)) || {}).user)
+        .find(Boolean),
+      seen = "tj-viewed-" + tok;
+    if ((!me || me.id !== t.owner) && !localStorage.getItem(seen)) {
+      localStorage.setItem(seen, "1");
+      SB.rpc("share_view", { tok }).then(() => {});
+    }
+  } catch {}
+
   const WCRIT = [
     ["ms", "Weekly MS"],
     ["trend", "Market trend"],

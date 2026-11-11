@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.2.23 — 2026-11-11
+
+- **View counter on shared trades:** the share bar under a shared trade shows how many people opened the link and when last ("3 views · last 11 Nov 2026"). Counted once per browser per link; your own opens don't count.
+
 ## 1.2.22 — 2026-11-10
 
 - The lower-timeframe chart is called by its timeframe (1H or 2H, from the trade) instead of "1H/2H" on the shared page, in Copy analysis, the chart viewer and the zoom.

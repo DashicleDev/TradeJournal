@@ -1423,12 +1423,15 @@ async function f2ShareShow(id, tok, p = "f2") {
   bar.hidden = true;
   bar.dataset.id = id || "";
   if (!id || !ME) return;
-  if (tok === undefined) {
-    const { data } = await SB.from("shares").select("token").eq("doc_id", id).maybeSingle();
-    tok = data && data.token;
-  }
+  const { data } = await SB.from("shares").select("token,views,last_view").eq("doc_id", id).maybeSingle();
+  tok = tok || (data && data.token);
   if (bar.dataset.id !== id || !tok) return;
   $("#" + p + "ShareUrl").value = shareUrl(tok);
+  // views: once per browser per link, the owner's own opens don't count
+  const v = (data && data.views) || 0;
+  $("#" + p + "ShareViews").textContent = v
+    ? `${v} view${v === 1 ? "" : "s"} · last ${fmtD(isoD(new Date(data.last_view)))}`
+    : "No views yet";
   bar.hidden = false;
 }
 // the trade's share token, made on first use
