@@ -133,7 +133,7 @@ language sql stable security definer set search_path to '' as $$
             -- invest: analysis, prices and percentages; never shares, amounts, P&L or exchange rates
             'ticker','sPhase','s12Ms','s12bm','s12ret','s6Ms','s6bm','s6ret','s3Ms','s3bm','s3room','s3roomB',
             's1Ms','s1room','s1cc','swMs','swPat','sEntry','sStop','sCur','retPct']))
-         || jsonb_build_object('owner', s.user_id)
+         || jsonb_build_object('owner', s.user_id, 'views', s.views)
          || case when jsonb_typeof(d.data->'sExits') = 'array' then jsonb_build_object(
               -- each exit with the share of the position it closed (%), not the number of shares
               'sExits', coalesce((select jsonb_agg(jsonb_build_object('date', x->'date', 'price', x->'price', 'how', x->'how',

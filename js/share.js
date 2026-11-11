@@ -33,8 +33,17 @@
     if ((!me || me.id !== t.owner) && !localStorage.getItem(seen)) {
       localStorage.setItem(seen, "1");
       SB.rpc("share_view", { tok }).then(() => {});
+      t.views = (t.views || 0) + 1; // this view is counted now
     }
   } catch {}
+  // eye + number of views, top right
+  {
+    const v = t.views || 0,
+      el = document.getElementById("shrViews");
+    el.innerHTML = `<svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg><b>${v}</b>`;
+    el.title = el.ariaLabel = `${v} view${v === 1 ? "" : "s"}`;
+    el.hidden = !v;
+  }
 
   const WCRIT = [
     ["ms", "Weekly MS"],

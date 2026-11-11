@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.2.24 — 2026-11-11
+
+- The shared trade page shows its view count top right, as an eye with a number.
+
 ## 1.2.23 — 2026-11-11
 
 - **View counter on shared trades:** the share bar under a shared trade shows how many people opened the link and when last ("3 views · last 11 Nov 2026"). Counted once per browser per link; your own opens don't count.

@@ -209,3 +209,23 @@ body {
   font: 500 12.5px var(--body);
   color: var(--muted);
 }
+.shr-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 18px;
+}
+.shr-top .shr-brand {
+  margin: 0;
+}
+.shr-views {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--muted);
+  font: 600 13px var(--mono);
+}
+.shr-views[hidden] {
+  display: none;
+}
