@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.3.1 — 2026-11-11
+
+- plan.json now includes the grade criteria and default rules, so the TradingView extension (1.4.7) can show a live setup grade while you log a trade.
+
 ## 1.3.0 — 2026-11-11
 
 - **X and C are one grade now: C = outside your rules.** A trade is C when a requirement is missing (or its structure isn't valid in the phase) or when a red flag is marked against. Grades are A / B / C everywhere. Every trade that was X is now C; the reason still says which ("Missing: Fib active" or "Against: S&D zone").
