@@ -546,10 +546,30 @@
               ><button type="button" class="btn ghost danger" id="sDel" hidden>Delete</button>
             </div>
             <div class="shrbar" id="sShareBar" hidden>
-              <span>Anyone with this link can view this trade (read-only) · <b id="sShareViews"></b></span>
-              <input type="text" id="sShareUrl" readonly aria-label="Share link" />
-              <button type="button" class="btn small" id="sShareCopy">Copy</button
-              ><button type="button" class="btn small ghost danger" id="sShareOff">Stop sharing</button>
+              <div class="shrhead">
+                <span><b>Shared</b> · anyone with the link can view it, read-only</span>
+                <span class="shrviews"
+                  ><svg
+                    viewBox="0 0 24 24"
+                    width="15"
+                    height="15"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="1.8"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    aria-hidden="true"
+                  >
+                    <path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z" />
+                    <circle cx="12" cy="12" r="3" /></svg
+                  ><span id="sShareViews"></span
+                ></span>
+              </div>
+              <div class="shrrow">
+                <input type="text" id="sShareUrl" readonly aria-label="Share link" />
+                <button type="button" class="btn small" id="sShareCopy">Copy</button
+                ><button type="button" class="btn small ghost danger" id="sShareOff">Stop sharing</button>
+              </div>
             </div>
           </form>
         </div>
@@ -871,10 +891,30 @@
               ><button type="button" class="btn ghost danger" id="f2Del" hidden>Delete</button>
             </div>
             <div class="shrbar" id="f2ShareBar" hidden>
-              <span>Anyone with this link can view this trade (read-only) · <b id="f2ShareViews"></b></span>
-              <input type="text" id="f2ShareUrl" readonly aria-label="Share link" />
-              <button type="button" class="btn small" id="f2ShareCopy">Copy</button
-              ><button type="button" class="btn small ghost danger" id="f2ShareOff">Stop sharing</button>
+              <div class="shrhead">
+                <span><b>Shared</b> · anyone with the link can view it, read-only</span>
+                <span class="shrviews"
+                  ><svg
+                    viewBox="0 0 24 24"
+                    width="15"
+                    height="15"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="1.8"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    aria-hidden="true"
+                  >
+                    <path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z" />
+                    <circle cx="12" cy="12" r="3" /></svg
+                  ><span id="f2ShareViews"></span
+                ></span>
+              </div>
+              <div class="shrrow">
+                <input type="text" id="f2ShareUrl" readonly aria-label="Share link" />
+                <button type="button" class="btn small" id="f2ShareCopy">Copy</button
+                ><button type="button" class="btn small ghost danger" id="f2ShareOff">Stop sharing</button>
+              </div>
             </div>
           </form>
         </div>

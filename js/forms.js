@@ -1429,9 +1429,9 @@ async function f2ShareShow(id, tok, p = "f2") {
   $("#" + p + "ShareUrl").value = shareUrl(tok);
   // views: once per browser per link, the owner's own opens don't count
   const v = (data && data.views) || 0;
-  $("#" + p + "ShareViews").textContent = v
-    ? `${v} view${v === 1 ? "" : "s"} · last ${fmtD(isoD(new Date(data.last_view)))}`
-    : "No views yet";
+  $("#" + p + "ShareViews").innerHTML = v
+    ? `<b>${v}</b><span class="shrlast"> · last ${esc(fmtD(isoD(new Date(data.last_view))))}</span>`
+    : "<b>0</b>";
   bar.hidden = false;
 }
 // the trade's share token, made on first use

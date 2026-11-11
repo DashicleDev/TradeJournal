@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.2.25 — 2026-11-11
+
+- Cleaner share bar under a shared trade: "Shared" with the eye and view count on top, the link with Copy and Stop sharing on one line below (stacked on phones).
+
 ## 1.2.24 — 2026-11-11
 
 - The shared trade page shows its view count top right, as an eye with a number.

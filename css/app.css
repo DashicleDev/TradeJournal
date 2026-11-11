@@ -4914,22 +4914,66 @@ button.pill.simpill {
 }
 /* Share link under the trade form buttons */
 .shrbar {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 8px;
-  margin-top: 10px;
-  padding: 10px 12px;
-  border: 1px dashed var(--line);
-  border-radius: 10px;
+  margin-top: 12px;
+  padding: 12px 14px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--surface);
   font-size: 13px;
   color: var(--muted);
 }
-.shrbar input {
-  flex: 1 1 260px;
+.shrbar[hidden] {
+  display: none;
+}
+.shrhead {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+.shrhead b {
+  color: var(--ink);
+}
+.shrviews {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+  font-size: 12.5px;
+}
+.shrviews b {
+  font: 600 13px var(--mono);
+}
+@media (max-width: 560px) {
+  .shrhead {
+    font-size: 12.5px;
+  }
+  .shrlast {
+    display: none; /* phones: just the eye and the number */
+  }
+}
+.shrrow {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+.shrrow input {
+  flex: 1;
   min-width: 0;
   font: 500 12.5px var(--mono);
-  padding: 6px 8px;
+  padding: 6px 10px;
+}
+.shrrow .btn {
+  white-space: nowrap;
+}
+@media (max-width: 560px) {
+  .shrrow {
+    flex-wrap: wrap;
+  }
+  .shrrow input {
+    flex-basis: 100%;
+  }
 }
 /* Zoom: switch between a trade's timeframes */
 #zTf {
