@@ -97,14 +97,14 @@ Each user has one role (`app_members`). A role (`app_roles`) is a name plus a se
 |---|---|
 | `ext` | Settings → Extension tab with the install guide |
 | `cgt` | Belgian capital gains tax on invest accounts |
-| `grade` | A/B/C/X setup grades everywhere, and the grade rules editor |
+| `grade` | A/B/C setup grades everywhere, and the grade rules editor |
 | `share` | Share button on forex trades (read-only links) |
 
 Admins open **Admin** from the header to create roles, pick their features and assign roles. Usage is recorded as one row per user per day they open the app (`app_activity`); the admin list shows last active day, active days in the last 30 and the number of trades, never the trades themselves.
 
 ## Setup grades
 
-Grades come from rules per weekly phase (`gradeOf` in `js/plan.js`), which the user edits in Settings → Forex and which are stored in the `settings` document as `gradeRules`. For the trade's phase: a missing requirement gives **X**, a red-flag criterion marked against gives **C**, enough extras give **A**, otherwise **B**. The editor shows live how the user's own trades grade under the current rules.
+Grades come from rules per weekly phase (`gradeOf` in `js/plan.js`), which the user edits in Settings → Forex and which are stored in the `settings` document as `gradeRules`. For the trade's phase: a missing requirement or a red-flag criterion marked against gives **C** (outside your rules; the reason says which), enough extras give **A**, otherwise **B**. The editor shows live how the user's own trades grade under the current rules.
 
 ## Share links
 

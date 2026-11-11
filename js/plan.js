@@ -103,15 +103,15 @@ const critV = (t, k) =>
               ? "for"
               : ""
             : (t.weekly || {})[k] || "";
-// { g: "A" | "B" | "C" | "X", why } or null when grades are off or the trade has no phase / analysis
+// { g: "A" | "B" | "C", why } — C = outside your rules: a requirement missing or something marked against or null when grades are off or the trade has no phase / analysis
 function gradeOf(t, rules) {
   if (!feat("grade")) return null;
   const P = (rules || GR)[String(t.fase || "")];
   if (!P) return null;
   if (!Object.keys(t.weekly || {}).length && !t.dMs && !t.hMs && !dProsOf(t).length) return null;
-  if (P.inner === "x" && t.wStruct === "inner") return { g: "X", why: "Inner structure not valid in phase " + t.fase };
+  if (P.inner === "x" && t.wStruct === "inner") return { g: "C", why: "Inner structure not valid in phase " + t.fase };
   const miss = P.req.filter(k => critV(t, k) !== "for");
-  if (miss.length) return { g: "X", why: "Missing: " + miss.map(grLab).join(", ") };
+  if (miss.length) return { g: "C", why: "Missing: " + miss.map(grLab).join(", ") };
   const ag = P.flags.filter(k => critV(t, k) === "against");
   if (ag.length) return { g: "C", why: "Against: " + ag.map(grLab).join(", ") };
   const ex = P.extras.filter(k => critV(t, k) === "for");
@@ -125,7 +125,12 @@ const tGrade = t => {
   const x = gradeOf(t);
   return x ? x.g : null;
 };
-const GRADES = ["A", "B", "C", "X"];
+const GRADES = ["A", "B", "C"];
+// why a C: "missing" (a requirement or inner structure not valid in the phase) or "against" (a red flag)
+const gradeWhy = t => {
+  const x = gradeOf(t);
+  return !x || x.g !== "C" ? null : /^Against/.test(x.why) ? "against" : "missing";
+};
 function verdict(t) {
   if (!t.entry4h || !t.bos) return { v: "open", txt: "Answer the questions" };
   const rev = t.entry4h === "Reversal";

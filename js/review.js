@@ -632,7 +632,7 @@ function prStatsHTML(list) {
     sg = v => (v > 0 ? "pos" : v < 0 ? "neg" : "");
   let g = "";
   if (fx && tk.length && feat("grade")) {
-    const G = { A: [], B: [], C: [], X: [] };
+    const G = { A: [], B: [], C: [] };
     tk.forEach(t => {
       const x = tGrade(t);
       if (x) G[x].push(t.r);

@@ -195,6 +195,11 @@ let SPLITS = {
     WKEYS.filter(k => k !== "ms").map(WLAB),
   ],
   grade: ["Setup grade", t => tGrade(t), GRADES],
+  cwhy: [
+    "Why C",
+    t => ({ missing: "Requirement missing", against: "Marked against" })[gradeWhy(t)] || null,
+    ["Requirement missing", "Marked against"],
+  ],
   wscore: [
     "Weekly score (pros − cons)",
     t => {
@@ -350,7 +355,7 @@ let SPLITGROUPS = [
   ["4H", ["hms", "entry4h", "struct", "room", "chan", "scale", "ectf", "rr", "sl"]],
   [
     "Context",
-    ["grade", "pair", "dir", "status", "weekday", "month", "account", "actype", "project", "btmonth", "btlag"],
+    ["grade", "cwhy", "pair", "dir", "status", "weekday", "month", "account", "actype", "project", "btmonth", "btlag"],
   ],
   ["Result", ["outcome", "evaluation", "exit", "maxr", "days"]],
 ];
@@ -377,7 +382,7 @@ let PRESETS = [
   ],
   ["Long vs short", { mode: "live", dir: "long" }, { mode: "live", dir: "short" }],
   ["A vs B vs C setups", { mode: "live", grade: "A" }, { mode: "live", grade: "B" }, { mode: "live", grade: "C" }],
-  ["Graded vs outside your rules (X)", { mode: "live", grade: ["A", "B", "C"] }, { mode: "live", grade: "X" }],
+  ["C: requirement missing vs marked against", { mode: "live", cwhy: "missing" }, { mode: "live", cwhy: "against" }],
   ["With vs against weekly structure", { mode: "live", wms: "for" }, { mode: "live", wms: "against" }],
   ["All timeframes with vs mixed", { mode: "live", align: "all" }, { mode: "live", align: ["mixed", "none"] }],
   ["To plan vs not", { mode: "live", eval: "plan" }, { mode: "live", eval: "off" }],
@@ -392,10 +397,20 @@ let FDEF = [
       ["", "Any"],
       ["A", "A (rules met, extras)"],
       ["B", "B (rules met)"],
-      ["C", "C (something against)"],
-      ["X", "X (a requirement missing)"],
+      ["C", "C (outside your rules)"],
     ],
-    t => tGrade(t),
+    // saved filters from before the merge may still say X: that is C now
+    (t, v) => tGrade(t) === (v === "X" ? "C" : v),
+  ],
+  [
+    "cwhy",
+    "Why C",
+    () => [
+      ["", "Any"],
+      ["missing", "A requirement missing"],
+      ["against", "Something marked against"],
+    ],
+    t => gradeWhy(t) || "",
   ],
   [
     "status",
@@ -675,7 +690,7 @@ function applySet(f, list) {
         (f.project === "none" ? !projName(t.project) : t.project === f.project)) &&
       FDEF.every(([k, , , get]) => {
         const vs = fvals(f[k]);
-        if (!vs.length || (k === "grade" && !feat("grade"))) return true;
+        if (!vs.length || ((k === "grade" || k === "cwhy") && !feat("grade"))) return true;
         return get.length === 2 ? vs.some(v => get(t, v)) : vs.includes(String(get(t) ?? ""));
       }) &&
       (!f.from || (t.date || "") >= f.from) &&
@@ -719,7 +734,7 @@ let FGROUPS = [
   ["Weekly", ["fase", "wpat", "wstruct", "wms", "wtrend", "wrange", "align", "pro", "con"]],
   ["Daily", ["dms", "concept", "sub", "dpro"]],
   ["4H", ["hms", "entry4h", "struct", "room", "chan", "scale", "ectf"]],
-  ["Context", ["status", "grade", "pair", "dir", "account", "actype", "dates"]],
+  ["Context", ["status", "grade", "cwhy", "pair", "dir", "account", "actype", "dates"]],
   ["Result", ["outcome", "eval", "rev", "exit"]],
 ];
 /* ---------- Analyze definitions per market ---------- */
@@ -954,7 +969,8 @@ const ST_DEFS = {
 function useMarketDefs() {
   const d = market === "stocks" ? ST_DEFS : FX_DEFS,
     gr = feat("grade"),
-    noG = G => (gr ? G : G.map(([g, ks]) => [g, ks.filter(k => k !== "grade")]).filter(x => x[1].length));
+    noG = G =>
+      gr ? G : G.map(([g, ks]) => [g, ks.filter(k => k !== "grade" && k !== "cwhy")]).filter(x => x[1].length);
   FDEF = d.FDEF;
   FGROUPS = noG(d.FGROUPS);
   SPLITS = d.SPLITS;

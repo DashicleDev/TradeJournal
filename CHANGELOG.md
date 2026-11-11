@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.3.0 — 2026-11-11
+
+- **X and C are one grade now: C = outside your rules.** A trade is C when a requirement is missing (or its structure isn't valid in the phase) or when a red flag is marked against. Grades are A / B / C everywhere. Every trade that was X is now C; the reason still says which ("Missing: Fib active" or "Against: S&D zone").
+- Grade rules editor: "C unless with you (requirements)" and "C if marked against (red flags)"; inner structure "Not valid (C)".
+- Analyze: new "Why C" filter and split (a requirement missing vs something marked against), and the preset "C: requirement missing vs marked against". Saved filters on X now match C.
+
 ## 1.2.25 — 2026-11-11
 
 - Cleaner share bar under a shared trade: "Shared" with the eye and view count on top, the link with Copy and Stop sharing on one line below (stacked on phones).
