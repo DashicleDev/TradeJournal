@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.3.3 — 2026-11-12
+
+- Grading: the inner-structure and 4H-entry buttons are replaced by two pick lists that read like the other rules, **"At most B with"** and **"C with"**, each holding inner structure and/or entry types. The entry types are no longer in the requirements and extras lists, so each lives in one place.
+
 ## 1.3.2 — 2026-11-12
 
 - **Grading is its own tab** next to Analyze (it moved out of Settings).

@@ -28,8 +28,6 @@ const GR_CRIT = [
   ["dMs", "Daily MS"],
   ["hMs", "4H MS"],
   ["chan", "4H channel"],
-  // the 4H entry types: "with you" when the trade uses that entry
-  ...PLAN.entries.map(e => ["e:" + e, "4H " + e]),
   ["d:fc", "Daily FC"],
   ["d:dcc", "Daily last CC"],
   ["d:sd", "Daily S&D zone"],
@@ -38,7 +36,7 @@ const GR_CRIT = [
 const GR_GROUPS = [
   ["Weekly", ["ms", "trend", "fibc", "fiba", "ic", "pattern", "whl", "sd", "pz", "lcc", "ec"]],
   ["Daily", ["dPat", "dMs", "d:fc", "d:dcc", "d:sd"]],
-  ["4H", ["hMs", "chan", ...PLAN.entries.map(e => "e:" + e)]],
+  ["4H", ["hMs", "chan"]],
 ];
 const GR_FLAGS = ["fibc", "fiba", "ic", "whl", "sd", "pz", "lcc"];
 // criteria a trade can have marked "against" (weekly pattern and the daily pros are only ever "with")
@@ -103,19 +101,15 @@ const critV = (t, k) =>
       ? t.channel && t.entry4h === "Reversal"
         ? "for"
         : ""
-      : k.startsWith("e:")
-        ? t.entry4h === k.slice(2)
-          ? "for"
-          : ""
-        : k === "dMs"
-          ? t.dMs || ""
-          : k === "hMs"
-            ? t.hMs || ""
-            : k.startsWith("d:")
-              ? dProsOf(t).includes(k.slice(2))
-                ? "for"
-                : ""
-              : (t.weekly || {})[k] || "";
+      : k === "dMs"
+        ? t.dMs || ""
+        : k === "hMs"
+          ? t.hMs || ""
+          : k.startsWith("d:")
+            ? dProsOf(t).includes(k.slice(2))
+              ? "for"
+              : ""
+            : (t.weekly || {})[k] || "";
 // { g: "A" | "B" | "C", why } — C = outside your rules: a requirement missing or something marked against or null when grades are off or the trade has no phase / analysis
 function gradeOf(t, rules) {
   if (!feat("grade")) return null;

@@ -5075,20 +5075,6 @@ button.pill.simpill {
 .grpanel {
   max-width: 860px;
 }
-.grents {
-  display: grid;
-  gap: 6px;
-}
-.grent {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 6px 12px;
-  font-size: 13.5px;
-}
-.grent > span {
-  min-width: 140px;
-}
 nav button .dot {
   flex: none;
 }

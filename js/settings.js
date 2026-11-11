@@ -231,46 +231,67 @@ function grPreview() {
     <table class="grtab"><thead><tr><th>Grade</th><th class="num">Trades</th><th class="num">Avg R</th><th class="num">Total</th><th class="num">Win</th></tr></thead><tbody>${rows}</tbody></table>
     <p class="hint" style="margin:6px 0 0">${T.length} taken trades${none ? `, ${none} without a phase or analysis (no grade)` : ""}. Changes apply right away.</p></div>`;
 }
-let grMs = ""; // which list is open: "req" | "flags" | "extras"
+let grMs = ""; // which list is open: "req" | "flags" | "extras" | "capB" | "capC"
 const GR_LISTS = {
   req: { kind: "for", ph: "Nothing required" },
   flags: { kind: "against", ph: "Nothing" },
   extras: { kind: "extra", ph: "Nothing, so never A" },
+  capB: { kind: "extra", ph: "Nothing" },
+  capC: { kind: "against", ph: "Nothing" },
 };
+// the grade limits: the inner structure ("inner") and the 4H entry types ("e:Reversal", …), stored as inner / ent
+const GR_CAP_GROUPS = [
+  ["Structure", ["inner"]],
+  ["4H entry", PLAN.entries.map(e => "e:" + e)],
+];
+const grCapLab = k => (k === "inner" ? "Inner structure" : k.slice(2));
+const grCapSel = (P, list) => {
+  const v = list === "capB" ? "b" : "x";
+  return [...(P.inner === v ? ["inner"] : []), ...PLAN.entries.filter(e => P.ent[e] === v).map(e => "e:" + e)];
+};
+// switch one limit on or off in a list ("capB" = at most B, "capC" = C)
+function grCapSet(list, k, on) {
+  const P = GR[grPh],
+    v = on ? (list === "capB" ? "b" : "x") : "";
+  if (k === "inner") grUpd({ inner: v, innerB: v === "b" });
+  else grUpd({ ent: { ...P.ent, [k.slice(2)]: v } });
+}
 // the multi-select from the trade form, for one rule list of the open phase
 function grMsHTML(list) {
   const P = GR[grPh],
     { kind, ph } = GR_LISTS[list],
-    sel = P[list],
-    other = list === "req" ? P.extras : list === "extras" ? P.req : [],
+    cap = list === "capB" || list === "capC",
+    lab = cap ? grCapLab : grLab,
+    sel = cap ? grCapSel(P, list) : P[list],
+    other = cap
+      ? grCapSel(P, list === "capB" ? "capC" : "capB")
+      : list === "req"
+        ? P.extras
+        : list === "extras"
+          ? P.req
+          : [],
+    why = { req: "is an extra", extras: "is required", capB: "gives C", capC: "is at most B" }[list],
     open = grMs === list;
-  return `<div class="ms grms${open ? " open" : ""}" data-grms="${list}"><button type="button" class="ms-field" aria-haspopup="listbox" aria-expanded="${open}">${sel.length ? sel.map(k => `<span class="chip-sel ${kind}">${esc(grLab(k))}<span class="x" data-grx="${k}" aria-label="Remove ${esc(grLab(k))}">×</span></span>`).join("") : `<span class="ph">${ph}</span>`}<span class="caret">▾</span></button>
-  <ul class="ms-list" role="listbox" aria-multiselectable="true" ${open ? "" : "hidden"}>${GR_GROUPS.map(
-    ([g, keys]) =>
-      `<li class="ms-grp" role="presentation">${g}</li>` +
-      keys
-        .filter(k => list !== "flags" || GR_CAN_AGAINST.has(k))
-        .map(k => {
-          const l = grLab(k).replace(/^(Weekly|Daily|4H) /, ""),
-            on = sel.includes(k),
-            dis = other.includes(k);
-          return `<li role="option" aria-selected="${on}" aria-disabled="${dis}" data-grk="${k}" class="${dis ? "dis" : ""}"><span class="box ${kind}">${on ? "✓" : ""}</span>${esc(l[0].toUpperCase() + l.slice(1))}${dis ? `<em>${list === "req" ? "is an extra" : "is required"}</em>` : ""}</li>`;
-        })
-        .join("")
-  ).join("")}</ul></div>`;
-}
-// "Same rules" / "At most B" / "Not valid (C)" for the inner structure or one 4H entry type
-const grCap = (name, v) =>
-  `<div class="segs">${[
-    ["", "Same rules"],
-    ["b", "At most B"],
-    ["x", "Not valid (C)"],
-  ]
+  return `<div class="ms grms${open ? " open" : ""}" data-grms="${list}"><button type="button" class="ms-field" aria-haspopup="listbox" aria-expanded="${open}">${sel.length ? sel.map(k => `<span class="chip-sel ${kind}">${esc(lab(k))}<span class="x" data-grx="${k}" aria-label="Remove ${esc(lab(k))}">×</span></span>`).join("") : `<span class="ph">${ph}</span>`}<span class="caret">▾</span></button>
+  <ul class="ms-list" role="listbox" aria-multiselectable="true" ${open ? "" : "hidden"}>${(cap
+    ? GR_CAP_GROUPS
+    : GR_GROUPS
+  )
     .map(
-      ([k, l]) =>
-        `<label class="seg"><input type="radio" name="${esc(name)}" value="${k}" ${v === k ? "checked" : ""}><span>${l}</span></label>`
+      ([g, keys]) =>
+        `<li class="ms-grp" role="presentation">${g}</li>` +
+        keys
+          .filter(k => list !== "flags" || GR_CAN_AGAINST.has(k))
+          .map(k => {
+            const l = lab(k).replace(/^(Weekly|Daily|4H) /, ""),
+              on = sel.includes(k),
+              dis = other.includes(k);
+            return `<li role="option" aria-selected="${on}" aria-disabled="${dis}" data-grk="${k}" class="${dis ? "dis" : ""}"><span class="box ${kind}">${on ? "✓" : ""}</span>${esc(l[0].toUpperCase() + l.slice(1))}${dis ? `<em>${why}</em>` : ""}</li>`;
+          })
+          .join("")
     )
-    .join("")}</div>`;
+    .join("")}</ul></div>`;
+}
 function grRender() {
   const box = $("#grEd");
   if (!box) return;
@@ -304,10 +325,8 @@ function grRender() {
       .join(
         ""
       )}<option value="0" ${P.min === 0 ? "selected" : ""}>no</option></select> of</span>${grMsHTML("extras")}</div>
-    <div class="grline"><span>Inner structure</span>${grCap("grinner", P.inner)}</div>
-    <div class="grline"><span>4H entry</span><div class="grents">${PLAN.entries
-      .map(e => `<div class="grent"><span>${esc(e)}</span>${grCap("grent:" + e, P.ent[e] || "")}</div>`)
-      .join("")}</div></div>
+    <div class="grline"><span>At most <span class="grade gB">B</span> with</span>${grMsHTML("capB")}</div>
+    <div class="grline"><span><span class="grade gC">C</span> with</span>${grMsHTML("capC")}</div>
     <p class="hint" style="margin:0">Anything else is <span class="grade gB">B</span>.</p>
     <b class="eyebrow grovh">All phases</b>
     <table class="grov"><thead><tr><th>Phase</th><th>C unless with you</th><th>A with</th><th class="num">Flags</th></tr></thead><tbody>${overview}</tbody></table>
@@ -342,14 +361,17 @@ document.addEventListener("click", e => {
     P = GR[grPh],
     x = e.target.closest("[data-grx]"),
     li = e.target.closest("[data-grk]");
+  const cap = list === "capB" || list === "capC";
   if (x) {
-    grUpd({ [list]: P[list].filter(k => k !== x.dataset.grx) });
+    if (cap) grCapSet(list, x.dataset.grx, false);
+    else grUpd({ [list]: P[list].filter(k => k !== x.dataset.grx) });
     return;
   }
   if (li) {
     if (li.classList.contains("dis")) return;
     const k = li.dataset.grk;
-    grUpd({ [list]: P[list].includes(k) ? P[list].filter(v => v !== k) : [...P[list], k] });
+    if (cap) grCapSet(list, k, !grCapSel(P, list).includes(k));
+    else grUpd({ [list]: P[list].includes(k) ? P[list].filter(v => v !== k) : [...P[list], k] });
     return;
   }
   if (e.target.closest(".ms-field")) {
@@ -390,8 +412,6 @@ document.addEventListener("change", e => {
     grF[t.id === "grFrom" ? "from" : "to"] = t.value;
     grRender();
   } else if (t.id === "grMin") grUpd({ min: +t.value });
-  else if (t.name === "grinner") grUpd({ inner: t.value, innerB: t.value === "b" });
-  else if (t.name.startsWith("grent:")) grUpd({ ent: { ...GR[grPh].ent, [t.name.slice(6)]: t.value } });
 });
 let setTab = "look";
 function showSetTab(k) {
