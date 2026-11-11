@@ -46,6 +46,7 @@
             <span class="dot"></span>Backtest <span class="count" id="cBt"></span>
           </button>
           <button role="tab" data-tab="analyze" aria-selected="false">Analyze</button>
+          <button role="tab" data-tab="grading" aria-selected="false">Grading</button>
           <button role="tab" data-tab="accounts" aria-selected="false">Accounts</button>
           <button role="tab" data-tab="review" aria-selected="false">Review</button>
         </nav>
@@ -63,6 +64,14 @@
       </main>
 
       <main id="view-analyze" hidden></main>
+      <main id="view-grading" hidden>
+        <div class="panel grpanel">
+          <span class="eyebrow">Setup grades</span>
+          <h2>Grading</h2>
+          <p class="hint">Per weekly phase: what a trade needs, what makes it C and what makes it A.</p>
+          <div id="grEd"></div>
+        </div>
+      </main>
       <main id="view-review" hidden>
         <div id="rvTop"></div>
         <div id="prBox" hidden></div>
@@ -974,14 +983,6 @@
                   <div class="setrow">
                     <span class="setl">Journal opens on</span>
                     <div class="segs" id="seg-speriod"></div>
-                  </div>
-                  <div class="setrow grrow">
-                    <span class="setl"
-                      >Grade rules<small
-                        >Per weekly phase: what a trade needs, what makes it C and what makes it A</small
-                      ></span
-                    >
-                    <div id="grEd"></div>
                   </div>
                 </section>
                 <section class="setsec" data-setpane="rev" hidden>

@@ -57,7 +57,7 @@ The scripts are plain (non-module) scripts loaded in order from `index.html`; th
 | `js/plan.js` | Weekly/daily criteria, setup score and A/B/C grade, R and pip maths |
 | `js/analyze.js` | Analyze tab (filters, comparisons, drill-down splits, charts) and the dashboard KPIs/calendar |
 | `js/review.js` | Blind re-analysis of old trades, weekly/monthly period reviews, chart zoom |
-| `js/settings.js` | Settings window, look, role features (`feat()`), scoring, data tools, news links |
+| `js/settings.js` | Settings window, look, role features (`feat()`), scoring, data tools, news links, and the grade rules editor (shown in the Grading tab) |
 | `js/admin.js` | Admin window: roles with features, users with roles and usage |
 | `js/accounts.js` | Trading accounts and balances |
 | `js/journal.js` | Journal and Backtest views: charts, tables, Belgian capital gains tax, projects and invest simulation |
@@ -104,7 +104,7 @@ Admins open **Admin** from the header to create roles, pick their features and a
 
 ## Setup grades
 
-Grades come from rules per weekly phase (`gradeOf` in `js/plan.js`), which the user edits in Settings → Forex and which are stored in the `settings` document as `gradeRules`. For the trade's phase: a missing requirement or a red-flag criterion marked against gives **C** (outside your rules; the reason says which), enough extras give **A**, otherwise **B**. The editor shows live how the user's own trades grade under the current rules.
+Grades come from rules per weekly phase (`gradeOf` in `js/plan.js`), which the user edits in the Grading tab and which are stored in the `settings` document as `gradeRules`. For the trade's phase: a missing requirement or a red-flag criterion marked against gives **C** (outside your rules; the reason says which), enough extras give **A**, otherwise **B**. The inner structure and each 4H entry type can also be set per phase to "at most B" or "not valid (C)", and the entry types can be used as requirements or extras. The editor shows live how the user's own trades grade under the current rules.
 
 ## Share links
 

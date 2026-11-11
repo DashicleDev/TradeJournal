@@ -1220,7 +1220,8 @@ a[id^="slp-"] {
   margin-top: 1px;
 }
 .nf-grade #f2Score,
-.nf-grade .setrow.grrow {
+.nf-grade nav [data-tab="grading"],
+[data-market="stocks"] nav [data-tab="grading"] {
   display: none !important;
 }
 .nf-cgt #taxBox,
@@ -5070,4 +5071,36 @@ button.pill.simpill {
 .rvfilt .eyebrow {
   display: block;
   margin: 0 0 8px;
+}
+.grpanel {
+  max-width: 860px;
+}
+.grents {
+  display: grid;
+  gap: 6px;
+}
+.grent {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 12px;
+  font-size: 13.5px;
+}
+.grent > span {
+  min-width: 140px;
+}
+nav button .dot {
+  flex: none;
+}
+.grov th {
+  white-space: normal;
+  vertical-align: bottom;
+}
+@media (max-width: 560px) {
+  .grov th:first-child {
+    width: 42px;
+  }
+  .grov th:last-child {
+    width: 48px;
+  }
 }

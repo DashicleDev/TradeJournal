@@ -195,7 +195,7 @@ $("#sAccent2").innerHTML = ACCENTS2.map(
   ([k, l, c]) =>
     `<label title="${l}"><input type="radio" name="saccent2" value="${k}" aria-label="${l}"><span style="background:${c}"></span></label>`
 ).join("");
-/* ---------- grade rules editor (Settings → Forex) ---------- */
+/* ---------- grade rules editor (Grading tab) ---------- */
 let grPh = "2",
   grF = { plan: "plan", mode: "", from: "", to: "" }; // preview filters
 function grSave(rules) {
@@ -259,6 +259,18 @@ function grMsHTML(list) {
         .join("")
   ).join("")}</ul></div>`;
 }
+// "Same rules" / "At most B" / "Not valid (C)" for the inner structure or one 4H entry type
+const grCap = (name, v) =>
+  `<div class="segs">${[
+    ["", "Same rules"],
+    ["b", "At most B"],
+    ["x", "Not valid (C)"],
+  ]
+    .map(
+      ([k, l]) =>
+        `<label class="seg"><input type="radio" name="${esc(name)}" value="${k}" ${v === k ? "checked" : ""}><span>${l}</span></label>`
+    )
+    .join("")}</div>`;
 function grRender() {
   const box = $("#grEd");
   if (!box) return;
@@ -267,7 +279,18 @@ function grRender() {
     overview = ["1", "2", "3", "4"]
       .map(ph => {
         const R = GR[ph];
-        return `<tr class="${ph === grPh ? "on" : ""}" data-grgo="${ph}"><td><b>${ph}</b></td><td>${esc(R.inner === "x" ? [names(R.req, ""), "outer structure"].filter(Boolean).join(", ") : names(R.req, "—"))}</td><td>${R.min ? `${R.min} of ${esc(names(R.extras, "—"))}` : "never"}${R.inner === "b" ? " · inner at most B" : ""}</td><td class="num">${R.flags.length}</td></tr>`;
+        return `<tr class="${ph === grPh ? "on" : ""}" data-grgo="${ph}"><td><b>${ph}</b></td><td>${esc(
+          [
+            names(R.req, ""),
+            R.inner === "x" ? "outer structure" : "",
+            ...PLAN.entries.filter(e => R.ent[e] === "x").map(e => "no " + e),
+          ]
+            .filter(Boolean)
+            .join(", ") || "—"
+        )}</td><td>${R.min ? `${R.min} of ${esc(names(R.extras, "—"))}` : "never"}${R.inner === "b" ? " · inner at most B" : ""}${PLAN.entries
+          .filter(e => R.ent[e] === "b")
+          .map(e => ` · ${esc(e)} at most B`)
+          .join("")}</td><td class="num">${R.flags.length}</td></tr>`;
       })
       .join("");
   box.innerHTML = `${grPreview()}
@@ -281,19 +304,13 @@ function grRender() {
       .join(
         ""
       )}<option value="0" ${P.min === 0 ? "selected" : ""}>no</option></select> of</span>${grMsHTML("extras")}</div>
-    <div class="grline"><span>Inner structure</span><div class="segs">${[
-      ["", "Same rules"],
-      ["b", "At most B"],
-      ["x", "Not valid (C)"],
-    ]
-      .map(
-        ([v, l]) =>
-          `<label class="seg"><input type="radio" name="grinner" value="${v}" ${P.inner === v ? "checked" : ""}><span>${l}</span></label>`
-      )
+    <div class="grline"><span>Inner structure</span>${grCap("grinner", P.inner)}</div>
+    <div class="grline"><span>4H entry</span><div class="grents">${PLAN.entries
+      .map(e => `<div class="grent"><span>${esc(e)}</span>${grCap("grent:" + e, P.ent[e] || "")}</div>`)
       .join("")}</div></div>
     <p class="hint" style="margin:0">Anything else is <span class="grade gB">B</span>.</p>
     <b class="eyebrow grovh">All phases</b>
-    <table class="grov"><thead><tr><th>Phase</th><th>C unless with you</th><th>A with</th><th class="num">Red flags</th></tr></thead><tbody>${overview}</tbody></table>
+    <table class="grov"><thead><tr><th>Phase</th><th>C unless with you</th><th>A with</th><th class="num">Flags</th></tr></thead><tbody>${overview}</tbody></table>
     <button type="button" class="btn small ghost" id="grReset">Reset all phases to default</button>`;
   seg("seg-grplan", "grplan", [
     ["plan", "On plan"],
@@ -374,6 +391,7 @@ document.addEventListener("change", e => {
     grRender();
   } else if (t.id === "grMin") grUpd({ min: +t.value });
   else if (t.name === "grinner") grUpd({ inner: t.value, innerB: t.value === "b" });
+  else if (t.name.startsWith("grent:")) grUpd({ ent: { ...GR[grPh].ent, [t.name.slice(6)]: t.value } });
 });
 let setTab = "look";
 function showSetTab(k) {

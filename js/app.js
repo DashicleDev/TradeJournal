@@ -319,11 +319,12 @@ function show(t) {
     rvLocal = null;
     rvOpen = "";
   }
+  if (t === "grading" && (!feat("grade") || market !== "fx")) t = "analyze";
   tab = t;
   document.querySelectorAll("nav button").forEach(b => b.setAttribute("aria-selected", b.dataset.tab === t));
-  ["live", "backtest", "analyze", "accounts", "review"].forEach(x => ($("#view-" + x).hidden = x !== t));
+  ["live", "backtest", "analyze", "grading", "accounts", "review"].forEach(x => ($("#view-" + x).hidden = x !== t));
   if (t === "live") $("#view-live").appendChild($("#jv"));
-  $("#fab").hidden = t === "analyze" || t === "accounts" || t === "review";
+  $("#fab").hidden = t === "analyze" || t === "grading" || t === "accounts" || t === "review";
   $("#fab").classList.toggle("btmode", t === "backtest");
   render();
   window.scrollTo(0, 0);
@@ -482,7 +483,9 @@ function render() {
   }
   $("#cLive").textContent = liveTrades().length || "";
   $("#cBt").textContent = btTrades().length || "";
+  if (tab === "grading" && (!feat("grade") || market !== "fx")) return show("analyze");
   if (tab === "analyze") renderAnalyze();
+  else if (tab === "grading") grRender();
   else if (tab === "live") renderLive();
   else if (tab === "accounts") acRender();
   else if (tab === "review") rvRender();

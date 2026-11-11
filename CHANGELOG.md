@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.3.2 — 2026-11-12
+
+- **Grading is its own tab** next to Analyze (it moved out of Settings).
+- Grade rules per phase now cover the **4H entry**: each entry type (Reversal, Continuation, Deceleration, Engulfing Candle) can follow the same rules, be "at most B" or "not valid (C)". The entry types can also be picked as requirements or extras.
+- Re-evaluate: the 4H step asks about Channel on a Reversal entry, and the grade it shows counts it, like the trade form. Changing the entry away from Reversal clears Channel on the trade.
+- Re-evaluate with the previous analysis shown: "Ranging" is now pre-filled from the trade, so replacing the analysis no longer switches it off.
+- 4H channel only counts towards a grade on a Reversal entry.
+
 ## 1.3.1 — 2026-11-11
 
 - plan.json now includes the grade criteria and default rules, so the TradingView extension (1.4.7) can show a live setup grade while you log a trade.

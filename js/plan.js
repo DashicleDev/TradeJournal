@@ -8,10 +8,10 @@ const DCRIT = [
   ["sd", "S&D zone"],
 ];
 let dSel = {};
-/* ---------- setup grades: rules per weekly phase (Settings → Forex → Grade rules) ---------- */
-// For the trade's phase:  X = a requirement isn't "with" you · C = a red-flag item is marked "against"
+/* ---------- setup grades: rules per weekly phase (Grading tab) ---------- */
+// For the trade's phase:  C = a requirement isn't "with" you, or a red-flag item is marked "against"
 //                         A = at least `min` extras are "with" you · B = otherwise.
-// "Inner structure: at most B" turns an A on an inner structure into a B.
+// "Inner structure: at most B" turns an A on an inner structure into a B; the same per 4H entry type.
 const GR_CRIT = [
   ["ms", "Weekly MS"],
   ["trend", "Market trend"],
@@ -28,6 +28,8 @@ const GR_CRIT = [
   ["dMs", "Daily MS"],
   ["hMs", "4H MS"],
   ["chan", "4H channel"],
+  // the 4H entry types: "with you" when the trade uses that entry
+  ...PLAN.entries.map(e => ["e:" + e, "4H " + e]),
   ["d:fc", "Daily FC"],
   ["d:dcc", "Daily last CC"],
   ["d:sd", "Daily S&D zone"],
@@ -36,7 +38,7 @@ const GR_CRIT = [
 const GR_GROUPS = [
   ["Weekly", ["ms", "trend", "fibc", "fiba", "ic", "pattern", "whl", "sd", "pz", "lcc", "ec"]],
   ["Daily", ["dPat", "dMs", "d:fc", "d:dcc", "d:sd"]],
-  ["4H", ["hMs", "chan"]],
+  ["4H", ["hMs", "chan", ...PLAN.entries.map(e => "e:" + e)]],
 ];
 const GR_FLAGS = ["fibc", "fiba", "ic", "whl", "sd", "pz", "lcc"];
 // criteria a trade can have marked "against" (weekly pattern and the daily pros are only ever "with")
@@ -56,10 +58,10 @@ const GR_CAN_AGAINST = new Set([
   "hMs",
 ]);
 const GR_DEF = {
-  1: { req: [], extras: ["fibc", "lcc", "pz", "sd"], min: 1, flags: GR_FLAGS, inner: "" },
-  2: { req: ["ms", "fiba"], extras: ["fibc", "lcc", "pz", "sd"], min: 1, flags: GR_FLAGS, inner: "" },
-  3: { req: ["pz"], extras: ["fibc", "lcc", "sd", "whl"], min: 1, flags: GR_FLAGS, inner: "x" },
-  4: { req: [], extras: ["fibc", "lcc", "pz", "sd"], min: 1, flags: GR_FLAGS, inner: "" },
+  1: { req: [], extras: ["fibc", "lcc", "pz", "sd"], min: 1, flags: GR_FLAGS, inner: "", ent: {} },
+  2: { req: ["ms", "fiba"], extras: ["fibc", "lcc", "pz", "sd"], min: 1, flags: GR_FLAGS, inner: "", ent: {} },
+  3: { req: ["pz"], extras: ["fibc", "lcc", "sd", "whl"], min: 1, flags: GR_FLAGS, inner: "x", ent: {} },
+  4: { req: [], extras: ["fibc", "lcc", "pz", "sd"], min: 1, flags: GR_FLAGS, inner: "", ent: {} },
 };
 const GR_KEYS = new Set(GR_CRIT.map(c => c[0]));
 const grNorm = r => {
@@ -74,6 +76,13 @@ const grNorm = r => {
       flags: list(x.flags, d.flags).filter(k => GR_CAN_AGAINST.has(k)),
       min: Number.isFinite(+x.min) && +x.min >= 0 ? Math.round(+x.min) : d.min,
       inner: ["", "b", "x"].includes(x.inner) ? x.inner : x.innerB === true ? "b" : d.inner,
+      // per 4H entry type: "" same rules · "b" at most B · "x" not valid (C)
+      ent: Object.fromEntries(
+        PLAN.entries.map(e => {
+          const v = (x.ent || d.ent || {})[e];
+          return [e, v === "b" || v === "x" ? v : ""];
+        })
+      ),
     };
   }
   return out;
@@ -91,18 +100,22 @@ const critV = (t, k) =>
         : "for"
       : ""
     : k === "chan"
-      ? t.channel
+      ? t.channel && t.entry4h === "Reversal"
         ? "for"
         : ""
-      : k === "dMs"
-        ? t.dMs || ""
-        : k === "hMs"
-          ? t.hMs || ""
-          : k.startsWith("d:")
-            ? dProsOf(t).includes(k.slice(2))
-              ? "for"
-              : ""
-            : (t.weekly || {})[k] || "";
+      : k.startsWith("e:")
+        ? t.entry4h === k.slice(2)
+          ? "for"
+          : ""
+        : k === "dMs"
+          ? t.dMs || ""
+          : k === "hMs"
+            ? t.hMs || ""
+            : k.startsWith("d:")
+              ? dProsOf(t).includes(k.slice(2))
+                ? "for"
+                : ""
+              : (t.weekly || {})[k] || "";
 // { g: "A" | "B" | "C", why } — C = outside your rules: a requirement missing or something marked against or null when grades are off or the trade has no phase / analysis
 function gradeOf(t, rules) {
   if (!feat("grade")) return null;
@@ -110,6 +123,8 @@ function gradeOf(t, rules) {
   if (!P) return null;
   if (!Object.keys(t.weekly || {}).length && !t.dMs && !t.hMs && !dProsOf(t).length) return null;
   if (P.inner === "x" && t.wStruct === "inner") return { g: "C", why: "Inner structure not valid in phase " + t.fase };
+  const cap = (P.ent || {})[t.entry4h] || "";
+  if (cap === "x") return { g: "C", why: t.entry4h + " entry not valid in phase " + t.fase };
   const miss = P.req.filter(k => critV(t, k) !== "for");
   if (miss.length) return { g: "C", why: "Missing: " + miss.map(grLab).join(", ") };
   const ag = P.flags.filter(k => critV(t, k) === "against");
@@ -117,6 +132,7 @@ function gradeOf(t, rules) {
   const ex = P.extras.filter(k => critV(t, k) === "for");
   if (ex.length >= P.min && P.min > 0) {
     if (P.inner === "b" && t.wStruct === "inner") return { g: "B", why: "Inner structure: at most B" };
+    if (cap === "b") return { g: "B", why: t.entry4h + " entry: at most B" };
     return { g: "A", why: ex.map(grLab).join(", ") };
   }
   return { g: "B", why: ex.length ? ex.map(grLab).join(", ") : "No extras" };

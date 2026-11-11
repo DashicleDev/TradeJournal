@@ -121,6 +121,7 @@ function rvOrig(t) {
   delete w.ms;
   delete w.pattern;
   return {
+    wRange: !!(t.wRange || (t.weekly || {}).trend === "range"),
     dir: t.dir || "",
     fase: t.fase ? String(t.fase) : "",
     wStruct: t.wStruct || "",
@@ -134,6 +135,7 @@ function rvOrig(t) {
     dPros: dProsOf(t),
     entry4h: t.entry4h || "",
     hMs: t.hMs || "",
+    channel: !!t.channel && t.entry4h === "Reversal",
     struct: t.struct || (t.bos === "ja" ? "bos" : t.bos === "nee" ? "som" : ""),
     room: t.room === "ja",
     scaleIn: !!t.scaleIn,
@@ -148,8 +150,11 @@ const rvAsTrade = a => ({
   wStruct: a.wStruct,
   fase: a.fase, // the grade rules are per phase
   concept: a.concept,
+  entry4h: a.entry4h,
+  channel: !!a.channel && a.entry4h === "Reversal",
 });
 const rvBlank = () => ({
+  wRange: false,
   dir: "",
   fase: "",
   wStruct: "",
@@ -163,6 +168,7 @@ const rvBlank = () => ({
   dPros: [],
   entry4h: "",
   hMs: "",
+  channel: false,
   struct: "",
   room: false,
   scaleIn: false,
@@ -281,21 +287,25 @@ function rvStepHTML(a, step) {
           )
         )
       : ""
-  }</div>
+  }${a.entry4h === "Reversal" ? rvF("Extra confirmation", rvSeg("channel", [["yes", "Channel"]], a.channel ? "yes" : "")) : ""}</div>
     <div class="row" style="gap:16px;margin-top:12px"><label class="checkline"><input type="checkbox" data-rc="room" ${a.room ? "checked" : ""}><span>Room</span></label><label class="checkline"><input type="checkbox" data-rc="scaleIn" ${a.scaleIn ? "checked" : ""}><span>Scale-in</span></label></div>`;
 }
 const rvPick = (o, k) =>
   k === "wRange"
     ? !!(o.wRange || (o.weekly || {}).trend === "range")
-    : k === "trend"
-      ? (o.weekly || {}).trend === "range"
-        ? ""
-        : (o.weekly || {}).trend || ""
-      : k === "wpros" || k === "wcons"
-        ? WCRIT.map(c => c[0]).filter(x => x !== "trend" && (o.weekly || {})[x] === (k === "wpros" ? "for" : "against"))
-        : k === "dPros"
-          ? DCRIT.map(c => c[0]).filter(x => (o.dPros || []).includes(x))
-          : o[k];
+    : k === "channel"
+      ? !!o.channel && o.entry4h === "Reversal"
+      : k === "trend"
+        ? (o.weekly || {}).trend === "range"
+          ? ""
+          : (o.weekly || {}).trend || ""
+        : k === "wpros" || k === "wcons"
+          ? WCRIT.map(c => c[0]).filter(
+              x => x !== "trend" && (o.weekly || {})[x] === (k === "wpros" ? "for" : "against")
+            )
+          : k === "dPros"
+            ? DCRIT.map(c => c[0]).filter(x => (o.dPros || []).includes(x))
+            : o[k];
 function rvLab(k, v) {
   if (k === "wpros" || k === "wcons") return v.length ? v.map(x => WLAB(x)).join(", ") : "—";
   if (v == null || v === "" || (Array.isArray(v) && !v.length)) return "—";
@@ -304,7 +314,7 @@ function rvLab(k, v) {
     return v === "for" ? "✓ With" : v === "range" ? "↔ Range" : "✗ Against";
   if (k === "wStruct") return v === "inner" ? "Inner" : "Outer";
   if (k === "struct") return v === "bos" ? "BoS" : "SoM";
-  if (k === "room" || k === "scaleIn" || k === "wRange") return v ? "Yes" : "No";
+  if (k === "room" || k === "scaleIn" || k === "wRange" || k === "channel") return v ? "Yes" : "No";
   if (k === "dPros") return v.map(x => (DCRIT.find(c => c[0] === x) || [, x])[1]).join(", ");
   if (k === "weekly") {
     const e = Object.entries(v).filter(([, x]) => x);
@@ -332,6 +342,7 @@ const RV_ROWS = [
   ["entry4h", "4H entry"],
   ["hMs", "4H MS"],
   ["struct", "4H structure"],
+  ["channel", "Channel"],
   ["room", "Room"],
   ["scaleIn", "Scale-in"],
 ];
@@ -1095,6 +1106,7 @@ function rvApply(t, a, plan, repl) {
       entry4h: a.entry4h,
       hMs: a.hMs,
       struct: hasStruct(a.entry4h) ? a.struct : "",
+      channel: a.entry4h === "Reversal" && !!a.channel,
       room: a.room ? "ja" : "nee",
       scaleIn: a.scaleIn,
     });
@@ -1296,8 +1308,8 @@ $("#rvBox").addEventListener("click", e => {
     return rvRender();
   }
   const a = S.cur;
-  if (b.dataset.rk === "wRange") {
-    a.wRange = !a.wRange;
+  if (b.dataset.rk === "wRange" || b.dataset.rk === "channel") {
+    a[b.dataset.rk] = !a[b.dataset.rk];
     rvSave();
     return rvRender();
   }
@@ -1347,6 +1359,7 @@ $("#rvBox").addEventListener("change", e => {
     if (k === "wPat") S.cur.wPatSub = "";
     if (k === "concept") S.cur.sub = "";
     if (k === "entry4h" && !hasStruct(el.value)) S.cur.struct = "";
+    if (k === "entry4h" && el.value !== "Reversal") S.cur.channel = false;
     rvSave();
     return rvRender();
   }

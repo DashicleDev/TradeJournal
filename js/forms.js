@@ -977,6 +977,7 @@ function f2Summaries() {
           wStruct: radio("f2wstruct") || "",
           fase: radio("f2fase") || "",
           concept: $("#f2Concept").value,
+          entry4h: $("#f2Entry").value,
           channel: $("#f2Entry").value === "Reversal" && $("#f2Chan").checked,
         },
         g = gradeOf(tt);
