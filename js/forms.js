@@ -542,7 +542,7 @@ $("#stockForm").onsubmit = e => {
     pair: $("#sTicker").value.trim().toUpperCase(),
     date: $("#sDate").value,
     closeDate: $("#sClose").value,
-    status: $("#sMissed").checked ? "missed" : "taken",
+    status: (old ? old.mode : sMode) === "live" && $("#sMissed").checked ? "missed" : "taken", // only live trades can be missed
     account: $("#sAccount").value,
     btDate: (old ? old.mode : sMode) === "backtest" ? $("#sBtDate").value || todayISO() : null,
     sPhase: radio("sphase"),
@@ -1329,7 +1329,7 @@ $("#tradeForm2").onsubmit = e => {
     mode,
     market: old ? mktOf(old) : f2Market,
     project: mode === "backtest" && $("#f2Project").value !== "none" ? $("#f2Project").value : null,
-    status: $("#f2Missed").checked ? "missed" : "taken",
+    status: mode === "live" && $("#f2Missed").checked ? "missed" : "taken", // only live trades can be missed
     account: $("#f2Account").value,
     btDate: mode === "backtest" ? $("#f2BtDate").value || todayISO() : null,
     date: $("#f2Date").value,

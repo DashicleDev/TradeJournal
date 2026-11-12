@@ -397,10 +397,13 @@ td.acts {
   color: var(--bad);
 }
 .misstag {
-  display: block;
-  font: 500 12px var(--body);
+  display: table;
+  font: 600 11px var(--body);
   color: var(--muted);
-  margin-top: 1px;
+  margin-top: 3px;
+  padding: 1px 7px;
+  border: 1px dashed currentColor;
+  border-radius: 999px;
 }
 .restag.open {
   background: color-mix(in srgb, var(--s1, #3987e5) 16%, transparent);
@@ -4146,6 +4149,22 @@ fieldset.subs-closed .legend-toggle .chev {
 .dp.more {
   font-family: var(--body);
 }
+/* missed trades: hollow dot and a dashed outline on the day, not counted in its R */
+.dp.miss i {
+  background: none;
+  box-shadow: inset 0 0 0 1.5px var(--muted);
+}
+.dp.miss span {
+  font-style: italic;
+}
+.cal .day.hasmiss {
+  outline: 1px dashed color-mix(in srgb, var(--muted) 70%, transparent);
+  outline-offset: -4px;
+}
+.day .dr.dmiss {
+  font: 600 12px var(--body);
+  color: var(--muted);
+}
 .day .dc {
   font-size: 11px;
   color: var(--muted);
@@ -4277,6 +4296,11 @@ fieldset.subs-closed .legend-toggle .chev {
   background: var(--bad);
   border-color: var(--bad);
   color: #fff;
+}
+/* only live trades can be missed */
+#tradeForm2:not(.mode-live) .f-missed,
+#stockForm:not(.mode-live) .f-missed {
+  display: none;
 }
 .f-missed {
   align-self: end;

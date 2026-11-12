@@ -386,7 +386,7 @@ let PRESETS = [
   ["With vs against weekly structure", { mode: "live", wms: "for" }, { mode: "live", wms: "against" }],
   ["All timeframes with vs mixed", { mode: "live", align: "all" }, { mode: "live", align: ["mixed", "none"] }],
   ["To plan vs not", { mode: "live", eval: "plan" }, { mode: "live", eval: "off" }],
-  ["Taken vs missed", { mode: "live", status: "taken" }, { mode: "live", status: "missed" }],
+  ["Taken vs missed", { mode: "live" }, { mode: "live", status: "missed" }],
   ["4H reversal vs continuation", { mode: "live", entry4h: "Reversal" }, { mode: "live", entry4h: "Continuation" }],
 ];
 let FDEF = [
@@ -415,12 +415,14 @@ let FDEF = [
   [
     "status",
     "Status",
+    // a set counts taken trades only; the switch next to All / Live / Backtest swaps in or adds the missed ones, at the R they would have made
     () => [
-      ["", "Taken and missed"],
-      ["taken", "Taken"],
-      ["missed", "Missed (hypothetical R)"],
+      ["", "Taken only"],
+      ["missed", "Missed only (hypothetical R)"],
+      ["all", "Taken + missed (hypothetical R)"],
+      ["taken", "Taken"], // older saved sets
     ],
-    t => t.status,
+    (t, v) => v === "all" || t.status === v,
   ],
   [
     "fase",
@@ -696,7 +698,8 @@ function applySet(f, list) {
       (!f.from || (t.date || "") >= f.from) &&
       (!f.to || (t.date || "") <= f.to)
   );
-  return fvals(f.status).includes("missed") ? out.map(t => ({ ...t, status: "taken" })) : out;
+  const vs = fvals(f.status);
+  return vs.includes("missed") || vs.includes("all") ? out.map(t => ({ ...t, status: "taken" })) : out;
 }
 // short names for compared sets: only the parts of describe() that differ between them ("Grade A", "Grade B", …)
 function setNames(sets) {
@@ -745,7 +748,7 @@ let FGROUPS = [
   ["Weekly", ["fase", "wpat", "wstruct", "wms", "wtrend", "wrange", "align", "pro", "con"]],
   ["Daily", ["dms", "concept", "sub", "dpro"]],
   ["4H", ["hms", "entry4h", "struct", "room", "chan", "scale", "ectf"]],
-  ["Context", ["status", "grade", "cwhy", "pair", "dir", "account", "actype", "dates"]],
+  ["Context", ["grade", "cwhy", "pair", "dir", "account", "actype", "dates"]],
   ["Result", ["outcome", "eval", "rev", "exit"]],
 ];
 /* ---------- Analyze definitions per market ---------- */
@@ -769,11 +772,12 @@ const ST_DEFS = {
       "status",
       "Status",
       () => [
-        ["", "Taken and missed"],
-        ["taken", "Taken"],
-        ["missed", "Missed"],
+        ["", "Taken only"],
+        ["missed", "Missed only"],
+        ["all", "Taken + missed"],
+        ["taken", "Taken"], // older saved sets
       ],
-      t => t.status,
+      (t, v) => v === "all" || t.status === v,
     ],
     [
       "sstate",
@@ -917,7 +921,7 @@ const ST_DEFS = {
   FGROUPS: [
     ["Higher timeframes", ["sphase", "salign", "s12ms", "s6ms", "s6bm", "s3ms", "s3room"]],
     ["Monthly & weekly", ["s1ms", "s1cc", "swms", "swpat"]],
-    ["Context", ["status", "sstate", "pair", "account", "dates"]],
+    ["Context", ["sstate", "pair", "account", "dates"]],
     ["Result", ["outcome", "exit"]],
   ],
   SPLITS: {
@@ -973,7 +977,7 @@ const ST_DEFS = {
       { mode: "live", s6bm: "PinP" },
     ],
     ["Monthly bullish CC vs not", { mode: "live", s1cc: "yes" }, { mode: "live", s1cc: "no" }],
-    ["Taken vs missed", { mode: "live", status: "taken" }, { mode: "live", status: "missed" }],
+    ["Taken vs missed", { mode: "live" }, { mode: "live", status: "missed" }],
   ],
   split: "sphase",
 };
@@ -993,7 +997,7 @@ function useMarketDefs() {
 const flabel = k => (k === "dates" ? "Date range" : FDEF.find(d => d[0] === k)[1]);
 // the filter chips of one filter object; k is the set id the popover and × buttons act on
 function fchipsOf(f, k) {
-  const chips = FDEF.filter(d => fvals(f[d[0]]).length).map(d => {
+  const chips = FDEF.filter(d => d[0] !== "status" && fvals(f[d[0]]).length).map(d => {
     const O = d[2](),
       vs = fvals(f[d[0]]);
     const l = vs
@@ -1019,9 +1023,17 @@ function setControls(st, i) {
     ["live", "Live"],
     ["backtest", "Backtest"],
   ];
+  const sv = fvals(f.status),
+    miss = sv.includes("all") || (sv.includes("taken") && sv.includes("missed")) ? "all" : sv.includes("missed") ? "missed" : "";
+  const misses = [
+    ["", "Taken"],
+    ["all", "Taken + missed"],
+    ["missed", "Missed only"],
+  ];
   return `<div class="panel setpanel" style="border-top-color:${scol(st)}">
   <div class="row spread"><span class="eyebrow"><i class="sdot" style="background:${scol(st)}"></i>Set ${i + 1}</span><div class="row" style="gap:2px"><button type="button" class="btn small ghost" data-dupset="${k}" ${sets.length >= MAXSETS ? "disabled" : ""}>Duplicate</button><button type="button" class="btn small ghost" data-resetset="${k}">Reset</button>${sets.length > 1 ? `<button type="button" class="btn small ghost danger" data-rmset="${k}" aria-label="Remove set ${i + 1}">Remove</button>` : ""}</div></div>
   <div class="setbar"><div class="segs" role="radiogroup" aria-label="Trades">${modes.map(([v, l]) => `<label class="seg"><input type="radio" name="mode-${k}" id="m${k}-${v}" value="${v}" data-set="${k}" data-key="mode" ${f.mode === v ? "checked" : ""}><span>${l}</span></label>`).join("")}</div>
+  ${f.mode === "backtest" ? "" : `<div class="segs" role="radiogroup" aria-label="Missed trades" title="Missed trades count at the R you logged for them">${misses.map(([v, l]) => `<label class="seg"><input type="radio" name="miss-${k}" value="${v}" data-set="${k}" data-key="status" ${miss === v ? "checked" : ""}><span>${l}</span></label>`).join("")}</div>`}
   ${f.mode === "backtest" ? `<select id="f${k}-project" data-set="${k}" data-key="project" aria-label="Backtest project">${[["all", "All projects"], ...projects().map(p => [p.id, p.name]), ["none", "No project"]].map(([v, l]) => `<option value="${esc(v)}" ${f.project === v ? "selected" : ""}>${esc(l)}</option>`).join("")}</select>` : ""}</div>
   <div class="fchips">${chips.join("")}<button type="button" class="addf" data-addf="${k}">+ Add filter</button></div>
   </div>`;
@@ -1509,6 +1521,8 @@ document.addEventListener("change", e => {
   const st = sets.find(x => x.id === el.dataset.set);
   if (!st) return;
   st.f[el.dataset.key] = el.value;
+  // only live trades can be missed
+  if (el.dataset.key === "mode" && el.value === "backtest") delete st.f.status;
   if (el.dataset.key === "mode") renderAnalyze();
   else renderResults();
 });

@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.3.19 — 2026-11-13
+
+- **Missed trades show in the calendar**: on their day with a hollow dot and a dashed outline, and as "1 missed" in the week and month totals. They still don't count in the day's R, win rate or any stats. The Missed tag in the trade list is easier to spot.
+- **Missed trades in Analyze**: live and "All" sets have a switch under All / Live / Backtest: **Taken** (the default), **Taken + missed** (missed at the R you logged) or **Missed only**. Backtest sets don't show it: only live trades can be missed. For the same reason, the backtest trade form no longer has a "Missed trade" checkbox. It replaces the Status filter, whose "Taken" option did nothing. The "Taken vs missed" preset uses it.
+
 ## 1.3.18 — 2026-11-13
 
 - Market trend buttons fit on one line and use the normal selection colour (red and green only mean with / against). The weekly fields line up in two columns.
