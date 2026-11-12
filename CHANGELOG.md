@@ -2,7 +2,7 @@
 
 ## 1.3.11 — 2026-11-12
 
-- **Link previews for shared trades** in WhatsApp, Discord and other apps: the pair and direction with the result ("AUDUSD - Long · Win +2.00R"), one line of setup info (phase, setup, 4H entry), the date, and the first chart as the image. Share links now go through the share worker; older links keep working.
+- **Link previews for shared trades** in WhatsApp, Discord and other apps: the pair and direction with the result ("AUDUSD - Long · Win +2.00R"), one line of setup info (phase, setup, 4H entry), and the date (no image). Share links now go through the share worker; older links keep working.
 
 ## 1.3.10 — 2026-11-12
 

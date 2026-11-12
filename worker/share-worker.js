@@ -5,7 +5,7 @@
  * GitHub Pages serves the same share.html for every link, so this Worker serves
  *   https://<worker>/t/<token>
  * by taking share.html from GitHub Pages and adding preview tags for that one trade
- * (pair, direction and result, one line of setup info, and a chart as the image). People who open the link
+ * (pair, direction and result, plus one line of setup info; no image). People who open the link
  * get the normal read-only page. Uses only the public anon key, like the app itself.
  */
 const SITE = "https://dashicledev.github.io/TradeJournal/";
@@ -20,29 +20,7 @@ const esc = s =>
 const fmtR = r => (r == null ? "" : (r > 0 ? "+" : r < 0 ? "−" : "") + Math.abs(Number(r)).toFixed(2) + "R");
 const fmtD = d =>
   d ? new Date(d + "T12:00:00Z").toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" }) : "";
-const tvImg = u => {
-  const m = /tradingview\.com\/x\/([A-Za-z0-9]+)/.exec(u || "");
-  return m ? `https://s3.tradingview.com/snapshots/${m[1][0].toLowerCase()}/${m[1]}.png` : "";
-};
 const H = { apikey: ANON, Authorization: "Bearer " + ANON, "Content-Type": "application/json" };
-
-async function chartImage(t) {
-  for (const k of ["weekly", "daily", "h4", "ltf", "m12", "m6", "m3", "mo", "wk"]) {
-    const id = t.shots && t.shots[k];
-    if (id) {
-      const r = await fetch(`${SUPA}/storage/v1/object/sign/shots/${t.owner}/${id}`, {
-        method: "POST",
-        headers: H,
-        body: JSON.stringify({ expiresIn: 60 * 60 * 24 * 30 }),
-      });
-      const j = r.ok ? await r.json() : null;
-      if (j && j.signedURL) return SUPA + "/storage/v1" + j.signedURL;
-    }
-    const tv = tvImg(t.shotLinks && t.shotLinks[k]);
-    if (tv) return tv;
-  }
-  return SITE + "icons/icon-512.png";
-}
 
 // A short card: "AUDUSD - Long · Win +2.00R", then one line of setup info and one of date and mode.
 function preview(t) {
@@ -80,17 +58,14 @@ export default {
     let tags;
     if (trade) {
       const { title, desc } = preview(trade);
-      const img = await chartImage(trade);
       tags = `<meta property="og:type" content="article">
 <meta property="og:site_name" content="Trade Journal">
 <meta property="og:title" content="${esc(title)}">
 <meta property="og:description" content="${esc(desc)}">
-<meta property="og:image" content="${esc(img)}">
 <meta property="og:url" content="${esc(url.href)}">
-<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="${esc(title)}">
 <meta name="twitter:description" content="${esc(desc)}">
-<meta name="twitter:image" content="${esc(img)}">
 <meta name="description" content="${esc(desc)}">`;
     } else {
       tags = `<meta property="og:title" content="Shared trade · Trade Journal">
