@@ -698,6 +698,17 @@ function applySet(f, list) {
   );
   return fvals(f.status).includes("missed") ? out.map(t => ({ ...t, status: "taken" })) : out;
 }
+// short names for compared sets: only the parts of describe() that differ between them ("Grade A", "Grade B", …)
+function setNames(sets) {
+  const parts = sets.map(st => describe(st.f).split(" · "));
+  return parts.map(
+    (p, i) =>
+      p
+        .filter(x => !parts.every(q => q.includes(x)))
+        .map(x => x.replace(/ \([^)]*\)$/, ""))
+        .join(" · ") || "Set " + (i + 1)
+  );
+}
 function describe(f) {
   const p = [];
   p.push(f.mode === "all" ? "All trades" : f.mode === "live" ? "Live" : "Backtest");
@@ -1343,11 +1354,13 @@ function renderResults() {
     top = `<div class="setcards">${sets.map(card).join("")}</div>
     <div class="panel"><span class="eyebrow">Profit over time</span><h2>Total R after each trade</h2>
       ${equityMulti(
-        sets.map((st, i) => ({ tk: D[i].tk, c: scol(st), name: "Set " + (i + 1) })),
+        sets.map((st, i) => ({ tk: D[i].tk, c: scol(st), name: setNames(sets)[i] })),
         innerWidth < 640 ? 280 : 300,
         innerWidth < 640 ? 380 : 760
       )}
-      <div class="legend">${sets.map((st, i) => `<span><i style="background:${scol(st)}"></i>Set ${i + 1}</span>`).join("")}</div></div>`;
+      <div class="legend">${setNames(sets)
+        .map((nm, i) => `<span><i style="background:${scol(sets[i])}"></i>${esc(nm)}</span>`)
+        .join("")}</div></div>`;
   }
   const bi = two ? sets.findIndex(x => x.f.mode === "backtest") : -1,
     li = two ? sets.findIndex(x => x.f.mode === "live") : -1;
@@ -1369,7 +1382,14 @@ function renderResults() {
   ${match}
   <div class="panel"><div class="row spread"><div><span class="eyebrow">Drill down</span><h2>Average R by ${esc(SPLITS[split][0].toLowerCase())}</h2></div>
     <label class="f" style="min-width:min(100%,220px)"><span>Split by</span><select id="splitSel">${SPLITGROUPS.map(([g, ks]) => `<optgroup label="${g}">${ks.map(k => `<option value="${k}" ${k === split ? "selected" : ""}>${SPLITS[k][0]}</option>`).join("")}</optgroup>`).join("")}</select></label></div>
-    ${rows.length ? `<div class="drill">${rows.map(r => `<div class="drow2"><span class="dk">${esc(r.k)}</span><div class="dbars">${r.st.map((x, i) => (!x.n && N > 1 ? "" : `<div class="dbar" data-tip="${esc(`Set ${i + 1} · ${r.k}: ${x.n} trades · ${fmtP(x.wr)} wins · avg ${fmtR(x.avg)}`)}"><span class="dtrack"><i style="${(x.avg || 0) < 0 ? "right:50%" : "left:50%"};width:${(Math.abs(x.avg || 0) / maxAbs) * 50}%;background:${scol(sets[i])};height:${bh}px"></i></span><span class="dv num">${x.n ? fmtR(x.avg) : "—"}</span><span class="dn2 num">${x.n} tr · ${fmtP(x.wr)}</span></div>`)).join("")}</div></div>`).join("")}</div>` : `<p class="hint">No taken trades with a result in these sets.</p>`}</div>
+    ${
+      N > 1
+        ? `<div class="legend">${setNames(sets)
+            .map((nm, i) => `<span><i style="background:${scol(sets[i])}"></i>${esc(nm)}</span>`)
+            .join("")}</div>`
+        : ""
+    }
+    ${rows.length ? `<div class="drill">${rows.map(r => `<div class="drow2"><span class="dk">${esc(r.k)}</span><div class="dbars">${r.st.map((x, i) => `<div class="dbar" data-tip="${esc(`${setNames(sets)[i]} · ${r.k}: ${x.n} trades · ${fmtP(x.wr)} wins · avg ${fmtR(x.avg)}`)}"><span class="dtrack"><i style="${(x.avg || 0) < 0 ? "right:50%" : "left:50%"};width:${(Math.abs(x.avg || 0) / maxAbs) * 50}%;background:${scol(sets[i])};height:${bh}px"></i></span><span class="dv num">${x.n ? fmtR(x.avg) : "—"}</span><span class="dn2 num">${x.n} tr · ${fmtP(x.wr)}</span></div>`).join("")}</div></div>`).join("")}</div>` : `<p class="hint">No taken trades with a result in these sets.</p>`}</div>
   ${setTradesHTML(lists)}
   ${projectsVsLive(liveTrades())}`);
   $("#splitSel").onchange = e => {
