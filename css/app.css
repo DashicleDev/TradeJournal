@@ -2410,6 +2410,15 @@ svg text {
   text-align: right;
   font-size: 12px;
 }
+/* the number the bars are scaled on is the bold one */
+.drill.sc-total .dtot {
+  font-size: 13px;
+  font-weight: 600;
+}
+.drill.sc-total .dv {
+  font-size: 12px;
+  font-weight: 400;
+}
 .dn2 {
   color: var(--muted);
   font-size: 12px;

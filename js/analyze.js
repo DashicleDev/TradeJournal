@@ -367,7 +367,8 @@ function newSet(f) {
   return { id: uid(), c, f: { ...blankSet("all"), ...f } };
 }
 let sets = [],
-  split = "fase";
+  split = "fase",
+  dScale = "total"; // drill-down bars: "total" R (small samples stay small) or "avg" R per trade
 sets = [newSet({ mode: "backtest" })];
 sets.push(newSet({ mode: "live" }));
 const scol = st => `var(--s${st.c + 1})`;
@@ -1378,7 +1379,8 @@ function renderResults() {
     li = two ? sets.findIndex(x => x.f.mode === "live") : -1;
   const match = bi >= 0 && li >= 0 ? matchHTML(taken(lists[bi]), taken(lists[li]), sets[bi], sets[li]) : "";
   const rows = splitRowsN(lists, split);
-  const maxAbs = Math.max(0.5, ...rows.flatMap(r => r.st.map(x => Math.abs(x.avg || 0))));
+  const bv = x => (dScale === "avg" ? x.avg : x.total) || 0,
+    maxAbs = Math.max(0.5, ...rows.flatMap(r => r.st.map(x => Math.abs(bv(x)))));
   const bh = Math.max(4, Math.min(8, Math.floor(24 / N)));
   const openN =
     market === "stocks"
@@ -1394,6 +1396,12 @@ function renderResults() {
   ${match}
   <div class="panel"><div class="row spread"><div><span class="eyebrow">Drill down</span><h2>Average and total R by ${esc(SPLITS[split][0].toLowerCase())}</h2></div>
     <label class="f" style="min-width:min(100%,220px)"><span>Split by</span><select id="splitSel">${SPLITGROUPS.map(([g, ks]) => `<optgroup label="${g}">${ks.map(k => `<option value="${k}" ${k === split ? "selected" : ""}>${SPLITS[k][0]}</option>`).join("")}</optgroup>`).join("")}</select></label></div>
+    <div class="row" style="gap:8px;align-items:center"><span class="hint" style="margin:0">Bars show</span><div class="segs" role="radiogroup" aria-label="Bars show">${[
+      ["total", "Total R"],
+      ["avg", "Average R"],
+    ]
+      .map(([v, l]) => `<label class="seg"><input type="radio" name="dscale" value="${v}" ${dScale === v ? "checked" : ""}><span>${l}</span></label>`)
+      .join("")}</div></div>
     ${
       N > 1
         ? `<div class="legend">${setNames(sets)
@@ -1401,13 +1409,14 @@ function renderResults() {
             .join("")}</div>`
         : ""
     }
-    ${rows.length ? `<div class="drill">${rows.map(r => `<div class="drow2"><span class="dk">${esc(r.k)}</span><div class="dbars">${r.st.map((x, i) => `<div class="dbar" data-tip="${esc(`${setNames(sets)[i]} · ${r.k}: ${x.n} trades · ${fmtP(x.wr)} wins · avg ${fmtR(x.avg)} · total ${fmtR(x.total)}`)}"><span class="dtrack"><i style="${(x.avg || 0) < 0 ? "right:50%" : "left:50%"};width:${(Math.abs(x.avg || 0) / maxAbs) * 50}%;background:${scol(sets[i])};height:${bh}px"></i></span><span class="dv num" title="Average R">${x.n ? fmtR(x.avg) : "—"}</span><span class="dtot num ${x.total > 0 ? "pos" : x.total < 0 ? "neg" : ""}" title="Total R">${x.n ? fmtR(x.total) : ""}</span><span class="dn2 num">${x.n} tr · ${fmtP(x.wr)}</span></div>`).join("")}</div></div>`).join("")}</div>` : `<p class="hint">No taken trades with a result in these sets.</p>`}</div>
+    ${rows.length ? `<div class="drill${dScale === "avg" ? "" : " sc-total"}">${rows.map(r => `<div class="drow2"><span class="dk">${esc(r.k)}</span><div class="dbars">${r.st.map((x, i) => `<div class="dbar" data-tip="${esc(`${setNames(sets)[i]} · ${r.k}: ${x.n} trades · ${fmtP(x.wr)} wins · avg ${fmtR(x.avg)} · total ${fmtR(x.total)}`)}"><span class="dtrack"><i style="${bv(x) < 0 ? "right:50%" : "left:50%"};width:${(Math.abs(bv(x)) / maxAbs) * 50}%;background:${scol(sets[i])};height:${bh}px"></i></span><span class="dv num" title="Average R">${x.n ? fmtR(x.avg) : "—"}</span><span class="dtot num ${x.total > 0 ? "pos" : x.total < 0 ? "neg" : ""}" title="Total R">${x.n ? fmtR(x.total) : ""}</span><span class="dn2 num">${x.n} tr · ${fmtP(x.wr)}</span></div>`).join("")}</div></div>`).join("")}</div>` : `<p class="hint">No taken trades with a result in these sets.</p>`}</div>
   ${setTradesHTML(lists)}
   ${projectsVsLive(liveTrades())}`);
   $("#splitSel").onchange = e => {
     split = e.target.value;
     renderResults();
   };
+  document.querySelectorAll("input[name=dscale]").forEach(i => (i.onchange = () => ((dScale = i.value), renderResults())));
   if (N === 1 && D[0].tk.length)
     requestAnimationFrame(() => {
       const cb = document.querySelector("#results .ov-right .cbody");

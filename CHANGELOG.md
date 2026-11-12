@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.3.21 — 2026-11-13
+
+- **Drill down bars show total R by default**, so a group with only a couple of trades no longer gets the biggest bar. Switch to **Average R** to compare sets of very different sizes (like backtest vs live). The number the bars use is the bold one.
+
 ## 1.3.20 — 2026-11-13
 
 - **Drill down shows total R** next to the average R on every row (green or red), so you see what a phase, grade or pair actually made, not just its average.
