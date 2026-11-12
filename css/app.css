@@ -5164,3 +5164,27 @@ nav button .dot {
     white-space: normal;
   }
 }
+.grblk {
+  display: grid;
+  gap: 8px;
+  padding-left: 12px;
+  border-left: 2px solid var(--line);
+}
+.grhead {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0;
+  font: 600 14px var(--body);
+}
+.grhead select {
+  width: auto;
+  padding: 2px 4px;
+  font: inherit;
+}
+.grblk .grline > span {
+  color: var(--muted);
+}
+.grelse {
+  padding-left: 14px;
+}

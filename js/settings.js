@@ -253,7 +253,7 @@ function grList(L) {
 }
 let grMs = ""; // which list is open: "req" | "flags" | "extras" | "capB" | "capC"
 const GR_LISTS = {
-  req: { kind: "for", ph: "Nothing required" },
+  req: { kind: "for", ph: "Nothing" },
   flags: { kind: "against", ph: "Nothing" },
   extras: { kind: "extra", ph: "Nothing, so never A" },
   capB: { kind: "extra", ph: "Nothing" },
@@ -336,18 +336,18 @@ function grRender() {
       .join("");
   box.innerHTML = `${grPreview()}
     <div class="grph"><b>Phase ${grPh}</b><div class="segs">${["1", "2", "3", "4"].map(p => `<label class="seg"><input type="radio" name="grph" value="${p}" ${p === grPh ? "checked" : ""}><span>${p}</span></label>`).join("")}</div></div>
-    <div class="grline"><span><span class="grade gC">C</span> unless with you <em class="opt">requirements</em></span>${grMsHTML("req")}</div>
-    <div class="grline"><span><span class="grade gC">C</span> if marked against <em class="opt">red flags</em></span>${grMsHTML("flags")}</div>
-    <div class="grline"><span><span class="grade gA">A</span> with at least <select id="grMin" aria-label="Extras needed for A">${[
+    <div class="grblk"><p class="grhead"><span class="grade gC">C</span> outside your rules, if</p>
+      <div class="grline"><span>any of these not with you</span>${grMsHTML("req")}</div>
+      <div class="grline"><span>any of these marked against you</span>${grMsHTML("flags")}</div>
+      <div class="grline"><span>the trade is</span>${grMsHTML("capC")}</div></div>
+    <div class="grblk"><p class="grhead"><span class="grade gA">A</span> if at least <select id="grMin" aria-label="Extras needed for A">${[
       1, 2, 3, 4,
     ]
       .map(n => `<option value="${n}" ${P.min === n ? "selected" : ""}>${n}</option>`)
-      .join(
-        ""
-      )}<option value="0" ${P.min === 0 ? "selected" : ""}>no</option></select> of</span>${grMsHTML("extras")}</div>
-    <div class="grline"><span>At most <span class="grade gB">B</span> with</span>${grMsHTML("capB")}</div>
-    <div class="grline"><span><span class="grade gC">C</span> with</span>${grMsHTML("capC")}</div>
-    <p class="hint" style="margin:0">Anything else is <span class="grade gB">B</span>.</p>
+      .join("")}<option value="0" ${P.min === 0 ? "selected" : ""}>no</option></select> of these are with you</p>
+      <div class="grline">${grMsHTML("extras")}</div>
+      <div class="grline"><span>but only <span class="grade gB">B</span> if the trade is</span>${grMsHTML("capB")}</div></div>
+    <p class="grhead grelse">Otherwise <span class="grade gB">B</span></p>
     <b class="eyebrow grovh">All phases</b>
     <table class="grov"><thead><tr><th>Phase</th><th>C unless with you</th><th>A with</th><th class="num">Flags</th></tr></thead><tbody>${overview}</tbody></table>
     <div class="row grbtns"><button type="button" class="btn small ghost" id="grUndo" ${grUndo.length ? "" : "disabled"}>Undo last change</button><button type="button" class="btn small ghost" id="grReset">Reset all phases to default</button></div>`;

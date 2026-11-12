@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.3.5 — 2026-11-12
+
+- Grading rules read top to bottom in the order a grade is decided: **C** if any requirement isn't with you, any red flag is marked against you, or the trade is something you marked as C; **A** if enough extras are with you, but only B for what you marked; otherwise **B**. Same rules as before, only the layout and labels changed.
+
 ## 1.3.4 — 2026-11-12
 
 - Grading preview: **Phase N / All phases** switch, on the phase you're editing by default.
