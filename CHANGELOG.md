@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.3.10 — 2026-11-12
+
+- **Invest CSV export is readable too**: ticker, phase, market structure and the details per timeframe (12M, 6M, 3M, monthly, weekly), entry, stop, exits in one cell ("2026-05-10: 50% at 420 (3M BOC)"), ROI, R and outcome. Share counts, P&L, exchange rate and account only with **Include amounts**. Import reads it back; without amounts, existing trades keep their exits.
+- **Data tab**: each part explains what it does. Pick Forex or Invest for the CSV regardless of the market you're viewing; files are named by market and date. Delete data sits in its own block at the bottom.
+
 ## 1.3.9 — 2026-11-12
 
 - **Forex CSV export is readable**: plain column names ("Weekly MS", "Daily pattern", "4H entry"…), values as with / against / yes / no, the full analysis per trade, and the setup grade with its reason. Old, always-empty columns are gone. Easy to open in a spreadsheet or give to an AI.

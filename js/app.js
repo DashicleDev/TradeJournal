@@ -90,16 +90,95 @@ const FXCOLS = [
   ["Exit reason", t => t.exitReason, (t, v) => (t.exitReason = v)],
   ["Notes", t => t.notes, (t, v) => (t.notes = v)],
 ];
-function toCSV(list) {
-  list = list.filter(t => !t.demo);
-  if (market !== "stocks")
-    return [FXCOLS.map(c => c[0]).join(","), ...list.map(t => FXCOLS.map(([, get]) => csvQ(get(t))).join(","))].join(
-      "\n"
-    );
-  const pn = id => projName(id) || "";
+// Invest export: the analysis per timeframe, prices and returns; share counts, P&L, exchange rate and account only
+// with "Include amounts". Exits as one readable cell: "2026-05-01: 50% at 12.30 (3M BOC); …"
+const numOrNull = v => (v === "" || v == null ? null : Number(v));
+const exitPart = (t, x) =>
+  Number(t.sShares) > 0 && Number(x.shares) > 0 ? +((x.shares / t.sShares) * 100).toFixed(1) : null;
+const invRoi = t => {
+  if (t.retPct != null) return t.retPct;
+  const xs = (t.sExits || []).filter(x => Number(x.shares) > 0 && Number(x.price) > 0);
+  if (!xs.length || !(t.sEntry > 0) || !(t.sShares > 0)) return "";
+  return +((xs.reduce((a, x) => a + (x.price - t.sEntry) * x.shares, 0) / (t.sEntry * t.sShares)) * 100).toFixed(2);
+};
+const INVCOLS = amounts => [
+  ["ID", t => t.id, (t, v) => (t.id = v)],
+  ["Mode", t => t.mode, (t, v) => (t.mode = v)],
+  ["Project", t => projName(t.project) || ""],
+  ["Status", t => t.status, (t, v) => (t.status = v)],
+  ["Date", t => t.date, (t, v) => (t.date = v)],
+  ["Close date", t => t.closeDate, (t, v) => (t.closeDate = v)],
+  ["Ticker", t => t.ticker || t.pair, (t, v) => (t.ticker = t.pair = v.toUpperCase())],
+  ["Phase", t => t.sPhase, (t, v) => (t.sPhase = v)],
+  ["12M MS", t => wa(t.s12Ms), (t, v) => (t.s12Ms = aw(v))],
+  ["12M pattern", t => (t.s12Ms === "for" ? t.s12bm : ""), (t, v) => (t.s12bm = v)],
+  ["12M back to", t => (t.s12Ms === "against" ? t.s12ret : ""), (t, v) => (t.s12ret = v)],
+  ["6M MS", t => wa(t.s6Ms), (t, v) => (t.s6Ms = aw(v))],
+  ["6M BM", t => (t.sPhase === "A" ? t.s6bm : ""), (t, v) => (t.s6bm = v)],
+  ["6M back to previous MS", t => (t.sPhase === "B" ? t.s6ret : ""), (t, v) => (t.s6ret = v)],
+  ["3M MS", t => wa(t.s3Ms), (t, v) => (t.s3Ms = aw(v))],
+  ["3M BM", t => (t.sPhase === "A" ? yn(!!t.s3bm) : ""), (t, v) => (t.s3bm = v === "yes")],
+  [
+    "3M room",
+    t => (t.sPhase === "A" ? yn(!!t.s3room) : t.sPhase === "B" ? yn(!!t.s3roomB) : ""),
+    (t, v) => (t[t.sPhase === "B" ? "s3roomB" : "s3room"] = v === "yes"),
+  ],
+  ["Monthly MS", t => wa(t.s1Ms), (t, v) => (t.s1Ms = aw(v))],
+  ["Monthly room", t => (t.sPhase === "A" ? yn(!!t.s1room) : ""), (t, v) => (t.s1room = v === "yes")],
+  ["Monthly bullish CC", t => yn(!!t.s1cc), (t, v) => (t.s1cc = v === "yes")],
+  ["Weekly MS", t => wa(t.swMs), (t, v) => (t.swMs = aw(v))],
+  ["Weekly pattern", t => t.swPat, (t, v) => (t.swPat = v)],
+  ["Currency", t => t.sCur, (t, v) => (t.sCur = v)],
+  ["Entry", t => t.sEntry, (t, v) => (t.sEntry = numOrNull(v))],
+  ["Stop", t => t.sStop, (t, v) => (t.sStop = numOrNull(v))],
+  ...(amounts
+    ? [
+        ["Account", t => (accounts().find(a => a.id === t.account) || {}).name || ""],
+        ["Shares", t => t.sShares, (t, v) => (t.sShares = numOrNull(v))],
+        ["Exchange rate", t => t.sFx, (t, v) => (t.sFx = numOrNull(v))],
+      ]
+    : []),
+  [
+    "Exits",
+    t =>
+      (t.sExits || [])
+        .filter(x => x.price || x.date || x.how)
+        .map(x => {
+          const pt = exitPart(t, x),
+            q = amounts && x.shares ? x.shares + " shares" : pt != null ? pt + "%" : "";
+          return `${x.date || "?"}: ${q ? q + " " : ""}at ${x.price ?? "?"}${x.how ? ` (${x.how})` : ""}`;
+        })
+        .join("; "),
+    (t, v) => {
+      // only with share counts can the exits be rebuilt; otherwise an existing trade keeps its exits
+      const xs = v
+        .split(";")
+        .map(e => e.trim().match(/^(\S+): (?:([\d.]+) shares )?at ([\d.?]+)(?: \((.*)\))?$/))
+        .filter(Boolean);
+      if (xs.length && xs.every(m => m[2]))
+        t.sExits = xs.map(m => {
+          const hows = m[4] ? m[4].split(" + ") : [];
+          return {
+            date: m[1] === "?" ? "" : m[1],
+            shares: Number(m[2]),
+            price: numOrNull(m[3] === "?" ? "" : m[3]),
+            hows,
+            how: hows.join(" + "),
+          };
+        });
+    },
+  ],
+  ["ROI %", t => invRoi(t)],
+  ["Result R", t => t.r, (t, v) => (t.r = numOrNull(v))],
+  ...(amounts ? [["P&L", t => t.pnl, (t, v) => (t.pnl = numOrNull(v))]] : []),
+  ["Outcome", t => t.outcome, (t, v) => (t.outcome = v)],
+  ["Notes", t => t.notes, (t, v) => (t.notes = v)],
+];
+function toCSV(list, mk, amounts) {
+  const cols = mk === "stocks" ? INVCOLS(amounts) : FXCOLS;
   return [
-    [...COLS, "projectName"].join(","),
-    ...list.map(t => [...COLS.map(c => csvQ(t[c])), csvQ(pn(t.project))].join(",")),
+    cols.map(c => c[0]).join(","),
+    ...list.filter(t => !t.demo).map(t => cols.map(([, get]) => csvQ(get(t))).join(",")),
   ].join("\n");
 }
 function saveFile(name, data, type) {
@@ -192,11 +271,19 @@ async function restoreBackup(file, msg) {
   msg.textContent = `Restored ${list.length} items and ${imgs.length - fail} screenshots${fail ? ` (${fail} screenshots failed)` : ""}.`;
   toast("Backup restored");
 }
+// the market picked in Settings → Data (defaults to the one you're viewing)
+let csvMarket = null;
 async function exportCSV(btn) {
-  const csv = toCSV(trades()),
+  const mk = csvMarket || market,
+    amounts = mk === "stocks" && !!($("#csvAmounts") || {}).checked,
+    list = docs.filter(d => !d.kind && mktOf(d) === mk),
     msg = (btn.closest(".panel,.setsec") || document).querySelector(".ioMsg");
-  saveFile("trade-journal.csv", csv, "text/csv");
-  msg.textContent = "CSV downloaded.";
+  saveFile(
+    `trade-journal-${mk === "stocks" ? "invest" : "forex"}-${todayISO()}.csv`,
+    toCSV(list, mk, amounts),
+    "text/csv"
+  );
+  msg.textContent = `${list.length} ${mk === "stocks" ? "invest" : "forex"} trades exported.`;
 }
 function parseCSV(s) {
   const rows = [];
@@ -261,10 +348,20 @@ imp.onchange = e => {
     const rows = parseCSV(rd.result),
       head = rows.shift() || [];
     let n = 0;
-    const fx = head.includes("Pair"); // the readable forex format; otherwise the old one with field names
+    // the readable formats (forex: "Pair", invest: "Ticker"); otherwise the old one with field names
+    const fx = head.includes("Pair"),
+      inv = head.includes("Ticker"),
+      icols = INVCOLS(true);
     rows.forEach(row => {
       let t = {};
-      if (fx) {
+      if (inv) {
+        head.forEach((h, i) => {
+          const c = icols.find(x => x[0] === h);
+          if (c && c[2]) c[2](t, row[i] ?? "");
+        });
+        t.market = "stocks";
+        t.dir = "long";
+      } else if (fx) {
         t.weekly = {};
         t.dPros = [];
         head.forEach((h, i) => {
@@ -282,6 +379,7 @@ imp.onchange = e => {
         );
         t.onPlan = t.onPlan === "true";
         t.project = t.project || null;
+        if ((csvMarket || market) === "stocks") t.market = "stocks";
       }
       if (!t.mode) return;
       // an existing trade keeps everything the file doesn't carry (screenshots, account, …)
@@ -290,7 +388,7 @@ imp.onchange = e => {
       saveDoc(t);
       n++;
     });
-    $("#setIo").textContent = `${n} trades imported into ${market === "stocks" ? "Invest" : "Forex"}.`;
+    $("#setIo").textContent = `${n} ${inv ? "invest" : fx ? "forex" : ""} trades imported.`.replace("  ", " ");
   };
   rd.readAsText(f);
   e.target.value = "";

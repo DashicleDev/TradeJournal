@@ -5215,3 +5215,32 @@ nav button .dot {
   flex: 1 1 180px;
   max-width: 320px;
 }
+.datablk {
+  display: grid;
+  gap: 8px;
+  justify-items: start;
+  padding: 14px 0;
+  border-bottom: 1px solid var(--line);
+}
+.datablk:first-child {
+  padding-top: 0;
+}
+.datablk > b {
+  font: 700 14px var(--body);
+}
+.datablk .hint {
+  margin: 0;
+  max-width: 520px;
+}
+.datablk .checkline small {
+  margin-left: 4px;
+}
+.ioMsg:empty {
+  display: none;
+}
+.dangerblk {
+  border-bottom: 0;
+}
+.dangerblk > b {
+  color: var(--bad);
+}

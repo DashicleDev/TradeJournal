@@ -633,7 +633,9 @@ function openSettings() {
   $("#wipeBox").hidden = true;
   $("#wipeOpen").hidden = false;
   $("#setIo").textContent = "";
-  $("#csvMk").textContent = (market === "stocks" ? "Invest" : "Forex") + " trades only";
+  csvMarket = market;
+  setRadio("csvmk", csvMarket);
+  $("#csvAmtRow").hidden = csvMarket !== "stocks";
   const st = getSet();
   setRadio("stheme", st.theme);
   setRadio("saccent", st.accent);
@@ -679,3 +681,13 @@ $("#setForm").addEventListener("change", e => {
   else if (n === "speriod2") saveSetting("periodSt", e.target.value);
 });
 matchMedia("(prefers-color-scheme: dark)").addEventListener("change", applySettings);
+
+seg("seg-csvmk", "csvmk", [
+  ["fx", "Forex"],
+  ["stocks", "Invest"],
+]);
+document.addEventListener("change", e => {
+  if (e.target.name !== "csvmk") return;
+  csvMarket = e.target.value;
+  $("#csvAmtRow").hidden = csvMarket !== "stocks";
+});

@@ -1026,23 +1026,38 @@
                 </section>
                 <section class="setsec" data-setpane="ext" hidden><div id="extGuide"></div></section>
                 <section class="setsec" data-setpane="data" hidden>
-                  <div class="setrow">
-                    <span class="setl">Backup<small>All markets, accounts, settings</small></span>
+                  <div class="datablk">
+                    <b>Backup</b>
+                    <p class="hint">
+                      A full copy of everything: forex and invest trades with their screenshots, projects, accounts and
+                      settings. Keep one before big changes, or use it to move to another account.
+                    </p>
                     <div class="row" style="gap: 6px">
                       <button type="button" class="btn small" data-backup>Back up everything</button
-                      ><label class="btn small" for="restoreIn">Restore backup</label>
+                      ><label class="btn small ghost" for="restoreIn">Restore backup</label>
                     </div>
                   </div>
-                  <div class="setrow">
-                    <span class="setl">CSV<small id="csvMk">Trades of the market you are viewing</small></span>
+                  <div class="datablk">
+                    <b>Spreadsheet or AI (CSV)</b>
+                    <p class="hint">
+                      One row per trade with readable columns: your analysis per timeframe, the result and, for forex,
+                      the setup grade. Importing updates trades that already exist and keeps their screenshots.
+                    </p>
+                    <div class="segs" id="seg-csvmk"></div>
+                    <label class="checkline" id="csvAmtRow"
+                      ><input type="checkbox" id="csvAmounts" /><span
+                        >Include amounts <small class="hint">shares, P&amp;L, exchange rate, account</small></span
+                      ></label
+                    >
                     <div class="row" style="gap: 6px">
                       <button type="button" class="btn small" data-export>Export CSV</button
-                      ><label class="btn small" for="imp">Import CSV</label>
+                      ><label class="btn small ghost" for="imp">Import CSV</label>
                     </div>
                   </div>
                   <p class="hint ioMsg" id="setIo" style="margin: 0"></p>
-                  <div class="setrow danger">
-                    <span class="setl">Delete data<small>Cannot be undone</small></span>
+                  <div class="datablk dangerblk">
+                    <b>Delete data</b>
+                    <p class="hint">Removes trades for good, on all your devices. Make a backup first.</p>
                     <div>
                       <button type="button" class="btn small dangerb" id="wipeOpen">Delete…</button>
                       <div class="wipebox" id="wipeBox" hidden>
