@@ -5,7 +5,7 @@
  * GitHub Pages serves the same share.html for every link, so this Worker serves
  *   https://<worker>/t/<token>
  * by taking share.html from GitHub Pages and adding preview tags for that one trade
- * (pair, direction and result, plus one line of setup info; no image). People who open the link
+ * (pair, direction and result, plus one line of setup info, the journal logo as a small thumbnail and a result colour). People who open the link
  * get the normal read-only page. Uses only the public anon key, like the app itself.
  */
 const SITE = "https://dashicledev.github.io/TradeJournal/";
@@ -43,7 +43,9 @@ function preview(t) {
         t.concept === "Weekly - 4H" ? "Weekly - 4H" : t.concept ? "Weekly - Daily - 4H" : "",
         fmtD(t.date)
       );
-  return { title, desc };
+  // Discord colours the card's edge: green win, red loss, the journal's accent otherwise
+  const color = oc === "win" ? "#43c088" : oc === "loss" ? "#f06c60" : "#8590ff";
+  return { title, desc, color };
 }
 
 export default {
@@ -61,12 +63,16 @@ export default {
 
     let tags;
     if (trade) {
-      const { title, desc } = preview(trade);
+      const { title, desc, color } = preview(trade);
       tags = `<meta property="og:type" content="article">
 <meta property="og:site_name" content="Trade Journal">
 <meta property="og:title" content="${esc(title)}">
 <meta property="og:description" content="${esc(desc)}">
 <meta property="og:url" content="${esc(url.href)}">
+<meta property="og:image" content="${SITE}icons/icon-192.png">
+<meta property="og:image:width" content="192">
+<meta property="og:image:height" content="192">
+<meta name="theme-color" content="${color}">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="${esc(title)}">
 <meta name="twitter:description" content="${esc(desc)}">
@@ -76,7 +82,9 @@ export default {
 <meta property="og:description" content="This link was turned off or the trade was deleted.">`;
     }
     // <base> makes share.html's css/js load from GitHub Pages; share.js reads the token from /t/<token>.
-    const html = page.replace(/<meta charset[^>]*>/, c => `${c}\n<base href="${SITE}">\n${tags}`);
+    const html = page
+      .replace(/<meta name="theme-color"[^>]*>/, "")
+      .replace(/<meta charset[^>]*>/, c => `${c}\n<base href="${SITE}">\n${tags}`);
     return new Response(html, {
       headers: { "Content-Type": "text/html; charset=utf-8", "Cache-Control": "public, max-age=120" },
     });
