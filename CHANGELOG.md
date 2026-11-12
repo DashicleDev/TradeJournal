@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.3.12 — 2026-11-12
+
+- Copy analysis puts the "Full trade" link right under the title, so WhatsApp (which only previews the first link) shows the trade card instead of the first chart. Discord shows the trade card first.
+
 ## 1.3.11 — 2026-11-12
 
 - **Link previews for shared trades** in WhatsApp, Discord and other apps: the pair and direction with the result ("AUDUSD - Long · Win +2.00R"), one line of setup info (phase, setup, 4H entry), and the date (no image). Share links now go through the share worker; older links keep working.

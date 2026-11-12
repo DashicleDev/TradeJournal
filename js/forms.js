@@ -1489,6 +1489,8 @@ function analysisText(t, link) {
   const parts = [
     // a concept other than Weekly - 4H is a pattern on the daily: the setup is Weekly - Daily - 4H
     head + (t.concept ? "\nConcept: " + (t.concept === "Weekly - 4H" ? "Weekly - 4H" : "Weekly - Daily - 4H") : ""),
+    // the share link first: WhatsApp only previews the first link in a message
+    link ? "Full trade: " + link : "",
     block("Weekly", L.weekly, [
       t.wStruct ? (t.wStruct === "inner" ? "Inner" : "Outer") + " structure" : "",
       t.wPat ? t.wPat + " pattern" + (t.wPatSub ? " (" + t.wPatSub + ")" : "") : "",
@@ -1509,7 +1511,6 @@ function analysisText(t, link) {
     ]),
     block(t.ecTf ? t.ecTf : "1h/2h", L.ltf, []),
     t.notes || "",
-    link ? "Full trade: " + link : "",
   ];
   return parts.filter(Boolean).join("\n\n");
 }
@@ -1557,6 +1558,8 @@ function investText(t, link) {
       .join(" · ") + (ph ? "\nPhase " + ph : "");
   return [
     head,
+    // the share link first: WhatsApp only previews the first link in a message
+    link ? "Full trade: " + link : "",
     block("12M", L.m12, [
       ms(t.s12Ms),
       t.s12Ms === "for" && t.s12bm ? t.s12bm : "",
@@ -1575,7 +1578,6 @@ function investText(t, link) {
     block("Monthly", L.mo, [ms(t.s1Ms), ph === "A" && t.s1room ? "Room" : "", t.s1cc ? "Bullish CC" : ""]),
     block("Weekly", L.wk, [ms(t.swMs), t.swPat || ""]),
     t.notes || "",
-    link ? "Full trade: " + link : "",
   ]
     .filter(Boolean)
     .join("\n\n");
