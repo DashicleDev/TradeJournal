@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.3.20 — 2026-11-13
+
+- **Drill down shows total R** next to the average R on every row (green or red), so you see what a phase, grade or pair actually made, not just its average.
+
 ## 1.3.19 — 2026-11-13
 
 - **Missed trades show in the calendar**: on their day with a hollow dot and a dashed outline, and as "1 missed" in the week and month totals. They still don't count in the day's R, win rate or any stats. The Missed tag in the trade list is easier to spot.

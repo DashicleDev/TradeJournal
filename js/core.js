@@ -42,6 +42,7 @@ const stLbl = h =>
   market !== "stocks"
     ? h
     : h
+        .replace(/Average and total R\b/g, "Average and total ROI")
         .replace(/Average R\b/g, "Average ROI")
         .replace(/Avg R\b/g, "Avg ROI")
         .replace(/Total R\b/g, "Total ROI")

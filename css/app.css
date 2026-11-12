@@ -2386,7 +2386,7 @@ svg text {
 }
 .dbar {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 64px 96px;
+  grid-template-columns: minmax(0, 1fr) 64px 72px 96px;
   gap: 10px;
   align-items: center;
 }
@@ -2406,6 +2406,10 @@ svg text {
   font-size: 13px;
   font-weight: 600;
 }
+.dtot {
+  text-align: right;
+  font-size: 12px;
+}
 .dn2 {
   color: var(--muted);
   font-size: 12px;
@@ -2416,7 +2420,7 @@ svg text {
     grid-template-columns: 1fr;
   }
   .dbar {
-    grid-template-columns: minmax(0, 1fr) 58px;
+    grid-template-columns: minmax(0, 1fr) 58px 62px;
   }
   .dn2 {
     display: none;

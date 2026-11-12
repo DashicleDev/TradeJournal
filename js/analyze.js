@@ -1392,7 +1392,7 @@ function renderResults() {
   $("#results").innerHTML =
     stLbl(`${openN ? `<p class="hint" style="margin:0">Includes ${openN} open trade${openN > 1 ? "s" : ""} with the R realised so far from partial exits.</p>` : ""}${top}
   ${match}
-  <div class="panel"><div class="row spread"><div><span class="eyebrow">Drill down</span><h2>Average R by ${esc(SPLITS[split][0].toLowerCase())}</h2></div>
+  <div class="panel"><div class="row spread"><div><span class="eyebrow">Drill down</span><h2>Average and total R by ${esc(SPLITS[split][0].toLowerCase())}</h2></div>
     <label class="f" style="min-width:min(100%,220px)"><span>Split by</span><select id="splitSel">${SPLITGROUPS.map(([g, ks]) => `<optgroup label="${g}">${ks.map(k => `<option value="${k}" ${k === split ? "selected" : ""}>${SPLITS[k][0]}</option>`).join("")}</optgroup>`).join("")}</select></label></div>
     ${
       N > 1
@@ -1401,7 +1401,7 @@ function renderResults() {
             .join("")}</div>`
         : ""
     }
-    ${rows.length ? `<div class="drill">${rows.map(r => `<div class="drow2"><span class="dk">${esc(r.k)}</span><div class="dbars">${r.st.map((x, i) => `<div class="dbar" data-tip="${esc(`${setNames(sets)[i]} · ${r.k}: ${x.n} trades · ${fmtP(x.wr)} wins · avg ${fmtR(x.avg)}`)}"><span class="dtrack"><i style="${(x.avg || 0) < 0 ? "right:50%" : "left:50%"};width:${(Math.abs(x.avg || 0) / maxAbs) * 50}%;background:${scol(sets[i])};height:${bh}px"></i></span><span class="dv num">${x.n ? fmtR(x.avg) : "—"}</span><span class="dn2 num">${x.n} tr · ${fmtP(x.wr)}</span></div>`).join("")}</div></div>`).join("")}</div>` : `<p class="hint">No taken trades with a result in these sets.</p>`}</div>
+    ${rows.length ? `<div class="drill">${rows.map(r => `<div class="drow2"><span class="dk">${esc(r.k)}</span><div class="dbars">${r.st.map((x, i) => `<div class="dbar" data-tip="${esc(`${setNames(sets)[i]} · ${r.k}: ${x.n} trades · ${fmtP(x.wr)} wins · avg ${fmtR(x.avg)} · total ${fmtR(x.total)}`)}"><span class="dtrack"><i style="${(x.avg || 0) < 0 ? "right:50%" : "left:50%"};width:${(Math.abs(x.avg || 0) / maxAbs) * 50}%;background:${scol(sets[i])};height:${bh}px"></i></span><span class="dv num" title="Average R">${x.n ? fmtR(x.avg) : "—"}</span><span class="dtot num ${x.total > 0 ? "pos" : x.total < 0 ? "neg" : ""}" title="Total R">${x.n ? fmtR(x.total) : ""}</span><span class="dn2 num">${x.n} tr · ${fmtP(x.wr)}</span></div>`).join("")}</div></div>`).join("")}</div>` : `<p class="hint">No taken trades with a result in these sets.</p>`}</div>
   ${setTradesHTML(lists)}
   ${projectsVsLive(liveTrades())}`);
   $("#splitSel").onchange = e => {
