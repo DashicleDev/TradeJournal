@@ -976,9 +976,6 @@ a[id^="slp-"] {
 }
 .wgrp .fields {
   margin: 0;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-}
-.wgrp.pc .fields {
   grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 @media (max-width: 640px) {

@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.3.18 — 2026-11-13
+
+- Market trend buttons fit on one line and use the normal selection colour (red and green only mean with / against). The weekly fields line up in two columns.
+
 ## 1.3.17 — 2026-11-13
 
 - **Market trend is Bullish, Bearish or Ranging.** You pick the trend as you see it on the chart; the journal still works out with / against from your direction, so grades and the Market trend stats work as before. Ranging replaces the separate Ranging checkbox (old ranging trades show as Ranging). Old trades show as Bullish or Bearish from their direction. Also in the review game and on shared trades.
