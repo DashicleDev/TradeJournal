@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.3.16 — 2026-11-12
+
+- **Weekly cons are just Fib active and Last CC.** The other weekly criteria (FC, IC, High / Low, S&D zone, Proven zone, Engulfing candle) were almost never a con, so they're pros only now, in the trade form, the review game and the grade rules. Older trades keep any con they already have, and you can still remove it.
+
 ## 1.3.15 — 2026-11-12
 
 - **Delete data is much faster**: items are deleted 200 at a time instead of one by one (also when clearing demo data).
