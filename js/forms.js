@@ -764,12 +764,6 @@ const WCRIT = [
 let wcSel = {}; /* key -> "for"|"against" */
 function msRender() {
   setRadio("f2wms", wcSel.ms || "");
-  if (wcSel.trend === "range") {
-    delete wcSel.trend;
-    const r = $("#f2Range");
-    if (r) r.checked = true;
-  }
-  setRadio("f2trend", wcSel.trend || "");
   [
     ["#f2Pros", WCRIT.filter(([k]) => k !== "pattern" && k !== "trend"), wcSel],
     // cons: only criteria that can be against, plus any an older trade already has, so it can still be removed
@@ -833,7 +827,15 @@ document.addEventListener(
   },
   true
 );
-const wcVals = () => ({ ...wcSel });
+// weekly pros/cons, with the trend as with/against from Bullish/Bearish + direction (no direction yet: keep what was saved)
+const wcVals = () => {
+  const w = { ...wcSel },
+    a = radio("f2trend"),
+    d = radio("f2dir");
+  if (!a || a === "range") delete w.trend;
+  else if (d) w.trend = trendRel(a, d);
+  return w;
+};
 const wcScore = w =>
   w ? Object.values(w).reduce((a, v) => a + (v === "for" ? 1 : v === "against" ? -1 : 0), 0) : null;
 /* market structure row: click a checked option again to clear; W is linked to the weekly pros/cons */
@@ -850,12 +852,6 @@ document.querySelectorAll(".mstf input").forEach(i => {
       const v = radio("f2wms");
       if (v) wcSel.ms = v;
       else delete wcSel.ms;
-      msRender();
-    }
-    if (i.name === "f2trend") {
-      const v = radio("f2trend");
-      if (v) wcSel.trend = v;
-      else delete wcSel.trend;
       msRender();
     }
     (i.form || $("#tradeForm2")).dispatchEvent(new Event("change"));
@@ -916,7 +912,6 @@ function f2Summaries() {
   const f = radio("f2fase"),
     w = wcVals();
   delete w.ms;
-  const tr = w.trend;
   delete w.trend;
   delete w.pattern;
   const fo = Object.values(w).filter(v => v === "for").length,
@@ -925,9 +920,8 @@ function f2Summaries() {
     [
       f ? "Phase " + f : "",
       radio("f2wstruct") ? (radio("f2wstruct") === "inner" ? "Inner" : "Outer") + " structure" : "",
-      tr ? (tr === "for" ? "Trend ✓" : "Trend ✗") : "",
+      TREND_LAB[radio("f2trend")] || "",
       radio("f2wms") ? (radio("f2wms") === "for" ? "MS ✓" : "MS ✗") : "",
-      $("#f2Range").checked ? "Ranging" : "",
       $("#f2WPat").value && $("#f2WPat").value !== "?"
         ? $("#f2WPat").value + ($("#f2WPatSub").value ? " · " + $("#f2WPatSub").value : "")
         : "",
@@ -971,7 +965,7 @@ function f2Summaries() {
     {
       const tt = {
           weekly: wcVals(),
-          wRange: $("#f2Range").checked,
+          wRange: radio("f2trend") === "range",
           dMs: radio("f2dms") || "",
           hMs: radio("f2hms") || "",
           dPros: Object.keys(dSel),
@@ -1226,7 +1220,7 @@ function f2Fill(t) {
   setRadio("f2out", t.outcome || (t.r > 0 ? "win" : t.r < 0 ? "loss" : t.r === 0 ? "be" : ""));
   $("#f2R").value = t.r ?? "";
   $("#f2MaxR").value = t.maxR ?? "";
-  $("#f2Range").checked = !!t.wRange || (t.weekly || {}).trend === "range";
+  setRadio("f2trend", trendAbs(t));
   $("#f2Notes").value = t.notes || "";
   $("#f2Exit").value = t.exitReason || "";
   setRadio("f2eval", t.evaluation === "plan" ? "plan" : t.evaluation ? "off" : "");
@@ -1356,7 +1350,7 @@ $("#tradeForm2").onsubmit = e => {
     outcome: radio("f2out"),
     r: radio("f2out") === "open" ? null : num("f2R"),
     maxR: num("f2MaxR"),
-    wRange: $("#f2Range").checked,
+    wRange: radio("f2trend") === "range",
     notes: $("#f2Notes").value.trim(),
     evaluation: radio("f2eval"),
     onPlan: radio("f2eval") ? radio("f2eval") === "plan" : null,
@@ -1463,7 +1457,6 @@ function analysisText(t, link) {
     ok = (l, v) => (v === "for" ? "✓ " : v === "against" ? "✗ " : "") + l;
   const WK = [
     ["ms", "MS"],
-    ["trend", "Trend"],
     ["fibc", "FC"],
     ["fiba", "Fib active"],
     ["ic", "IC"],
@@ -1495,6 +1488,7 @@ function analysisText(t, link) {
     block("Weekly", L.weekly, [
       t.wStruct ? (t.wStruct === "inner" ? "Inner" : "Outer") + " structure" : "",
       t.wPat ? t.wPat + " pattern" + (t.wPatSub ? " (" + t.wPatSub + ")" : "") : "",
+      trendAbs(t) ? "Trend " + TREND_LAB[trendAbs(t)].slice(2) : "",
       ...WK.filter(([k]) => w[k]).map(([k, l]) => ok(l, w[k])),
     ]),
     block("Daily", L.daily, [

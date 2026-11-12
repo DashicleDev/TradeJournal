@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.3.17 — 2026-11-13
+
+- **Market trend is Bullish, Bearish or Ranging.** You pick the trend as you see it on the chart; the journal still works out with / against from your direction, so grades and the Market trend stats work as before. Ranging replaces the separate Ranging checkbox (old ranging trades show as Ranging). Old trades show as Bullish or Bearish from their direction. Also in the review game and on shared trades.
+
 ## 1.3.16 — 2026-11-12
 
 - **Weekly cons are just Fib active and Last CC.** The other weekly criteria (FC, IC, High / Low, S&D zone, Proven zone, Engulfing candle) were almost never a con, so they're pros only now, in the trade form, the review game and the grade rules. Older trades keep any con they already have, and you can still remove it.

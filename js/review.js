@@ -233,15 +233,8 @@ function rvStepHTML(a, step) {
       )
     )}${rvF("Market structure", rvMs("wms", a.wms))}${rvF(
       "Market trend",
-      rvSeg(
-        "wtrend",
-        [
-          ["for", "✓ With"],
-          ["against", "✗ Against"],
-        ],
-        (a.weekly || {}).trend || ""
-      )
-    )}${rvF("Ranging", rvSeg("wRange", [["yes", "↔ Ranging"]], a.wRange ? "yes" : ""))}
+      rvSeg("wtrend", Object.entries(TREND_LAB), trendAbs(a))
+    )}
     ${rvF("Weekly pattern", rvSel("wPat", ["Continuation", "Reversal", "Pattern in Pattern"], a.wPat, "No pattern"))}${a.wPat && a.wPat !== "Reversal" ? rvF('Pattern variant <em class="opt">optional</em>', rvSel("wPatSub", PLAN.concepts[a.wPat] || [], a.wPatSub, "Not set")) : ""}${rvF(
       "Direction",
       rvSeg(
@@ -296,9 +289,7 @@ const rvPick = (o, k) =>
     : k === "channel"
       ? !!o.channel && o.entry4h === "Reversal"
       : k === "trend"
-        ? (o.weekly || {}).trend === "range"
-          ? ""
-          : (o.weekly || {}).trend || ""
+        ? trendAbs(o)
         : k === "wpros" || k === "wcons"
           ? WCRIT.map(c => c[0]).filter(
               x => x !== "trend" && (o.weekly || {})[x] === (k === "wpros" ? "for" : "against")
@@ -310,8 +301,8 @@ function rvLab(k, v) {
   if (k === "wpros" || k === "wcons") return v.length ? v.map(x => WLAB(x)).join(", ") : "—";
   if (v == null || v === "" || (Array.isArray(v) && !v.length)) return "—";
   if (k === "dir") return v === "long" ? "↑ Long" : "↓ Short";
-  if (k === "wms" || k === "dMs" || k === "hMs" || k === "trend")
-    return v === "for" ? "✓ With" : v === "range" ? "↔ Range" : "✗ Against";
+  if (k === "trend") return TREND_LAB[v] || v;
+  if (k === "wms" || k === "dMs" || k === "hMs") return v === "for" ? "✓ With" : "✗ Against";
   if (k === "wStruct") return v === "inner" ? "Inner" : "Outer";
   if (k === "struct") return v === "bos" ? "BoS" : "SoM";
   if (k === "room" || k === "scaleIn" || k === "wRange" || k === "channel") return v ? "Yes" : "No";
@@ -330,7 +321,6 @@ const RV_ROWS = [
   ["wStruct", "Inner / outer"],
   ["wms", "Weekly MS"],
   ["trend", "Market trend"],
-  ["wRange", "Ranging"],
   ["wPat", "Weekly pattern"],
   ["wPatSub", "Pattern variant"],
   ["wpros", "Weekly pros"],
@@ -1314,18 +1304,26 @@ $("#rvBox").addEventListener("click", e => {
     return rvRender();
   }
   if (b.dataset.rk === "wtrend") {
-    const v = b.dataset.rv;
+    const v = trendAbs(a) === b.dataset.rv ? "" : b.dataset.rv,
+      r = trendRel(v, a.dir);
     a.weekly = { ...(a.weekly || {}) };
-    if (a.weekly.trend === v) delete a.weekly.trend;
-    else a.weekly.trend = v;
+    a.wRange = v === "range";
+    if (r) a.weekly.trend = r;
+    else delete a.weekly.trend;
     rvSave();
     return rvRender();
   }
   if (b.dataset.rk) {
     const k = b.dataset.rk,
       v = b.dataset.rv;
+    // a new direction keeps the picked Bullish / Bearish, so with/against flips
+    const tr = k === "dir" && trendAbs(a);
     if (k === "plan" || k === "repl") S[k] = v;
     else a[k] = a[k] === v ? "" : v;
+    if (tr && tr !== "range") {
+      a.weekly = { ...a.weekly };
+      if (a.dir) a.weekly.trend = trendRel(tr, a.dir);
+    }
     rvSave();
     return rvRender();
   }

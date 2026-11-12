@@ -165,7 +165,7 @@
         ${row("Structure", t.wStruct ? (t.wStruct === "inner" ? "Inner" : "Outer") : "")}
         ${row("Pattern", t.wPat ? esc(t.wPat + (t.wPatSub ? " · " + t.wPatSub : "")) : "")}
         ${row("Market structure", ms(w.ms))}
-        ${row("Market trend", ms(w.trend))}
+        ${row("Market trend", TREND_LAB[trendAbs(t)] || "")}
         ${wChips ? `<div class="shr-chips">${wChips}</div>` : ""}
       </section>
       <section class="shr-card"><span class="eyebrow">Daily</span>

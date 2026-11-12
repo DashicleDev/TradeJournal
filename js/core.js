@@ -55,6 +55,14 @@ const stLbl = h =>
         .replace(/ At 1% risk, 1R is about 1% of your account\./g, "");
 const fmtP = v => (v == null || isNaN(v) || !isFinite(v) ? "—" : Math.round(v * 100) + "%");
 // chart links are shown as clickable links, so keep only https ones (never javascript: and the like)
+// market trend is picked as Bullish / Bearish / Ranging; grades and stats keep it as with/against the trade (weekly.trend) + wRange
+const trendAbs = t => {
+  const r = (t.weekly || {}).trend;
+  if (t.wRange || r === "range") return "range";
+  return r && t.dir ? ((r === "for") === (t.dir === "long") ? "bull" : "bear") : "";
+};
+const trendRel = (a, dir) => ((a === "bull" || a === "bear") && dir ? ((a === "bull") === (dir === "long") ? "for" : "against") : "");
+const TREND_LAB = { bull: "↑ Bullish", bear: "↓ Bearish", range: "↔ Ranging" };
 const httpsOnly = u => (/^https:\/\//i.test(u || "") ? u : "");
 const httpsLinks = o => Object.fromEntries(Object.entries(o || {}).filter(([, v]) => httpsOnly(v)));
 const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
