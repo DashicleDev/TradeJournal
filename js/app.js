@@ -347,7 +347,7 @@ imp.onchange = e => {
   rd.onload = () => {
     const rows = parseCSV(rd.result),
       head = rows.shift() || [];
-    let n = 0;
+    const out = new Map(); // id -> trade; one batch save at the end instead of one save and redraw per row
     // the readable formats (forex: "Pair", invest: "Ticker"); otherwise the old one with field names
     const fx = head.includes("Pair"),
       inv = head.includes("Ticker"),
@@ -385,10 +385,12 @@ imp.onchange = e => {
       // an existing trade keeps everything the file doesn't carry (screenshots, account, …)
       const old = t.id && docs.find(d => d.id === t.id && !d.kind);
       t = old ? { ...old, ...t } : { ...t, id: t.id || uid(), created: Date.now() };
-      saveDoc(t);
-      n++;
+      upsertLocal(t); // so a later row with the same id builds on this one, as before
+      out.set(t.id, t);
     });
-    $("#setIo").textContent = `${n} ${inv ? "invest" : fx ? "forex" : ""} trades imported.`.replace("  ", " ");
+    render();
+    dbPutMany([...out.values()]);
+    $("#setIo").textContent = `${out.size} ${inv ? "invest" : fx ? "forex" : ""} trades imported.`.replace("  ", " ");
   };
   rd.readAsText(f);
   e.target.value = "";

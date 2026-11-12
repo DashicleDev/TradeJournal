@@ -140,9 +140,18 @@ async function saveDoc(t) {
   await dbPut(t);
 }
 async function deleteDoc(id) {
+  const gone = docs.find(t => t.id === id);
   docs = docs.filter(t => t.id !== id);
   render();
   await dbDel(id);
+  // its screenshots too, unless another doc still shows them (a duplicated trade shares the files)
+  const left = new Set(shotIds(docs)),
+    files = gone ? shotIds([gone]).filter(f => !left.has(f)) : [];
+  // shortcut: a failed removal (offline) is not retried and leaves the file behind; queue it like deletes if that matters
+  if (files.length && ME) {
+    const { error } = await SB.storage.from("shots").remove(files.map(shotKey));
+    if (error) console.warn(error);
+  }
 }
 async function loadAll() {
   let all = [],
