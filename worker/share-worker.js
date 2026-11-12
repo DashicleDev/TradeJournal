@@ -5,7 +5,7 @@
  * GitHub Pages serves the same share.html for every link, so this Worker serves
  *   https://<worker>/t/<token>
  * by taking share.html from GitHub Pages and adding preview tags for that one trade
- * (pair, direction, result, phase, concept and a chart as the image). People who open the link
+ * (pair, direction and result, one line of setup info, and a chart as the image). People who open the link
  * get the normal read-only page. Uses only the public anon key, like the app itself.
  */
 const SITE = "https://dashicledev.github.io/TradeJournal/";
@@ -27,7 +27,7 @@ const tvImg = u => {
 const H = { apikey: ANON, Authorization: "Bearer " + ANON, "Content-Type": "application/json" };
 
 async function chartImage(t) {
-  for (const k of ["weekly", "daily", "h4", "ltf"]) {
+  for (const k of ["weekly", "daily", "h4", "ltf", "m12", "m6", "m3", "mo", "wk"]) {
     const id = t.shots && t.shots[k];
     if (id) {
       const r = await fetch(`${SUPA}/storage/v1/object/sign/shots/${t.owner}/${id}`, {
@@ -44,53 +44,23 @@ async function chartImage(t) {
   return SITE + "icons/icon-512.png";
 }
 
+// A short card: "AUDUSD - Long · Win +2.00R", then one line of setup info and one of date and mode.
 function preview(t) {
+  const inv = !!t.ticker;
   const oc = t.outcome || (t.r > 0 ? "win" : t.r < 0 ? "loss" : t.r === 0 ? "be" : "");
-  const res = oc ? `${{ win: "Win", loss: "Loss", be: "Break-even" }[oc]} ${fmtR(t.r)}` : "Open";
-  const title = [t.pair || "Trade", t.dir ? (t.dir === "long" ? "Long" : "Short") : "", "·", res]
-    .filter(Boolean)
-    .join(" ");
-  // The analysis first, one line per timeframe (Discord shows the line breaks, WhatsApp the start).
-  const w = t.weekly || {};
-  const mark = v => (v === "for" ? "✓" : v === "against" ? "✗" : "");
-  const WK = [
-    ["ms", "MS"],
-    ["trend", "Trend"],
-    ["fibc", "FC"],
-    ["fiba", "Fib active"],
-    ["ic", "IC"],
-    ["whl", "High/Low"],
-    ["sd", "S&D"],
-    ["pz", "Proven zone"],
-    ["lcc", "Last CC"],
-  ];
-  const DK = { fc: "FC", dcc: "Last CC", sd: "S&D" };
+  const res = oc
+    ? `${{ win: "Win", loss: "Loss", be: "Break-even" }[oc]} ${inv && t.retPct != null ? (t.retPct > 0 ? "+" : "") + Number(t.retPct).toFixed(1) + "%" : fmtR(t.r)}`
+    : "Open";
+  const title = `${t.ticker || t.pair || "Trade"}${inv ? "" : t.dir ? " - " + (t.dir === "long" ? "Long" : "Short") : ""} · ${res}`;
   const line = (...p) => p.filter(Boolean).join(" · ");
-  const desc = [
-    line(
-      t.fase ? "Phase " + t.fase : "",
-      t.wStruct ? (t.wStruct === "inner" ? "Inner" : "Outer") + " structure" : "",
-      t.wPat
-    ),
-    WK.filter(([k]) => w[k]).length
-      ? "Weekly: " +
-        WK.filter(([k]) => w[k])
-          .map(([k, l]) => mark(w[k]) + " " + l)
-          .join("  ")
-      : "",
-    line(
-      t.concept ? "Daily: " + t.concept + (t.sub && t.sub !== "—" ? " (" + t.sub + ")" : "") : "",
-      t.dMs ? mark(t.dMs) + " MS" : "",
-      ...(Array.isArray(t.dPros) ? t.dPros : []).map(k => "✓ " + (DK[k] || k))
-    ),
-    line(
-      t.hMs || t.entry4h ? "4H:" + (t.hMs ? " " + mark(t.hMs) + " MS" : "") : "",
-      t.entry4h ? t.entry4h + (t.ecTf ? " " + t.ecTf.toUpperCase() : "") : ""
-    ),
-    line(t.mode === "backtest" ? "Backtest" : "Live", fmtD(t.date), t.exitReason ? "Exit: " + t.exitReason : ""),
-  ]
-    .filter(Boolean)
-    .join("\n");
+  const info = inv
+    ? line(t.sPhase ? "Phase " + t.sPhase : "", t.swPat ? "Weekly " + t.swPat : "")
+    : line(
+        t.fase ? "Phase " + t.fase : "",
+        t.concept ? (t.concept === "Weekly - 4H" ? "Weekly - 4H" : "Weekly - Daily - 4H · " + t.concept) : "",
+        t.entry4h ? t.entry4h + " entry" : ""
+      );
+  const desc = [info, line(t.mode === "backtest" ? "Backtest" : "Live", fmtD(t.date))].filter(Boolean).join("\n");
   return { title, desc };
 }
 

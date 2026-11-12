@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.3.11 — 2026-11-12
+
+- **Link previews for shared trades** in WhatsApp, Discord and other apps: the pair and direction with the result ("AUDUSD - Long · Win +2.00R"), one line of setup info (phase, setup, 4H entry), the date, and the first chart as the image. Share links now go through the share worker; older links keep working.
+
 ## 1.3.10 — 2026-11-12
 
 - **Invest CSV export is readable too**: ticker, phase, market structure and the details per timeframe (12M, 6M, 3M, monthly, weekly), entry, stop, exits in one cell ("2026-05-10: 50% at 420 (3M BOC)"), ROI, R and outcome. Share counts, P&L, exchange rate and account only with **Include amounts**. Import reads it back; without amounts, existing trades keep their exits.
