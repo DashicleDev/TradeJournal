@@ -270,40 +270,51 @@ const GR_LISTS = {
   extras: { kind: "extra", ph: "Nothing, so never A" },
   capB: { kind: "extra", ph: "Nothing" },
   capC: { kind: "against", ph: "Nothing" },
+  strB: { kind: "extra", ph: "Nothing" },
+  strC: { kind: "against", ph: "Nothing" },
 };
-// the grade limits per 4H entry type ("e:Reversal", …), stored in ent; the inner structure has its own checkbox
-const GR_CAP_GROUPS = [["4H entry", PLAN.entries.map(e => "e:" + e)]];
-const grCapLab = k => k.slice(2);
+// the grade limits: "cap…" lists hold 4H entry types ("e:Reversal", …, stored in ent), "str…" the inner structure (stored in inner)
+const grIsCap = list => /^(cap|str)[BC]$/.test(list);
+const grCapGroups = list =>
+  list.startsWith("str") ? [["Weekly structure", ["inner"]]] : [["4H entry", PLAN.entries.map(e => "e:" + e)]];
+const grCapLab = k => (k === "inner" ? "Inner" : k.slice(2));
 const grCapSel = (P, list) => {
-  const v = list === "capB" ? "b" : "x";
+  const v = list.endsWith("B") ? "b" : "x";
+  if (list.startsWith("str")) return P.inner === v ? ["inner"] : [];
   return PLAN.entries.filter(e => P.ent[e] === v).map(e => "e:" + e);
 };
-// switch one limit on or off in a list ("capB" = at most B, "capC" = C)
+// switch one limit on or off in a list (…B = at most B, …C = C)
 function grCapSet(list, k, on) {
-  grUpd({ ent: { ...GR[grPh].ent, [k.slice(2)]: on ? (list === "capB" ? "b" : "x") : "" } });
+  const v = on ? (list.endsWith("B") ? "b" : "x") : "";
+  if (k === "inner") grUpd({ inner: v, innerB: v === "b" });
+  else grUpd({ ent: { ...GR[grPh].ent, [k.slice(2)]: v } });
 }
-// "the weekly structure is inner" checkbox for C ("x") or at most B ("b")
-const grInner = (P, v) =>
-  `<label class="checkline grinner"><input type="checkbox" name="grinner" value="${v}" ${P.inner === v ? "checked" : ""}> or the weekly structure is inner</label>`;
 // the multi-select from the trade form, for one rule list of the open phase
 function grMsHTML(list) {
   const P = GR[grPh],
     { kind, ph } = GR_LISTS[list],
-    cap = list === "capB" || list === "capC",
+    cap = grIsCap(list),
     lab = cap ? grCapLab : grLab,
     sel = cap ? grCapSel(P, list) : P[list],
     other = cap
-      ? grCapSel(P, list === "capB" ? "capC" : "capB")
+      ? grCapSel(P, list.slice(0, 3) + (list.endsWith("B") ? "C" : "B"))
       : list === "req"
         ? P.extras
         : list === "extras"
           ? P.req
           : [],
-    why = { req: "is an extra", extras: "is required", capB: "gives C", capC: "is at most B" }[list],
+    why = {
+      req: "is an extra",
+      extras: "is required",
+      capB: "gives C",
+      capC: "is at most B",
+      strB: "gives C",
+      strC: "is at most B",
+    }[list],
     open = grMs === list;
   return `<div class="ms grms${open ? " open" : ""}" data-grms="${list}"><button type="button" class="ms-field" aria-haspopup="listbox" aria-expanded="${open}">${sel.length ? sel.map(k => `<span class="chip-sel ${kind}">${esc(lab(k))}<span class="x" data-grx="${k}" aria-label="Remove ${esc(lab(k))}">×</span></span>`).join("") : `<span class="ph">${ph}</span>`}<span class="caret">▾</span></button>
   <ul class="ms-list" role="listbox" aria-multiselectable="true" ${open ? "" : "hidden"}>${(cap
-    ? GR_CAP_GROUPS
+    ? grCapGroups(list)
     : GR_GROUPS
   )
     .map(
@@ -349,7 +360,7 @@ function grRender() {
       <div class="grline"><span>any of these not with you</span>${grMsHTML("req")}</div>
       <div class="grline"><span>any of these marked against you</span>${grMsHTML("flags")}</div>
       <div class="grline"><span>the 4H entry is</span>${grMsHTML("capC")}</div>
-      ${grInner(P, "x")}</div>
+      <div class="grline"><span>the weekly structure is</span>${grMsHTML("strC")}</div></div>
     <div class="grblk"><p class="grhead"><span class="grade gA">A</span> if at least <select id="grMin" aria-label="Extras needed for A">${[
       1, 2, 3, 4,
     ]
@@ -357,7 +368,7 @@ function grRender() {
       .join("")}<option value="0" ${P.min === 0 ? "selected" : ""}>no</option></select> of these are with you</p>
       <div class="grline">${grMsHTML("extras")}</div>
       <div class="grline"><span>but only <span class="grade gB">B</span> if the 4H entry is</span>${grMsHTML("capB")}</div>
-      ${grInner(P, "b")}</div>
+      <div class="grline"><span>or the weekly structure is</span>${grMsHTML("strB")}</div></div>
     <p class="grhead grelse">Otherwise <span class="grade gB">B</span></p>
     <b class="eyebrow grovh">All phases</b>
     <table class="grov"><thead><tr><th>Phase</th><th>C if</th><th>A with</th><th class="num">Flags</th></tr></thead><tbody>${overview}</tbody></table>
@@ -380,7 +391,7 @@ document.addEventListener("click", e => {
     P = GR[grPh],
     x = e.target.closest("[data-grx]"),
     li = e.target.closest("[data-grk]");
-  const cap = list === "capB" || list === "capC";
+  const cap = grIsCap(list);
   if (x) {
     if (cap) grCapSet(list, x.dataset.grx, false);
     else grUpd({ [list]: P[list].filter(k => k !== x.dataset.grx) });
@@ -444,7 +455,6 @@ document.addEventListener("change", e => {
     grF[t.id === "grFrom" ? "from" : "to"] = t.value;
     grRender();
   } else if (t.id === "grMin") grUpd({ min: +t.value });
-  else if (t.name === "grinner") grUpd({ inner: t.checked ? t.value : "", innerB: t.checked && t.value === "b" });
 });
 let setTab = "look";
 function showSetTab(k) {
