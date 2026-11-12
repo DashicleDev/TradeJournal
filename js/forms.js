@@ -1490,7 +1490,7 @@ function analysisText(t, link) {
     // a concept other than Weekly - 4H is a pattern on the daily: the setup is Weekly - Daily - 4H
     head + (t.concept ? "\nConcept: " + (t.concept === "Weekly - 4H" ? "Weekly - 4H" : "Weekly - Daily - 4H") : ""),
     // the share link first: WhatsApp only previews the first link in a message
-    link ? "Full trade: " + link : "",
+    link || "",
     block("Weekly", L.weekly, [
       t.wStruct ? (t.wStruct === "inner" ? "Inner" : "Outer") + " structure" : "",
       t.wPat ? t.wPat + " pattern" + (t.wPatSub ? " (" + t.wPatSub + ")" : "") : "",
@@ -1559,7 +1559,7 @@ function investText(t, link) {
   return [
     head,
     // the share link first: WhatsApp only previews the first link in a message
-    link ? "Full trade: " + link : "",
+    link || "",
     block("12M", L.m12, [
       ms(t.s12Ms),
       t.s12Ms === "for" && t.s12bm ? t.s12bm : "",

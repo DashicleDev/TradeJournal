@@ -2,7 +2,7 @@
 
 ## 1.3.12 — 2026-11-12
 
-- Copy analysis puts the "Full trade" link right under the title, so WhatsApp (which only previews the first link) shows the trade card instead of the first chart. Discord shows the trade card first.
+- Copy analysis puts the trade link (just the link) right under the title, so WhatsApp (which only previews the first link) shows the trade card instead of the first chart. Discord shows the trade card first.
 
 ## 1.3.11 — 2026-11-12
 
