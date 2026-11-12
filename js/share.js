@@ -217,7 +217,8 @@
   shots.forEach(([k, l]) => {
     const el = box.querySelector(`[data-k="${k}"] .shr-img`),
       src = urls[k] || (!(t.shots && t.shots[k]) && tvImg(t.shotLinks && t.shotLinks[k]));
-    const ln = t.shotLinks && t.shotLinks[k];
+    // only https links: anyone can share a trade, and a javascript: link would run on this site
+    const ln = t.shotLinks && /^https:\/\//i.test(t.shotLinks[k] || "") ? t.shotLinks[k] : "";
     el.innerHTML = src
       ? `<a href="${esc(ln && !urls[k] ? ln : src)}" target="_blank" rel="noopener" class="shr-zoom" data-zi="${shots.findIndex(x => x[0] === k)}" title="Click to zoom"><img src="${esc(src)}" alt="${l} chart for ${esc(t.pair || "trade")}"></a>`
       : ln

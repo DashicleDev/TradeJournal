@@ -53,23 +53,29 @@ function setSync(t) {
   $("#sync").textContent = t;
 }
 const row = t => ({ user_id: ME, id: t.id, data: t, updated_at: new Date().toISOString() });
-const PK = "trade-journal-pending-v1";
-const pending = new Set(
-  (() => {
-    try {
-      return JSON.parse(localStorage.getItem(PK) || "[]");
-    } catch {
-      return [];
-    }
-  })()
+const PK = "trade-journal-pending-v1",
+  PKD = "trade-journal-pending-del-v1";
+const lsJSON = (k, def) => {
+  try {
+    return JSON.parse(localStorage.getItem(k)) ?? def;
+  } catch {
+    return def;
+  }
+};
+// unsent changes: id -> when it was changed here (ms). Older versions stored a plain list of ids.
+const pending = new Map(
+  (v => (Array.isArray(v) ? v.map(id => [id, Date.now()]) : Object.entries(v)))(lsJSON(PK, []))
 );
+// unsent deletes, so a trade deleted offline doesn't come back from the server
+const pendingDel = new Set(lsJSON(PKD, []));
 const savePending = () => {
   try {
-    localStorage.setItem(PK, JSON.stringify([...pending]));
+    localStorage.setItem(PK, JSON.stringify(Object.fromEntries(pending)));
+    localStorage.setItem(PKD, JSON.stringify([...pendingDel]));
   } catch {}
 };
 const markPending = (ids, on) => {
-  ids.forEach(id => (on ? pending.add(id) : pending.delete(id)));
+  ids.forEach(id => (on ? pending.set(id, Date.now()) : pending.delete(id)));
   savePending();
 };
 async function dbPut(t) {
@@ -105,11 +111,27 @@ async function dbPutMany(list) {
   setSync("Synced");
 }
 async function dbDel(id) {
+  pendingDel.add(id);
+  markPending([id], false); // an unsent edit must not bring it back
   lsSave();
   if (!ME) return;
   const { error } = await SB.from("docs").delete().eq("user_id", ME).eq("id", id);
-  if (error) console.warn(error);
+  if (!error) {
+    pendingDel.delete(id);
+    savePending();
+  } else {
+    setSync("Delete failed: " + (error.message || error.code || "error"));
+    console.warn(error);
+  }
 }
+// send what was changed or deleted while offline
+async function flushPending() {
+  if (!ME) return;
+  for (const id of [...pendingDel]) await dbDel(id);
+  const list = docs.filter(d => pending.has(d.id));
+  if (list.length) await dbPutMany(list);
+}
+addEventListener("online", () => flushPending());
 async function saveDoc(t) {
   const i = docs.findIndex(x => x.id === t.id);
   if (i >= 0) docs[i] = t;
@@ -127,14 +149,14 @@ async function loadAll() {
     from = 0;
   for (;;) {
     const { data, error } = await SB.from("docs")
-      .select("id,data")
+      .select("id,data,updated_at")
       .range(from, from + 999);
     if (error) throw error;
     all = all.concat(data);
     if (data.length < 1000) break;
     from += 1000;
   }
-  return all.map(r => ({ ...r.data, id: r.id }));
+  return all;
 }
 window.TJF = {
   admin: async () => {
@@ -187,13 +209,22 @@ async function startSession(user) {
   $("#signOut").title = user.email || "";
   setSync("Connecting…");
   try {
-    const server = await loadAll(),
+    const rows = await loadAll(),
       local = docs.slice();
-    const keep = local.filter(l => pending.has(l.id));
-    docs = server.filter(s => !keep.some(k => k.id === s.id)).concat(keep);
+    const at = new Map(rows.map(r => [r.id, Date.parse(r.updated_at) || 0]));
+    // an unsent change here wins only when it's newer than the server copy (another device may have edited it since)
+    const keep = local.filter(l => pending.has(l.id) && (!at.has(l.id) || pending.get(l.id) > at.get(l.id)));
+    markPending(
+      [...pending.keys()].filter(id => !keep.some(k => k.id === id)),
+      false
+    );
+    docs = rows
+      .map(r => ({ ...r.data, id: r.id }))
+      .filter(s => !pendingDel.has(s.id) && !keep.some(k => k.id === s.id))
+      .concat(keep);
     docsReady = true;
     lsSave();
-    if (keep.length) await dbPutMany(keep);
+    await flushPending();
     await refreshShotUrls();
     if (!keep.length) setSync("Synced");
   } catch (e) {
@@ -287,7 +318,7 @@ $("#signOut").onclick = async () => {
   ME = null;
   docs = [];
   try {
-    localStorage.removeItem(LS);
+    [LS, PK, PKD].forEach(k => localStorage.removeItem(k));
   } catch {}
   location.reload();
 };

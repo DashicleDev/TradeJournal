@@ -54,6 +54,9 @@ const stLbl = h =>
         .replace(/>R</g, ">ROI<")
         .replace(/ At 1% risk, 1R is about 1% of your account\./g, "");
 const fmtP = v => (v == null || isNaN(v) || !isFinite(v) ? "—" : Math.round(v * 100) + "%");
+// chart links are shown as clickable links, so keep only https ones (never javascript: and the like)
+const httpsOnly = u => (/^https:\/\//i.test(u || "") ? u : "");
+const httpsLinks = o => Object.fromEntries(Object.entries(o || {}).filter(([, v]) => httpsOnly(v)));
 const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
 /* ---------- small DOM helpers ---------- */
 function seg(id, name, opts) {

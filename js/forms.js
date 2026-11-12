@@ -572,7 +572,7 @@ $("#stockForm").onsubmit = e => {
         hows: exHows(x),
         how: exHows(x).join(" + "),
       })),
-    shotLinks: Object.fromEntries(SLINKS.map(k => [k, $("#sl-" + k).value.trim()]).filter(([, v]) => v)),
+    shotLinks: httpsLinks(Object.fromEntries(SLINKS.map(k => [k, $("#sl-" + k).value.trim()]))),
     created: old ? old.created || Date.now() : Date.now(),
   };
   {
@@ -1367,7 +1367,7 @@ $("#tradeForm2").onsubmit = e => {
     ...f2CheckVals(),
     ecTf: $("#f2Entry").value === "Engulfing Candle" ? radio("f2ectf") : "",
     shots: Object.fromEntries(Object.entries(f2Shots).filter(([, v]) => v && v !== "uploading")),
-    shotLinks: { ...f2Links },
+    shotLinks: httpsLinks(f2Links),
     pair: $("#f2Pair").value.trim().toUpperCase(),
     dir: radio("f2dir"),
     created: Date.now(),
@@ -1781,7 +1781,7 @@ function showVTab(k) {
   document.querySelectorAll('input[name="vtab"]').forEach(i => (i.checked = i.value === k));
   const l = slotLab(viewTrade, k, LSLOTS.find(s => s[0] === k)[1]),
     id = viewTrade.shots && viewTrade.shots[k],
-    ln = viewTrade.shotLinks && viewTrade.shotLinks[k];
+    ln = httpsOnly(viewTrade.shotLinks && viewTrade.shotLinks[k]);
   $("#viewerImg").innerHTML = id
     ? `<a class="vzoom" href="${shotSrc(id)}" target="_blank" rel="noopener" title="Click to zoom"><img src="${shotSrc(id)}" alt="${l} chart for ${esc(viewTrade.pair || "trade")}"></a>`
     : (tvImg(ln)
