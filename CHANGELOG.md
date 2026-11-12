@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.3.9 — 2026-11-12
+
+- **Forex CSV export is readable**: plain column names ("Weekly MS", "Daily pattern", "4H entry"…), values as with / against / yes / no, the full analysis per trade, and the setup grade with its reason. Old, always-empty columns are gone. Easy to open in a spreadsheet or give to an AI.
+- Import CSV reads the new format as well as the old one. Importing a trade that already exists now updates it and keeps what the file doesn't hold (screenshots, account…), instead of replacing it.
+
 ## 1.3.8 — 2026-11-12
 
 - Grading **presets**: save the current rules under a name, load a preset later (Undo brings back what you had), or delete one. Saving under an existing name overwrites it. Presets are stored in your settings, so they sync across devices.

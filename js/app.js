@@ -30,15 +30,76 @@ const COLS = [
   "deviation",
   "notes",
 ];
+const csvQ = v => {
+  v = v == null ? "" : String(v);
+  return /[",\n]/.test(v) ? `"${v.replace(/"/g, '""')}"` : v;
+};
+// Forex export: readable headers and values, the full analysis and the setup grade, so a spreadsheet or an AI can read it
+// without a legend. [header, read from trade, write back on import (omitted = export only)]
+const yn = v => (v === true || v === "ja" ? "yes" : v === false || v === "nee" ? "no" : "");
+const wa = v => (v === "for" ? "with" : v === "against" ? "against" : "");
+const aw = v => (v === "with" ? "for" : v === "against" ? "against" : "");
+const FXCOLS = [
+  ["ID", t => t.id, (t, v) => (t.id = v)],
+  ["Mode", t => t.mode, (t, v) => (t.mode = v)],
+  ["Project", t => projName(t.project) || ""],
+  ["Status", t => t.status, (t, v) => (t.status = v)],
+  ["Date", t => t.date, (t, v) => (t.date = v)],
+  ["Close date", t => t.closeDate, (t, v) => (t.closeDate = v)],
+  ["Pair", t => t.pair, (t, v) => (t.pair = v)],
+  ["Direction", t => t.dir, (t, v) => (t.dir = v)],
+  ["Weekly phase", t => t.fase, (t, v) => (t.fase = v ? Number(v) : null)],
+  ["Weekly structure", t => t.wStruct, (t, v) => (t.wStruct = v)],
+  ["Weekly ranging", t => yn(t.wRange), (t, v) => (t.wRange = v === "yes")],
+  ["Weekly MS", t => wa((t.weekly || {}).ms), (t, v) => ((t.weekly ||= {}).ms = aw(v))],
+  ...WCRIT.map(([k, l]) => ["Weekly " + l, t => wa((t.weekly || {})[k]), (t, v) => ((t.weekly ||= {})[k] = aw(v))]),
+  ["Weekly pattern type", t => t.wPat, (t, v) => (t.wPat = v)],
+  ["Weekly pattern variant", t => t.wPatSub, (t, v) => (t.wPatSub = v)],
+  [
+    "Setup",
+    t => (!t.concept ? "" : t.concept === "Weekly - 4H" ? "Weekly - 4H" : "Weekly - Daily - 4H"),
+    (t, v) => v === "Weekly - 4H" && (t.concept = v),
+  ],
+  ["Daily pattern", t => (t.concept === "Weekly - 4H" ? "" : t.concept), (t, v) => v && (t.concept = v)],
+  ["Pattern variant", t => t.sub, (t, v) => (t.sub = v)],
+  ["Daily MS", t => wa(t.dMs), (t, v) => (t.dMs = aw(v))],
+  ...DCRIT.map(([k, l]) => [
+    "Daily " + l,
+    t => (dProsOf(t).includes(k) ? "yes" : ""),
+    (t, v) => v === "yes" && (t.dPros ||= []).push(k),
+  ]),
+  ["4H entry", t => t.entry4h, (t, v) => (t.entry4h = v)],
+  ["4H MS", t => wa(t.hMs), (t, v) => (t.hMs = aw(v))],
+  ["4H structure", t => t.struct, (t, v) => (t.struct = v)],
+  ["4H channel", t => (t.entry4h === "Reversal" ? yn(!!t.channel) : ""), (t, v) => (t.channel = v === "yes")],
+  ["Room", t => yn(t.room), (t, v) => (t.room = v === "yes" ? "ja" : v === "no" ? "nee" : "")],
+  ["Scale-in", t => yn(!!t.scaleIn), (t, v) => (t.scaleIn = v === "yes")],
+  ["Grade", t => (gradeOf(t) || {}).g || ""],
+  ["Grade reason", t => (gradeOf(t) || {}).why || ""],
+  [
+    "To plan",
+    t => (t.evaluation === "plan" ? "yes" : t.evaluation === "off" ? "no" : ""),
+    (t, v) => {
+      t.evaluation = v === "yes" ? "plan" : v === "no" ? "off" : "";
+      t.onPlan = v ? v === "yes" : null;
+    },
+  ],
+  ["Outcome", t => t.outcome, (t, v) => (t.outcome = v)],
+  ["Result R", t => t.r, (t, v) => (t.r = v === "" ? null : Number(v))],
+  ["Max R", t => t.maxR, (t, v) => (t.maxR = v === "" ? null : Number(v))],
+  ["Exit reason", t => t.exitReason, (t, v) => (t.exitReason = v)],
+  ["Notes", t => t.notes, (t, v) => (t.notes = v)],
+];
 function toCSV(list) {
-  const q = v => {
-    v = v == null ? "" : String(v);
-    return /[",\n]/.test(v) ? `"${v.replace(/"/g, '""')}"` : v;
-  };
+  list = list.filter(t => !t.demo);
+  if (market !== "stocks")
+    return [FXCOLS.map(c => c[0]).join(","), ...list.map(t => FXCOLS.map(([, get]) => csvQ(get(t))).join(","))].join(
+      "\n"
+    );
   const pn = id => projName(id) || "";
   return [
     [...COLS, "projectName"].join(","),
-    ...list.filter(t => !t.demo).map(t => [...COLS.map(c => q(t[c])), q(pn(t.project))].join(",")),
+    ...list.map(t => [...COLS.map(c => csvQ(t[c])), csvQ(pn(t.project))].join(",")),
   ].join("\n");
 }
 function saveFile(name, data, type) {
@@ -200,22 +261,34 @@ imp.onchange = e => {
     const rows = parseCSV(rd.result),
       head = rows.shift() || [];
     let n = 0;
+    const fx = head.includes("Pair"); // the readable forex format; otherwise the old one with field names
     rows.forEach(row => {
-      const t = {};
-      head.forEach((h, i) => {
-        if (COLS.includes(h)) t[h] = row[i];
-      });
-      ["fase", "planEntry", "planSL", "planTP", "slip", "r"].forEach(
-        k => (t[k] = t[k] === "" || t[k] == null ? null : Number(t[k]))
-      );
-      t.onPlan = t.onPlan === "true";
-      t.project = t.project || null;
-      t.id = t.id || uid();
-      t.created = Date.now();
-      if (t.mode) {
-        saveDoc(t);
-        n++;
+      let t = {};
+      if (fx) {
+        t.weekly = {};
+        t.dPros = [];
+        head.forEach((h, i) => {
+          const c = FXCOLS.find(x => x[0] === h);
+          if (c && c[2]) c[2](t, row[i] ?? "");
+        });
+        t.dailyFib = t.dPros.includes("fc") ? "ja" : "nee";
+        Object.keys(t.weekly).forEach(k => !t.weekly[k] && delete t.weekly[k]);
+      } else {
+        head.forEach((h, i) => {
+          if (COLS.includes(h)) t[h] = row[i];
+        });
+        ["fase", "planEntry", "planSL", "planTP", "slip", "r"].forEach(
+          k => (t[k] = t[k] === "" || t[k] == null ? null : Number(t[k]))
+        );
+        t.onPlan = t.onPlan === "true";
+        t.project = t.project || null;
       }
+      if (!t.mode) return;
+      // an existing trade keeps everything the file doesn't carry (screenshots, account, …)
+      const old = t.id && docs.find(d => d.id === t.id && !d.kind);
+      t = old ? { ...old, ...t } : { ...t, id: t.id || uid(), created: Date.now() };
+      saveDoc(t);
+      n++;
     });
     $("#setIo").textContent = `${n} trades imported into ${market === "stocks" ? "Invest" : "Forex"}.`;
   };
