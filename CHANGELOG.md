@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.3.4 — 2026-11-12
+
+- Grading preview: **Phase N / All phases** switch, on the phase you're editing by default.
+- After each rule change the counts show what moved, e.g. "B 12 (+3)". Click a grade to list its trades, newest first, with the grade they came from and why; click a trade to open it without leaving Grading.
+- **Undo last change** button (this session).
+
 ## 1.3.3 — 2026-11-12
 
 - Grading: the inner-structure and 4H-entry buttons are replaced by two pick lists that read like the other rules, **"At most B with"** and **"C with"**, each holding inner structure and/or entry types. The entry types are no longer in the requirements and extras lists, so each lives in one place.

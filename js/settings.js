@@ -197,9 +197,14 @@ $("#sAccent2").innerHTML = ACCENTS2.map(
 ).join("");
 /* ---------- grade rules editor (Grading tab) ---------- */
 let grPh = "2",
-  grF = { plan: "plan", mode: "", from: "", to: "" }; // preview filters
-function grSave(rules) {
+  grF = { plan: "plan", mode: "", from: "", to: "", ph: "open" }, // preview filters; ph "open" = only the phase being edited
+  grPrev = null, // trade id → grade before the last rule change, for the "(+2)" differences
+  grOpen = "", // grade whose trades are listed under the preview
+  grUndo = []; // earlier gradeRules, newest last (this session only)
+function grSave(rules, undo) {
   const cur = docs.find(x => x.id === "settings") || { id: "settings", kind: "settings" };
+  grPrev = new Map(docs.filter(t => !t.kind).map(t => [t.id, tGrade(t)]));
+  if (!undo) grUndo.push(cur.gradeRules);
   saveDoc({ ...cur, gradeRules: rules });
   applySettings();
   grRender();
@@ -216,20 +221,35 @@ function grPreview() {
       (!grF.plan || (grF.plan === "plan") === (t.evaluation === "plan")) &&
       (!grF.mode || (grF.mode === "backtest") === (t.mode === "backtest")) &&
       (!grF.from || (t.date || "") >= grF.from) &&
-      (!grF.to || (t.date || "") <= grF.to)
+      (!grF.to || (t.date || "") <= grF.to) &&
+      (!grF.ph || String(t.fase) === grPh)
   );
   const rows = GRADES.map(g => {
     const L = T.filter(t => tGrade(t) === g),
       tot = L.reduce((a, t) => a + t.r, 0),
-      w = L.filter(t => (t.outcome || (t.r > 0 ? "win" : "")) === "win").length;
-    return `<tr><td><b class="grade g${g}">${g}</b></td><td class="num">${L.length}</td><td class="num ${tot / (L.length || 1) > 0 ? "pos" : tot < 0 ? "neg" : ""}">${L.length ? fmtR(tot / L.length) : "—"}</td><td class="num ${tot > 0 ? "pos" : tot < 0 ? "neg" : ""}">${L.length ? fmtR(tot) : "—"}</td><td class="num">${L.length ? Math.round((w / L.length) * 100) + "%" : "—"}</td></tr>`;
+      w = L.filter(t => (t.outcome || (t.r > 0 ? "win" : "")) === "win").length,
+      d = grPrev ? L.filter(t => grPrev.has(t.id)).length - T.filter(t => grPrev.get(t.id) === g).length : 0,
+      open = grOpen === g;
+    return `<tr class="grgrow${open ? " on" : ""}" data-grlist="${g}" tabindex="0" aria-expanded="${open}"><td><b class="grade g${g}">${g}</b> <span class="caret">${open ? "▾" : "▸"}</span></td><td class="num">${L.length}${d ? ` <span class="grd ${d > 0 ? "up" : "down"}">(${d > 0 ? "+" : "−"}${Math.abs(d)})</span>` : ""}</td><td class="num ${tot / (L.length || 1) > 0 ? "pos" : tot < 0 ? "neg" : ""}">${L.length ? fmtR(tot / L.length) : "—"}</td><td class="num ${tot > 0 ? "pos" : tot < 0 ? "neg" : ""}">${L.length ? fmtR(tot) : "—"}</td><td class="num">${L.length ? Math.round((w / L.length) * 100) + "%" : "—"}</td></tr>${open ? `<tr class="grlist"><td colspan="5">${grList(L)}</td></tr>` : ""}`;
   }).join("");
   const none = T.filter(t => !tGrade(t)).length;
   return `<div class="grprev"><b class="eyebrow" style="margin:0">How your trades grade</b>
-    <div class="grfil"><div class="segs" id="seg-grplan"></div><div class="segs" id="seg-grmode"></div>
+    <div class="grfil"><div class="segs" id="seg-grph"></div><div class="segs" id="seg-grplan"></div><div class="segs" id="seg-grmode"></div>
     <span class="grdates"><input type="date" id="grFrom" aria-label="From" value="${grF.from}"> – <input type="date" id="grTo" aria-label="To" value="${grF.to}"></span></div>
     <table class="grtab"><thead><tr><th>Grade</th><th class="num">Trades</th><th class="num">Avg R</th><th class="num">Total</th><th class="num">Win</th></tr></thead><tbody>${rows}</tbody></table>
-    <p class="hint" style="margin:6px 0 0">${T.length} taken trades${none ? `, ${none} without a phase or analysis (no grade)` : ""}. Changes apply right away.</p></div>`;
+    <p class="hint" style="margin:6px 0 0">${T.length} taken trades${none ? `, ${none} without a phase or analysis (no grade)` : ""}. Changes apply right away${grPrev ? "; (±) is the change from your last edit" : ""}. Click a grade to see its trades.</p></div>`;
+}
+// the trades of one grade, newest first; a trade that changed grade with the last edit shows where it came from
+function grList(L) {
+  if (!L.length) return `<p class="hint" style="margin:0">No trades.</p>`;
+  return `<ul class="grtl">${[...L]
+    .sort((a, b) => (b.date || "").localeCompare(a.date || ""))
+    .map(t => {
+      const was = grPrev && grPrev.get(t.id),
+        now = gradeOf(t);
+      return `<li><button type="button" class="grtr" data-grtrade="${esc(t.id)}"><span>${esc(t.date || "")}</span><b>${esc(t.pair || "")}</b><span>${t.dir === "short" ? "↓" : "↑"}</span><span class="num ${t.r > 0 ? "pos" : t.r < 0 ? "neg" : ""}">${fmtR(t.r)}</span><span class="grwhy">${was && was !== now.g ? `<b class="grade g${was}">${was}</b> → ` : ""}${esc(now.why || "")}</span></button></li>`;
+    })
+    .join("")}</ul>`;
 }
 let grMs = ""; // which list is open: "req" | "flags" | "extras" | "capB" | "capC"
 const GR_LISTS = {
@@ -330,7 +350,12 @@ function grRender() {
     <p class="hint" style="margin:0">Anything else is <span class="grade gB">B</span>.</p>
     <b class="eyebrow grovh">All phases</b>
     <table class="grov"><thead><tr><th>Phase</th><th>C unless with you</th><th>A with</th><th class="num">Flags</th></tr></thead><tbody>${overview}</tbody></table>
-    <button type="button" class="btn small ghost" id="grReset">Reset all phases to default</button>`;
+    <div class="row grbtns"><button type="button" class="btn small ghost" id="grUndo" ${grUndo.length ? "" : "disabled"}>Undo last change</button><button type="button" class="btn small ghost" id="grReset">Reset all phases to default</button></div>`;
+  seg("seg-grph", "grfph", [
+    ["open", "Phase " + grPh],
+    ["", "All phases"],
+  ]);
+  setRadio("grfph", grF.ph);
   seg("seg-grplan", "grplan", [
     ["plan", "On plan"],
     ["off", "Off plan"],
@@ -398,6 +423,20 @@ const grUpd = patch => {
 };
 document.addEventListener("click", e => {
   if (e.target.id === "grReset") grSave(null);
+  else if (e.target.id === "grUndo" && grUndo.length) grSave(grUndo.pop(), true);
+  const tr = e.target.closest && e.target.closest("[data-grtrade]");
+  if (tr) return editTrade(tr.dataset.grtrade);
+  const gl = e.target.closest && e.target.closest("[data-grlist]");
+  if (gl) {
+    grOpen = grOpen === gl.dataset.grlist ? "" : gl.dataset.grlist;
+    grRender();
+  }
+});
+document.addEventListener("keydown", e => {
+  const gl = (e.key === "Enter" || e.key === " ") && e.target.closest && e.target.closest("[data-grlist]");
+  if (!gl) return;
+  e.preventDefault();
+  gl.click();
 });
 document.addEventListener("change", e => {
   const t = e.target;
@@ -405,8 +444,8 @@ document.addEventListener("change", e => {
   if (t.name === "grph") {
     grPh = t.value;
     grRender();
-  } else if (t.name === "grplan" || t.name === "grmode") {
-    grF[t.name.slice(2)] = t.value;
+  } else if (t.name === "grplan" || t.name === "grmode" || t.name === "grfph") {
+    grF[t.name === "grfph" ? "ph" : t.name.slice(2)] = t.value;
     grRender();
   } else if (t.id === "grFrom" || t.id === "grTo") {
     grF[t.id === "grFrom" ? "from" : "to"] = t.value;

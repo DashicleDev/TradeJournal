@@ -1292,7 +1292,7 @@ function editTrade(id) {
     activeProject = projName(t.project) ? t.project : "none";
     btOpen = true;
   }
-  if (tab !== "analyze") show(t.mode === "live" ? "live" : "backtest");
+  if (tab !== "analyze" && tab !== "grading") show(t.mode === "live" ? "live" : "backtest");
   openSheet2(t);
 }
 $("#f2Dup").onclick = () => {
