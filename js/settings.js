@@ -210,6 +210,8 @@ function grSave(rules, undo) {
   grRender();
   render();
 }
+const grSel = (name, v, opts) =>
+  `<select name="${name}" aria-label="Filter">${opts.map(([k, l]) => `<option value="${k}" ${v === k ? "selected" : ""}>${l}</option>`).join("")}</select>`;
 // how the current rules grade your own trades: per grade the count, average R, total R and win rate
 function grPreview() {
   const T = docs.filter(
@@ -233,7 +235,18 @@ function grPreview() {
   }).join("");
   const none = T.filter(t => !tGrade(t)).length;
   return `<div class="grprev"><b class="eyebrow" style="margin:0">How your trades grade</b>
-    <div class="grfil"><div class="segs" id="seg-grph"></div><div class="segs" id="seg-grplan"></div><div class="segs" id="seg-grmode"></div>
+    <div class="grfil">${grSel("grfph", grF.ph, [
+      ["open", "Phase " + grPh],
+      ["", "All phases"],
+    ])}${grSel("grplan", grF.plan, [
+      ["plan", "On plan"],
+      ["off", "Off plan"],
+      ["", "On and off plan"],
+    ])}${grSel("grmode", grF.mode, [
+      ["", "Live and backtest"],
+      ["live", "Live"],
+      ["backtest", "Backtest"],
+    ])}
     <span class="grdates"><input type="date" id="grFrom" aria-label="From" value="${grF.from}"> – <input type="date" id="grTo" aria-label="To" value="${grF.to}"></span></div>
     <table class="grtab"><thead><tr><th>Grade</th><th class="num">Trades</th><th class="num">Avg R</th><th class="num">Total</th><th class="num">Win</th></tr></thead><tbody>${rows}</tbody></table>
     <p class="hint" style="margin:6px 0 0">${T.length} taken trades${none ? `, ${none} without a phase or analysis (no grade)` : ""}. Changes apply right away. Click a grade to see its trades.</p></div>`;
@@ -321,13 +334,13 @@ function grRender() {
         const R = GR[ph];
         return `<tr class="${ph === grPh ? "on" : ""}" data-grgo="${ph}"><td><b>${ph}</b></td><td>${esc(
           [
-            names(R.req, ""),
-            R.inner === "x" ? "outer structure" : "",
-            ...PLAN.entries.filter(e => R.ent[e] === "x").map(e => "no " + e),
+            ...R.req.map(k => "no " + grLab(k)),
+            R.inner === "x" ? "inner structure" : "",
+            ...PLAN.entries.filter(e => R.ent[e] === "x"),
           ]
             .filter(Boolean)
             .join(", ") || "—"
-        )}</td><td>${R.min ? `${R.min} of ${esc(names(R.extras, "—"))}` : "never"}${R.inner === "b" ? " · inner at most B" : ""}${PLAN.entries
+        )}</td><td>${R.min && R.extras.length ? `${R.min} of ${esc(names(R.extras, ""))}` : "never"}${R.inner === "b" ? " · inner at most B" : ""}${PLAN.entries
           .filter(e => R.ent[e] === "b")
           .map(e => ` · ${esc(e)} at most B`)
           .join("")}</td><td class="num">${R.flags.length}</td></tr>`;
@@ -348,25 +361,8 @@ function grRender() {
       <div class="grline"><span>but only <span class="grade gB">B</span> if the trade is</span>${grMsHTML("capB")}</div></div>
     <p class="grhead grelse">Otherwise <span class="grade gB">B</span></p>
     <b class="eyebrow grovh">All phases</b>
-    <table class="grov"><thead><tr><th>Phase</th><th>C unless with you</th><th>A with</th><th class="num">Flags</th></tr></thead><tbody>${overview}</tbody></table>
+    <table class="grov"><thead><tr><th>Phase</th><th>C if</th><th>A with</th><th class="num">Flags</th></tr></thead><tbody>${overview}</tbody></table>
     <div class="row grbtns"><button type="button" class="btn small ghost" id="grUndo" ${grUndo.length ? "" : "disabled"}>Undo last change</button></div>`;
-  seg("seg-grph", "grfph", [
-    ["open", "Phase " + grPh],
-    ["", "All phases"],
-  ]);
-  setRadio("grfph", grF.ph);
-  seg("seg-grplan", "grplan", [
-    ["plan", "On plan"],
-    ["off", "Off plan"],
-    ["", "Both"],
-  ]);
-  seg("seg-grmode", "grmode", [
-    ["live", "Live"],
-    ["backtest", "Backtest"],
-    ["", "Both"],
-  ]);
-  setRadio("grplan", grF.plan);
-  setRadio("grmode", grF.mode);
 }
 document.addEventListener("click", e => {
   const ms = e.target.closest && e.target.closest(".grms");
