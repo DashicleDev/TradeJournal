@@ -22,23 +22,28 @@ const fmtD = d =>
   d ? new Date(d + "T12:00:00Z").toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" }) : "";
 const H = { apikey: ANON, Authorization: "Bearer " + ANON, "Content-Type": "application/json" };
 
-// A short card: "AUDUSD - Long · Win +2.00R", then one line of setup info and one of date and mode.
+// A short card: "AUDUSD - Long · Win +2.00R" (no result while open), one line of setup info and the date.
 function preview(t) {
   const inv = !!t.ticker;
   const oc = t.outcome || (t.r > 0 ? "win" : t.r < 0 ? "loss" : t.r === 0 ? "be" : "");
-  const res = oc
-    ? `${{ win: "Win", loss: "Loss", be: "Break-even" }[oc]} ${inv && t.retPct != null ? (t.retPct > 0 ? "+" : "") + Number(t.retPct).toFixed(1) + "%" : fmtR(t.r)}`
-    : "Open";
-  const title = `${t.ticker || t.pair || "Trade"}${inv ? "" : t.dir ? " - " + (t.dir === "long" ? "Long" : "Short") : ""} · ${res}`;
+  const res =
+    oc && oc !== "open"
+      ? `${{ win: "Win", loss: "Loss", be: "Break-even" }[oc]} ${inv && t.retPct != null ? (t.retPct > 0 ? "+" : "") + Number(t.retPct).toFixed(1) + "%" : fmtR(t.r)}`.trim()
+      : "";
   const line = (...p) => p.filter(Boolean).join(" · ");
+  const title = line(
+    `${t.ticker || t.pair || "Trade"}${inv ? "" : t.dir ? " - " + (t.dir === "long" ? "Long" : "Short") : ""}`,
+    res
+  );
   const info = inv
     ? line(t.sPhase ? "Phase " + t.sPhase : "", t.swPat ? "Weekly " + t.swPat : "")
     : line(
         t.fase ? "Phase " + t.fase : "",
-        t.concept ? (t.concept === "Weekly - 4H" ? "Weekly - 4H" : "Weekly - Daily - 4H · " + t.concept) : "",
+        t.wStruct ? (t.wStruct === "inner" ? "Inner" : "Outer") + " structure" : "",
+        t.concept ? (t.concept === "Weekly - 4H" ? "Weekly - 4H" : "Weekly - Daily - 4H (" + t.concept + ")") : "",
         t.entry4h ? t.entry4h + " entry" : ""
       );
-  const desc = [info, line(t.mode === "backtest" ? "Backtest" : "Live", fmtD(t.date))].filter(Boolean).join("\n");
+  const desc = [info, fmtD(t.date)].filter(Boolean).join("\n");
   return { title, desc };
 }
 
