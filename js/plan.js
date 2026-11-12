@@ -38,22 +38,10 @@ const GR_GROUPS = [
   ["Daily", ["dPat", "dMs", "d:fc", "d:dcc", "d:sd"]],
   ["4H", ["hMs", "chan"]],
 ];
-// criteria a trade can have marked "against" (weekly pattern and the daily pros are only ever "with")
-const GR_CAN_AGAINST = new Set([
-  "ms",
-  "trend",
-  "fibc",
-  "fiba",
-  "ic",
-  "whl",
-  "sd",
-  "pz",
-  "lcc",
-  "ec",
-  "dPat",
-  "dMs",
-  "hMs",
-]);
+// criteria a trade can have marked "against"; the other weekly criteria are pros only (in 222 trades the
+// rest were almost never logged as a con). Also in plan.json, so the extension offers the same cons.
+const GR_AGAINST = ["ms", "trend", "fiba", "lcc", "dPat", "dMs", "hMs"];
+const GR_CAN_AGAINST = new Set(GR_AGAINST);
 // nothing set by default: everyone builds their own rules (empty extras = never A, so all B)
 const GR_DEF = {
   1: { req: [], extras: [], min: 1, flags: [], inner: "", ent: {}, setup: {} },

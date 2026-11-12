@@ -253,7 +253,7 @@ function rvStepHTML(a, step) {
         a.dir
       )
     )}</div>
-    <div class="fields rv2" style="margin-top:14px">${rvMsBox("wp", "Pros", "for", rvWkCrit(), k => a.weekly[k])}${rvMsBox("wc", "Cons", "against", rvWkCrit(), k => a.weekly[k])}</div>`;
+    <div class="fields rv2" style="margin-top:14px">${rvMsBox("wp", "Pros", "for", rvWkCrit(), k => a.weekly[k])}${rvMsBox("wc", "Cons", "against", rvWkCrit().filter(([k]) => GR_CAN_AGAINST.has(k) || a.weekly[k] === "against"), k => a.weekly[k])}</div>`;
   if (step === "Daily")
     return `<div class="fields">${rvF("Trade concept", rvSel("concept", Object.keys(PLAN.concepts), a.concept, "Choose…"))}${
       a.concept !== "Weekly - 4H" && (PLAN.concepts[a.concept] || []).filter(x => x !== "—").length

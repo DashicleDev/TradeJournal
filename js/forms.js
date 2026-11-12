@@ -772,7 +772,8 @@ function msRender() {
   setRadio("f2trend", wcSel.trend || "");
   [
     ["#f2Pros", WCRIT.filter(([k]) => k !== "pattern" && k !== "trend"), wcSel],
-    ["#f2Cons", WCRIT.filter(([k]) => k !== "pattern" && k !== "trend"), wcSel],
+    // cons: only criteria that can be against, plus any an older trade already has, so it can still be removed
+    ["#f2Cons", WCRIT.filter(([k]) => k !== "trend" && (GR_CAN_AGAINST.has(k) || wcSel[k] === "against")), wcSel],
     ["#f2DPros", DCRIT, dSel],
   ].forEach(([id, CR, SEL]) => {
     const box = $(id);
