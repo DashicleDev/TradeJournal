@@ -273,20 +273,29 @@ const GR_LISTS = {
   strB: { kind: "extra", ph: "Nothing" },
   strC: { kind: "against", ph: "Nothing" },
 };
-// the grade limits: "cap…" lists hold 4H entry types ("e:Reversal", …, stored in ent), "str…" the inner structure (stored in inner)
+// the grade limits: "cap…" lists hold 4H entry types ("e:Reversal", …, stored in ent), "str…" the weekly structure and
+// setup type ("inner" stored in inner, "s:outer" / "s:wd4h" / "s:w4h" in setup)
 const grIsCap = list => /^(cap|str)[BC]$/.test(list);
 const grCapGroups = list =>
-  list.startsWith("str") ? [["Weekly structure", ["inner"]]] : [["4H entry", PLAN.entries.map(e => "e:" + e)]];
-const grCapLab = k => (k === "inner" ? "Inner" : k.slice(2));
+  list.startsWith("str")
+    ? [
+        ["Weekly structure", ["inner", "s:outer"]],
+        ["Setup", ["s:wd4h", "s:w4h"]],
+      ]
+    : [["4H entry", PLAN.entries.map(e => "e:" + e)]];
+const GR_STR_LAB = { inner: "Inner", "s:outer": "Outer", "s:wd4h": "Weekly - Daily - 4H", "s:w4h": "Weekly - 4H" };
+const grCapLab = k => GR_STR_LAB[k] || k.slice(2);
 const grCapSel = (P, list) => {
   const v = list.endsWith("B") ? "b" : "x";
-  if (list.startsWith("str")) return P.inner === v ? ["inner"] : [];
+  if (list.startsWith("str"))
+    return [...(P.inner === v ? ["inner"] : []), ...GR_SETUP.filter(([k]) => P.setup[k] === v).map(([k]) => "s:" + k)];
   return PLAN.entries.filter(e => P.ent[e] === v).map(e => "e:" + e);
 };
 // switch one limit on or off in a list (…B = at most B, …C = C)
 function grCapSet(list, k, on) {
   const v = on ? (list.endsWith("B") ? "b" : "x") : "";
   if (k === "inner") grUpd({ inner: v, innerB: v === "b" });
+  else if (k.startsWith("s:")) grUpd({ setup: { ...GR[grPh].setup, [k.slice(2)]: v } });
   else grUpd({ ent: { ...GR[grPh].ent, [k.slice(2)]: v } });
 }
 // the multi-select from the trade form, for one rule list of the open phase
@@ -323,7 +332,7 @@ function grMsHTML(list) {
         keys
           .filter(k => list !== "flags" || GR_CAN_AGAINST.has(k))
           .map(k => {
-            const l = lab(k).replace(/^(Weekly|Daily|4H) /, ""),
+            const l = cap ? lab(k) : lab(k).replace(/^(Weekly|Daily|4H) /, ""),
               on = sel.includes(k),
               dis = other.includes(k);
             return `<li role="option" aria-selected="${on}" aria-disabled="${dis}" data-grk="${k}" class="${dis ? "dis" : ""}"><span class="box ${kind}">${on ? "✓" : ""}</span>${esc(l[0].toUpperCase() + l.slice(1))}${dis ? `<em>${why}</em>` : ""}</li>`;
@@ -344,11 +353,16 @@ function grRender() {
           [
             ...R.req.map(k => "no " + grLab(k)),
             R.inner === "x" ? "inner structure" : "",
+            ...GR_SETUP.filter(([k]) => R.setup[k] === "x").map(([, l]) => l.charAt(0).toLowerCase() + l.slice(1)),
             ...PLAN.entries.filter(e => R.ent[e] === "x"),
           ]
             .filter(Boolean)
             .join(", ") || "—"
-        )}</td><td>${R.min && R.extras.length ? `${R.min} of ${esc(names(R.extras, ""))}` : "never"}${R.inner === "b" ? " · inner at most B" : ""}${PLAN.entries
+        )}</td><td>${R.min && R.extras.length ? `${R.min} of ${esc(names(R.extras, ""))}` : "never"}${R.inner === "b" ? " · inner at most B" : ""}${GR_SETUP.filter(
+          ([k]) => R.setup[k] === "b"
+        )
+          .map(([, l]) => ` · ${esc(l)} at most B`)
+          .join("")}${PLAN.entries
           .filter(e => R.ent[e] === "b")
           .map(e => ` · ${esc(e)} at most B`)
           .join("")}</td><td class="num">${R.flags.length}</td></tr>`;
@@ -360,7 +374,7 @@ function grRender() {
       <div class="grline"><span>any of these not with you</span>${grMsHTML("req")}</div>
       <div class="grline"><span>any of these marked against you</span>${grMsHTML("flags")}</div>
       <div class="grline"><span>the 4H entry is</span>${grMsHTML("capC")}</div>
-      <div class="grline"><span>the weekly structure is</span>${grMsHTML("strC")}</div></div>
+      <div class="grline"><span>the setup is</span>${grMsHTML("strC")}</div></div>
     <div class="grblk"><p class="grhead"><span class="grade gA">A</span> if at least <select id="grMin" aria-label="Extras needed for A">${[
       1, 2, 3, 4,
     ]
@@ -368,7 +382,7 @@ function grRender() {
       .join("")}<option value="0" ${P.min === 0 ? "selected" : ""}>no</option></select> of these are with you</p>
       <div class="grline">${grMsHTML("extras")}</div>
       <div class="grline"><span>but only <span class="grade gB">B</span> if the 4H entry is</span>${grMsHTML("capB")}</div>
-      <div class="grline"><span>or the weekly structure is</span>${grMsHTML("strB")}</div></div>
+      <div class="grline"><span>or the setup is</span>${grMsHTML("strB")}</div></div>
     <p class="grhead grelse">Otherwise <span class="grade gB">B</span></p>
     <b class="eyebrow grovh">All phases</b>
     <table class="grov"><thead><tr><th>Phase</th><th>C if</th><th>A with</th><th class="num">Flags</th></tr></thead><tbody>${overview}</tbody></table>

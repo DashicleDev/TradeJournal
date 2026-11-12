@@ -104,7 +104,7 @@ Admins open **Admin** from the header to create roles, pick their features and a
 
 ## Setup grades
 
-Grades come from rules per weekly phase (`gradeOf` in `js/plan.js`), which the user edits in the Grading tab and which are stored in the `settings` document as `gradeRules`. For the trade's phase: a missing requirement or a red-flag criterion marked against gives **C** (outside your rules; the reason says which), enough extras give **A**, otherwise **B**. The inner structure and each 4H entry type can also be set per phase to "at most B" or "not valid (C)". The editor shows live how the user's own trades grade under the current rules.
+Grades come from rules per weekly phase (`gradeOf` in `js/plan.js`), which the user edits in the Grading tab and which are stored in the `settings` document as `gradeRules`. For the trade's phase: a missing requirement or a red-flag criterion marked against gives **C** (outside your rules; the reason says which), enough extras give **A**, otherwise **B**. The weekly structure (inner/outer), the setup type (Weekly - Daily - 4H / Weekly - 4H) and each 4H entry type can also be set per phase to "at most B" or "not valid (C)". The editor shows live how the user's own trades grade under the current rules.
 
 ## Share links
 

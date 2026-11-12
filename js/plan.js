@@ -56,12 +56,18 @@ const GR_CAN_AGAINST = new Set([
 ]);
 // nothing set by default: everyone builds their own rules (empty extras = never A, so all B)
 const GR_DEF = {
-  1: { req: [], extras: [], min: 1, flags: [], inner: "", ent: {} },
-  2: { req: [], extras: [], min: 1, flags: [], inner: "", ent: {} },
-  3: { req: [], extras: [], min: 1, flags: [], inner: "", ent: {} },
-  4: { req: [], extras: [], min: 1, flags: [], inner: "", ent: {} },
+  1: { req: [], extras: [], min: 1, flags: [], inner: "", ent: {}, setup: {} },
+  2: { req: [], extras: [], min: 1, flags: [], inner: "", ent: {}, setup: {} },
+  3: { req: [], extras: [], min: 1, flags: [], inner: "", ent: {}, setup: {} },
+  4: { req: [], extras: [], min: 1, flags: [], inner: "", ent: {}, setup: {} },
 };
 const GR_KEYS = new Set(GR_CRIT.map(c => c[0]));
+// grade limits on the setup itself (the inner structure is stored separately as inner)
+const GR_SETUP = [
+  ["outer", "Outer structure", t => t.wStruct === "outer"],
+  ["wd4h", "Weekly - Daily - 4H setup", t => !!t.concept && t.concept !== "Weekly - 4H"],
+  ["w4h", "Weekly - 4H setup", t => t.concept === "Weekly - 4H"],
+];
 const grNorm = r => {
   const out = {};
   for (const ph of ["1", "2", "3", "4"]) {
@@ -79,6 +85,13 @@ const grNorm = r => {
         PLAN.entries.map(e => {
           const v = (x.ent || d.ent || {})[e];
           return [e, v === "b" || v === "x" ? v : ""];
+        })
+      ),
+      // outer structure and setup type, same values as ent
+      setup: Object.fromEntries(
+        GR_SETUP.map(([k]) => {
+          const v = (x.setup || d.setup || {})[k];
+          return [k, v === "b" || v === "x" ? v : ""];
         })
       ),
     };
@@ -116,17 +129,21 @@ function gradeOf(t, rules) {
   const P = (rules || GR)[String(t.fase || "")];
   if (!P) return null;
   if (!Object.keys(t.weekly || {}).length && !t.dMs && !t.hMs && !dProsOf(t).length) return null;
-  if (P.inner === "x" && t.wStruct === "inner") return { g: "C", why: "Inner structure not valid in phase " + t.fase };
-  const cap = (P.ent || {})[t.entry4h] || "";
-  if (cap === "x") return { g: "C", why: t.entry4h + " entry not valid in phase " + t.fase };
+  // the limits this trade hits: [label, "b" | "x"]
+  const lim = [
+    ...(t.wStruct === "inner" && P.inner ? [["Inner structure", P.inner]] : []),
+    ...GR_SETUP.filter(([k, , hit]) => (P.setup || {})[k] && hit(t)).map(([k, l]) => [l, P.setup[k]]),
+    ...((P.ent || {})[t.entry4h] ? [[t.entry4h + " entry", P.ent[t.entry4h]]] : []),
+  ];
+  const notValid = lim.find(([, v]) => v === "x");
+  if (notValid) return { g: "C", why: notValid[0] + " not valid in phase " + t.fase };
   const miss = P.req.filter(k => critV(t, k) !== "for");
   if (miss.length) return { g: "C", why: "Missing: " + miss.map(grLab).join(", ") };
   const ag = P.flags.filter(k => critV(t, k) === "against");
   if (ag.length) return { g: "C", why: "Against: " + ag.map(grLab).join(", ") };
   const ex = P.extras.filter(k => critV(t, k) === "for");
   if (ex.length >= P.min && P.min > 0) {
-    if (P.inner === "b" && t.wStruct === "inner") return { g: "B", why: "Inner structure: at most B" };
-    if (cap === "b") return { g: "B", why: t.entry4h + " entry: at most B" };
+    if (lim.length) return { g: "B", why: lim[0][0] + ": at most B" };
     return { g: "A", why: ex.map(grLab).join(", ") };
   }
   return { g: "B", why: ex.length ? ex.map(grLab).join(", ") : "No extras" };

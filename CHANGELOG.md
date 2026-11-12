@@ -4,7 +4,7 @@
 
 - Grading starts empty for new users: no requirements, red flags or extras, so every trade is B until you set your own rules. Rules you already saved are unchanged.
 - Removed "Reset all phases to default" and the (+/−) counts in the preview.
-- Grading rules: "C if", and the 4H entry lists no longer include the inner structure; it has its own pick list, "the weekly structure is [Inner]", under C and under B.
+- Grading rules: "C if", and the 4H entry lists no longer include the inner structure; they have their own pick list, "the setup is", under C and under B: weekly structure Inner or Outer, and setup Weekly - Daily - 4H or Weekly - 4H. So "outer structure at most B" or "Weekly - 4H setups give C" can now be set per phase.
 - Grading preview filters are three compact dropdowns (phase, plan, live/backtest) next to the dates. The phase overview reads "C if: no Weekly MS, inner structure, …" to match the rules.
 
 ## 1.3.5 — 2026-11-12
