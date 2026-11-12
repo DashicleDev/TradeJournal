@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.3.14 — 2026-11-12
+
+- **Deleting a trade deletes its screenshots** from storage too (also with Delete data). A screenshot that a duplicated trade still uses stays.
+- **CSV import is much faster** for big files: all rows are saved together, with one redraw, instead of one at a time.
+
 ## 1.3.13 — 2026-11-12
 
 - **Safer share links**: chart links on shared trades (and in the app) only open when they are normal `https://` links, so a shared trade can't carry a link that runs code.
