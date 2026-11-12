@@ -1395,13 +1395,13 @@ function renderResults() {
     stLbl(`${openN ? `<p class="hint" style="margin:0">Includes ${openN} open trade${openN > 1 ? "s" : ""} with the R realised so far from partial exits.</p>` : ""}${top}
   ${match}
   <div class="panel"><div class="row spread"><div><span class="eyebrow">Drill down</span><h2>Average and total R by ${esc(SPLITS[split][0].toLowerCase())}</h2></div>
-    <label class="f" style="min-width:min(100%,220px)"><span>Split by</span><select id="splitSel">${SPLITGROUPS.map(([g, ks]) => `<optgroup label="${g}">${ks.map(k => `<option value="${k}" ${k === split ? "selected" : ""}>${SPLITS[k][0]}</option>`).join("")}</optgroup>`).join("")}</select></label></div>
-    <div class="row" style="gap:8px;align-items:center"><span class="hint" style="margin:0">Bars show</span><div class="segs" role="radiogroup" aria-label="Bars show">${[
+    <div class="row" style="gap:12px;align-items:flex-end"><div class="f"><span>Bars show</span><div class="segs" role="radiogroup" aria-label="Bars show">${[
       ["total", "Total R"],
       ["avg", "Average R"],
     ]
       .map(([v, l]) => `<label class="seg"><input type="radio" name="dscale" value="${v}" ${dScale === v ? "checked" : ""}><span>${l}</span></label>`)
       .join("")}</div></div>
+    <label class="f" style="min-width:min(100%,220px)"><span>Split by</span><select id="splitSel">${SPLITGROUPS.map(([g, ks]) => `<optgroup label="${g}">${ks.map(k => `<option value="${k}" ${k === split ? "selected" : ""}>${SPLITS[k][0]}</option>`).join("")}</optgroup>`).join("")}</select></label></div></div>
     ${
       N > 1
         ? `<div class="legend">${setNames(sets)

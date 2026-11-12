@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.3.22 — 2026-11-13
+
+- The drill down's **Bars show** switch sits next to **Split by**.
+
 ## 1.3.21 — 2026-11-13
 
 - **Drill down bars show total R by default**, so a group with only a couple of trades no longer gets the biggest bar. Switch to **Average R** to compare sets of very different sizes (like backtest vs live). The number the bars use is the bold one.
