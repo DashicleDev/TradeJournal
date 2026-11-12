@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.3.13 — 2026-11-12
+
+- **Safer share links**: chart links on shared trades (and in the app) only open when they are normal `https://` links, so a shared trade can't carry a link that runs code.
+- **Offline fixes**: a trade deleted offline no longer comes back; changes made offline are sent as soon as the connection returns, without reopening the app; and an older offline edit no longer overwrites a newer edit from another device.
+
 ## 1.3.12 — 2026-11-12
 
 - Copy analysis puts the trade link (just the link) right under the title, so WhatsApp (which only previews the first link) shows the trade card instead of the first chart. Discord shows the trade card first.
