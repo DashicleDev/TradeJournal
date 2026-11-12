@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.3.15 — 2026-11-12
+
+- **Delete data is much faster**: items are deleted 200 at a time instead of one by one (also when clearing demo data).
+
 ## 1.3.14 — 2026-11-12
 
 - **Deleting a trade deletes its screenshots** from storage too (also with Delete data). A screenshot that a duplicated trade still uses stays.
