@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.3.8 — 2026-11-12
+
+- Grading **presets**: save the current rules under a name, load a preset later (Undo brings back what you had), or delete one. Saving under an existing name overwrites it. Presets are stored in your settings, so they sync across devices.
+
 ## 1.3.7 — 2026-11-12
 
 - Analyze, comparing sets: the chart legend, the drill-down and the tooltips name each set by what makes it different ("Setup grade: A", "Setup grade: B"…) instead of "Set 1, 2, 3". The drill-down has its own legend, and every set keeps its own line in each row, also when it has no trades there.

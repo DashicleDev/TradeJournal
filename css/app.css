@@ -5199,3 +5199,19 @@ nav button .dot {
     min-width: 0;
   }
 }
+.grpre {
+  display: grid;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+.grprow {
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.grprow select,
+.grprow input {
+  width: auto;
+  min-width: 0;
+  flex: 1 1 180px;
+  max-width: 320px;
+}

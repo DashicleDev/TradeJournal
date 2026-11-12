@@ -368,7 +368,16 @@ function grRender() {
           .join("")}</td><td class="num">${R.flags.length}</td></tr>`;
       })
       .join("");
-  box.innerHTML = `${grPreview()}
+  const presets = getSet().gradePresets || [];
+  box.innerHTML = `<div class="grpre"><b class="eyebrow" style="margin:0">Presets</b>
+      <div class="row grprow">${
+        presets.length
+          ? `<select id="grPreSel" aria-label="Preset">${presets.map((x, i) => `<option value="${i}">${esc(x.name)}</option>`).join("")}</select><button type="button" class="btn small" id="grPreLoad">Load</button><button type="button" class="btn small ghost" id="grPreDel">Delete</button>`
+          : `<span class="hint" style="margin:0">None saved yet.</span>`
+      }</div>
+      <div class="row grprow"><input type="text" id="grPreName" maxlength="40" placeholder="Name, e.g. My rules" aria-label="Preset name"><button type="button" class="btn small" id="grPreSave">Save current rules</button></div>
+      <p class="hint" style="margin:0">Loading a preset replaces the current rules; Undo brings them back.</p></div>
+    ${grPreview()}
     <div class="grph"><b>Phase ${grPh}</b><div class="segs">${["1", "2", "3", "4"].map(p => `<label class="seg"><input type="radio" name="grph" value="${p}" ${p === grPh ? "checked" : ""}><span>${p}</span></label>`).join("")}</div></div>
     <div class="grblk"><p class="grhead"><span class="grade gC">C</span> if</p>
       <div class="grline"><span>any of these not with you</span>${grMsHTML("req")}</div>
@@ -440,8 +449,24 @@ const grUpd = patch => {
   r[grPh] = { ...r[grPh], ...patch };
   grSave(r);
 };
+// named copies of the grade rules in the settings document (gradePresets: [{ name, rules }]); a same name overwrites
+function grPresets(list) {
+  const cur = docs.find(x => x.id === "settings") || { id: "settings", kind: "settings" };
+  saveDoc({ ...cur, gradePresets: list });
+  grRender();
+}
 document.addEventListener("click", e => {
   if (e.target.id === "grUndo" && grUndo.length) grSave(grUndo.pop(), true);
+  const presets = getSet().gradePresets || [],
+    sel = $("#grPreSel"),
+    i = sel ? +sel.value : -1;
+  if (e.target.id === "grPreSave") {
+    const name = $("#grPreName").value.trim();
+    if (!name) return $("#grPreName").focus();
+    grPresets([...presets.filter(x => x.name !== name), { name, rules: grNorm(getSet().gradeRules) }]);
+  } else if (e.target.id === "grPreLoad" && presets[i]) grSave(grNorm(presets[i].rules));
+  else if (e.target.id === "grPreDel" && presets[i] && confirm(`Delete the preset "${presets[i].name}"?`))
+    grPresets(presets.filter((_, j) => j !== i));
   const tr = e.target.closest && e.target.closest("[data-grtrade]");
   if (tr) return editTrade(tr.dataset.grtrade);
   const gl = e.target.closest && e.target.closest("[data-grlist]");
