@@ -1254,7 +1254,7 @@ function renderAnalyze() {
   ${allBar()}<div class="setgrid">${sets.map(setControls).join("")}${sets.length < MAXSETS ? `<button type="button" class="proj new addset" data-addset>+ Add set</button>` : ""}</div>
   <div id="results" style="display:grid;gap:20px"></div>`;
   const cd = $("#clearDemo");
-  if (cd) cd.onclick = () => docs.filter(t => t.demo).forEach(t => deleteDoc(t.id));
+  if (cd) cd.onclick = () => deleteDocs(docs.filter(t => t.demo).map(t => t.id));
   renderResults();
 }
 function ovData(list) {

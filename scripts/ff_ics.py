@@ -44,7 +44,6 @@ def esc(s):
     return s.replace("\\", "\\\\").replace(";", r"\;").replace(",", r"\,").replace("\n", r"\n")
 
 def ics(events, name, alarms=("-PT1H", "-PT15M")):
-    now = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
     L = ["BEGIN:VCALENDAR", "VERSION:2.0", "PRODID:-//TradeJournal//Forex news//EN", "CALSCALE:GREGORIAN", "METHOD:PUBLISH",
          f"X-WR-CALNAME:{esc(name)}", "X-PUBLISHED-TTL:PT3H", "REFRESH-INTERVAL;VALUE=DURATION:PT3H"]
     for e in events:

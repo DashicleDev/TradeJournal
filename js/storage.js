@@ -110,24 +110,27 @@ async function dbPutMany(list) {
   }
   setSync("Synced");
 }
-async function dbDel(id) {
-  pendingDel.add(id);
-  markPending([id], false); // an unsent edit must not bring it back
+async function dbDelMany(ids) {
+  ids.forEach(id => pendingDel.add(id));
+  markPending(ids, false); // an unsent edit must not bring it back
   lsSave();
   if (!ME) return;
-  const { error } = await SB.from("docs").delete().eq("user_id", ME).eq("id", id);
-  if (!error) {
-    pendingDel.delete(id);
+  for (let i = 0; i < ids.length; i += 200) {
+    const part = ids.slice(i, i + 200);
+    const { error } = await SB.from("docs").delete().eq("user_id", ME).in("id", part);
+    if (error) {
+      setSync("Delete failed: " + (error.message || error.code || "error"));
+      console.warn(error);
+      return;
+    }
+    part.forEach(id => pendingDel.delete(id));
     savePending();
-  } else {
-    setSync("Delete failed: " + (error.message || error.code || "error"));
-    console.warn(error);
   }
 }
 // send what was changed or deleted while offline
 async function flushPending() {
   if (!ME) return;
-  for (const id of [...pendingDel]) await dbDel(id);
+  if (pendingDel.size) await dbDelMany([...pendingDel]);
   const list = docs.filter(d => pending.has(d.id));
   if (list.length) await dbPutMany(list);
 }
@@ -139,17 +142,19 @@ async function saveDoc(t) {
   render();
   await dbPut(t);
 }
-async function deleteDoc(id) {
-  const gone = docs.find(t => t.id === id);
-  docs = docs.filter(t => t.id !== id);
+const deleteDoc = id => deleteDocs([id]);
+async function deleteDocs(ids) {
+  const del = new Set(ids),
+    gone = docs.filter(t => del.has(t.id));
+  docs = docs.filter(t => !del.has(t.id));
   render();
-  await dbDel(id);
-  // its screenshots too, unless another doc still shows them (a duplicated trade shares the files)
+  await dbDelMany([...del]);
+  // their screenshots too, unless another doc still shows them (a duplicated trade shares the files)
   const left = new Set(shotIds(docs)),
-    files = gone ? shotIds([gone]).filter(f => !left.has(f)) : [];
+    files = shotIds(gone).filter(f => !left.has(f));
   // shortcut: a failed removal (offline) is not retried and leaves the file behind; queue it like deletes if that matters
-  if (files.length && ME) {
-    const { error } = await SB.storage.from("shots").remove(files.map(shotKey));
+  for (let i = 0; i < files.length && ME; i += 200) {
+    const { error } = await SB.storage.from("shots").remove(files.slice(i, i + 200).map(shotKey));
     if (error) console.warn(error);
   }
 }

@@ -542,7 +542,7 @@ $("#wipeGo").onclick = async () => {
   $("#setIo").textContent = `Deleting ${list.length} items…`;
   holdRender = true;
   try {
-    for (const d of list) await deleteDoc(d.id);
+    await deleteDocs(list.map(d => d.id));
   } finally {
     holdRender = false;
   }
