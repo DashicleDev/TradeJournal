@@ -228,16 +228,15 @@ function grPreview() {
     const L = T.filter(t => tGrade(t) === g),
       tot = L.reduce((a, t) => a + t.r, 0),
       w = L.filter(t => (t.outcome || (t.r > 0 ? "win" : "")) === "win").length,
-      d = grPrev ? L.filter(t => grPrev.has(t.id)).length - T.filter(t => grPrev.get(t.id) === g).length : 0,
       open = grOpen === g;
-    return `<tr class="grgrow${open ? " on" : ""}" data-grlist="${g}" tabindex="0" aria-expanded="${open}"><td><b class="grade g${g}">${g}</b> <span class="caret">${open ? "▾" : "▸"}</span></td><td class="num">${L.length}${d ? ` <span class="grd ${d > 0 ? "up" : "down"}">(${d > 0 ? "+" : "−"}${Math.abs(d)})</span>` : ""}</td><td class="num ${tot / (L.length || 1) > 0 ? "pos" : tot < 0 ? "neg" : ""}">${L.length ? fmtR(tot / L.length) : "—"}</td><td class="num ${tot > 0 ? "pos" : tot < 0 ? "neg" : ""}">${L.length ? fmtR(tot) : "—"}</td><td class="num">${L.length ? Math.round((w / L.length) * 100) + "%" : "—"}</td></tr>${open ? `<tr class="grlist"><td colspan="5">${grList(L)}</td></tr>` : ""}`;
+    return `<tr class="grgrow${open ? " on" : ""}" data-grlist="${g}" tabindex="0" aria-expanded="${open}"><td><b class="grade g${g}">${g}</b> <span class="caret">${open ? "▾" : "▸"}</span></td><td class="num">${L.length}</td><td class="num ${tot / (L.length || 1) > 0 ? "pos" : tot < 0 ? "neg" : ""}">${L.length ? fmtR(tot / L.length) : "—"}</td><td class="num ${tot > 0 ? "pos" : tot < 0 ? "neg" : ""}">${L.length ? fmtR(tot) : "—"}</td><td class="num">${L.length ? Math.round((w / L.length) * 100) + "%" : "—"}</td></tr>${open ? `<tr class="grlist"><td colspan="5">${grList(L)}</td></tr>` : ""}`;
   }).join("");
   const none = T.filter(t => !tGrade(t)).length;
   return `<div class="grprev"><b class="eyebrow" style="margin:0">How your trades grade</b>
     <div class="grfil"><div class="segs" id="seg-grph"></div><div class="segs" id="seg-grplan"></div><div class="segs" id="seg-grmode"></div>
     <span class="grdates"><input type="date" id="grFrom" aria-label="From" value="${grF.from}"> – <input type="date" id="grTo" aria-label="To" value="${grF.to}"></span></div>
     <table class="grtab"><thead><tr><th>Grade</th><th class="num">Trades</th><th class="num">Avg R</th><th class="num">Total</th><th class="num">Win</th></tr></thead><tbody>${rows}</tbody></table>
-    <p class="hint" style="margin:6px 0 0">${T.length} taken trades${none ? `, ${none} without a phase or analysis (no grade)` : ""}. Changes apply right away${grPrev ? "; (±) is the change from your last edit" : ""}. Click a grade to see its trades.</p></div>`;
+    <p class="hint" style="margin:6px 0 0">${T.length} taken trades${none ? `, ${none} without a phase or analysis (no grade)` : ""}. Changes apply right away. Click a grade to see its trades.</p></div>`;
 }
 // the trades of one grade, newest first; a trade that changed grade with the last edit shows where it came from
 function grList(L) {
@@ -350,7 +349,7 @@ function grRender() {
     <p class="grhead grelse">Otherwise <span class="grade gB">B</span></p>
     <b class="eyebrow grovh">All phases</b>
     <table class="grov"><thead><tr><th>Phase</th><th>C unless with you</th><th>A with</th><th class="num">Flags</th></tr></thead><tbody>${overview}</tbody></table>
-    <div class="row grbtns"><button type="button" class="btn small ghost" id="grUndo" ${grUndo.length ? "" : "disabled"}>Undo last change</button><button type="button" class="btn small ghost" id="grReset">Reset all phases to default</button></div>`;
+    <div class="row grbtns"><button type="button" class="btn small ghost" id="grUndo" ${grUndo.length ? "" : "disabled"}>Undo last change</button></div>`;
   seg("seg-grph", "grfph", [
     ["open", "Phase " + grPh],
     ["", "All phases"],
@@ -422,8 +421,7 @@ const grUpd = patch => {
   grSave(r);
 };
 document.addEventListener("click", e => {
-  if (e.target.id === "grReset") grSave(null);
-  else if (e.target.id === "grUndo" && grUndo.length) grSave(grUndo.pop(), true);
+  if (e.target.id === "grUndo" && grUndo.length) grSave(grUndo.pop(), true);
   const tr = e.target.closest && e.target.closest("[data-grtrade]");
   if (tr) return editTrade(tr.dataset.grtrade);
   const gl = e.target.closest && e.target.closest("[data-grlist]");

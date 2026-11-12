@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.3.6 — 2026-11-12
+
+- Grading starts empty for new users: no requirements, red flags or extras, so every trade is B until you set your own rules. Rules you already saved are unchanged.
+- Removed "Reset all phases to default" and the (+/−) counts in the preview.
+
 ## 1.3.5 — 2026-11-12
 
 - Grading rules read top to bottom in the order a grade is decided: **C** if any requirement isn't with you, any red flag is marked against you, or the trade is something you marked as C; **A** if enough extras are with you, but only B for what you marked; otherwise **B**. Same rules as before, only the layout and labels changed.

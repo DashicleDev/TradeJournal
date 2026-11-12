@@ -1892,9 +1892,6 @@ textarea.prtext {
 .grtab .num {
   text-align: right;
 }
-#grReset {
-  justify-self: start;
-}
 .chip {
   display: inline-block;
   font: 600 11px var(--body);
@@ -5100,13 +5097,6 @@ nav button .dot {
 .grgrow .caret {
   color: var(--muted);
   font-size: 11px;
-}
-.grd {
-  font-size: 12px;
-  color: var(--muted);
-}
-.grd.up {
-  color: var(--accent);
 }
 .grlist > td {
   padding: 4px 0 8px;

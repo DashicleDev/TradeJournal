@@ -38,7 +38,6 @@ const GR_GROUPS = [
   ["Daily", ["dPat", "dMs", "d:fc", "d:dcc", "d:sd"]],
   ["4H", ["hMs", "chan"]],
 ];
-const GR_FLAGS = ["fibc", "fiba", "ic", "whl", "sd", "pz", "lcc"];
 // criteria a trade can have marked "against" (weekly pattern and the daily pros are only ever "with")
 const GR_CAN_AGAINST = new Set([
   "ms",
@@ -55,11 +54,12 @@ const GR_CAN_AGAINST = new Set([
   "dMs",
   "hMs",
 ]);
+// nothing set by default: everyone builds their own rules (empty extras = never A, so all B)
 const GR_DEF = {
-  1: { req: [], extras: ["fibc", "lcc", "pz", "sd"], min: 1, flags: GR_FLAGS, inner: "", ent: {} },
-  2: { req: ["ms", "fiba"], extras: ["fibc", "lcc", "pz", "sd"], min: 1, flags: GR_FLAGS, inner: "", ent: {} },
-  3: { req: ["pz"], extras: ["fibc", "lcc", "sd", "whl"], min: 1, flags: GR_FLAGS, inner: "x", ent: {} },
-  4: { req: [], extras: ["fibc", "lcc", "pz", "sd"], min: 1, flags: GR_FLAGS, inner: "", ent: {} },
+  1: { req: [], extras: [], min: 1, flags: [], inner: "", ent: {} },
+  2: { req: [], extras: [], min: 1, flags: [], inner: "", ent: {} },
+  3: { req: [], extras: [], min: 1, flags: [], inner: "", ent: {} },
+  4: { req: [], extras: [], min: 1, flags: [], inner: "", ent: {} },
 };
 const GR_KEYS = new Set(GR_CRIT.map(c => c[0]));
 const grNorm = r => {

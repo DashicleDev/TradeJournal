@@ -26,7 +26,7 @@ def literal(name):
     raise ValueError(name)
 
 
-names = ["PLAN", "WCRIT", "DCRIT", "EXITS", "EXOTHER", "GR_CRIT", "GR_FLAGS", "GR_DEF"]
+names = ["PLAN", "WCRIT", "DCRIT", "EXITS", "EXOTHER", "GR_CRIT", "GR_DEF"]
 js = "".join(f"const {n}={literal(n)};" for n in names)
 # grade: the criteria and the default rules per phase, so the extension grades the same way as the journal
 js += "console.log(JSON.stringify({v:1,plan:PLAN,wcrit:WCRIT,dcrit:DCRIT,exits:EXITS,exother:EXOTHER,phases:[1,2,3,4],grade:{crit:GR_CRIT,def:GR_DEF}}))"
