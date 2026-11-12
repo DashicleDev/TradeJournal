@@ -1,6 +1,6 @@
 // Network first, so updates show up right away; the cached copy is only used offline.
 // Keep VERSION in sync with APP_VERSION in js/core.js (scripts/release.sh does both).
-const VERSION = "1.3.21";
+const VERSION = "1.3.22";
 const CACHE = "tj-shell-" + VERSION;
 const JS = ["core", "storage", "plan", "analyze", "review", "settings", "admin", "accounts", "journal", "forms", "app"];
 const SHELL = [
