@@ -5199,3 +5199,7 @@ nav button .dot {
     min-width: 0;
   }
 }
+.grinner {
+  font-size: 13.5px;
+  color: var(--muted);
+}
