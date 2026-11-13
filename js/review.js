@@ -1592,9 +1592,12 @@ function renderLive() {
     days[t.date].n++;
     if (t.r > 0) days[t.date].w++;
   });
-  // missed trades: shown on their day with a hollow dot, never counted in the day's R or colour
-  const missed = {};
-  month.filter(t => t.status === "missed" && t.date).forEach(t => (missed[t.date] = missed[t.date] || []).push(t));
+  // open and missed trades: shown on their day (blue dot / hollow dot), never counted in the day's R or colour
+  const isOpenT = t => t.status === "taken" && (t.r == null || isNaN(t.r)),
+    extra = {};
+  month
+    .filter(t => t.date && (t.status === "missed" || isOpenT(t)))
+    .forEach(t => (extra[t.date] = extra[t.date] || []).push(t));
   const dv = Object.values(days),
     greens = dv.filter(d => d.r > 0).length;
   const best = Object.entries(days).sort((a, b) => b[1].r - a[1].r)[0],
@@ -1613,17 +1616,19 @@ function renderLive() {
   let wkR = 0,
     wkN = 0,
     wkM = 0,
+    wkO = 0,
     col = 0;
   const pushWeek = () => {
-    const mt = wkM ? `<span class="dc">${wkM} missed</span>` : "";
+    const mt = (wkO ? `<span class="dc">${wkO} open</span>` : "") + (wkM ? `<span class="dc">${wkM} missed</span>` : "");
     cells += wkN
       ? `<div class="wk"><span class="dr ${wkR > 0 ? "pos" : wkR < 0 ? "neg" : ""}">${fmtR(wkR)}</span><span class="dc">${wkN} trade${wkN > 1 ? "s" : ""}</span>${mt}</div>`
-      : wkM
+      : mt
         ? `<div class="wk">${mt}</div>`
         : `<div class="wk empty"></div>`;
     wkR = 0;
     wkN = 0;
     wkM = 0;
+    wkO = 0;
     col = 0;
   };
   for (let i = 0; i < off; i++) {
@@ -1633,16 +1638,22 @@ function renderLive() {
   for (let d = 1; d <= dim; d++) {
     const ds = `${calMonth}-${String(d).padStart(2, "0")}`,
       a = days[ds],
-      ms = missed[ds] || [],
+      ms = extra[ds] || [],
+      nOpen = ms.filter(isOpenT).length,
+      nMiss = ms.length - nOpen,
       we = col >= 5;
     const mchips = ms
       .slice(0, 3)
-      .map(t => `<span class="dp miss" title="Missed${t.r != null ? " · " + fmtR(t.r) : ""}"><i></i><span>${esc(t.pair || "?")}</span></span>`)
+      .map(t =>
+        isOpenT(t)
+          ? `<span class="dp open" title="Open"><i></i><span>${esc(t.pair || "?")}</span></span>`
+          : `<span class="dp miss" title="Missed${t.r != null ? " · " + fmtR(t.r) : ""}"><i></i><span>${esc(t.pair || "?")}</span></span>`
+      )
       .join("");
     const tint = a
       ? `background:color-mix(in srgb,var(${a.r > 0 ? "--good" : a.r < 0 ? "--bad" : "--be"}) ${a.r ? Math.round(10 + (Math.abs(a.r) / maxAbs) * 28) : 22}%,var(--surface))`
       : "";
-    cells += `<button type="button" class="day ${we ? "we" : ""} ${we && !a && !ms.length ? "off" : ""} ${ds === today ? "today" : ""} ${ms.length ? "hasmiss" : ""}" data-day="${ds}" aria-pressed="${selDay === ds}" style="${tint}" aria-label="${d} ${MONTHS[m - 1]}${a ? `, ${fmtR(a.r)}, ${a.n} trades` : ", no trades"}${ms.length ? `, ${ms.length} missed` : ""}"><span class="dn">${d}</span>${
+    cells += `<button type="button" class="day ${we ? "we" : ""} ${we && !a && !ms.length ? "off" : ""} ${ds === today ? "today" : ""} ${nMiss ? "hasmiss" : ""} ${nOpen ? "hasopen" : ""}" data-day="${ds}" aria-pressed="${selDay === ds}" style="${tint}" aria-label="${d} ${MONTHS[m - 1]}${a ? `, ${fmtR(a.r)}, ${a.n} trades` : ", no trades"}${nOpen ? `, ${nOpen} open` : ""}${nMiss ? `, ${nMiss} missed` : ""}"><span class="dn">${d}</span>${
       a
         ? `<span class="dr ${a.r > 0 ? "pos" : a.r < 0 ? "neg" : ""}">${fmtR(a.r)}</span><span class="dpairs">${a.tr
             .slice(0, 3)
@@ -1652,14 +1663,15 @@ function renderLive() {
             )
             .join("")}${a.tr.length > 3 ? `<span class="dp more">+${a.tr.length - 3}</span>` : ""}${mchips}</span>`
         : ms.length
-          ? `<span class="dr dmiss">Missed</span><span class="dpairs">${mchips}${ms.length > 3 ? `<span class="dp more">+${ms.length - 3}</span>` : ""}</span>`
+          ? `<span class="dr dmiss${nOpen ? " dopen" : ""}">${nOpen ? "Open" : "Missed"}</span><span class="dpairs">${mchips}${ms.length > 3 ? `<span class="dp more">+${ms.length - 3}</span>` : ""}</span>`
           : ""
     }</button>`;
     if (a) {
       wkR += a.r;
       wkN += a.n;
     }
-    wkM += ms.length;
+    wkM += nMiss;
+    wkO += nOpen;
     col++;
     if (col === 7) pushWeek();
   }
@@ -1736,8 +1748,9 @@ function renderLive() {
         const mt = taken(month),
           n = mt.length,
           nm = month.filter(t => t.status === "missed").length,
-          mtx = nm ? ` · ${nm} missed` : "";
-        if (!n) return nm ? `No trades taken${mtx}` : "No trades this month";
+          no = month.filter(isOpenT).length,
+          mtx = (no ? ` · ${no} open` : "") + (nm ? ` · ${nm} missed` : "");
+        if (!n) return mtx ? `No closed trades${mtx}` : "No trades this month";
         const tr = mt.reduce((a, t) => a + (t.r || 0), 0),
           w = mt.filter(t => t.r > 0).length,
           l = mt.filter(t => t.r < 0).length;
