@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.3.32 — 2026-11-13
+
+- Replay ↗ at the close date now shows the whole close day (it jumped to the start of that day, so the exit wasn't visible yet).
+
 ## 1.3.31 — 2026-11-13
 
 - Replay ↗ starts bar replay at the trade's **close date** when it has one, otherwise at its open date.

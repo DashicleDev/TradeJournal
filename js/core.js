@@ -69,7 +69,10 @@ const tvReplayUrl = t => {
   const p = String((t && t.pair) || "")
     .replace(/[^A-Za-z0-9]/g, "")
     .toUpperCase();
-  const day = /^\d{4}-\d{2}-\d{2}$/.test(t.closeDate || "") ? t.closeDate : t.date; // the close date when there is one
+  // replay jumps to 00:00 UTC of the date: the close date jumps to the day after, so the whole close day shows;
+  // the open date stays at its start, so the entry isn't shown yet
+  const close = /^\d{4}-\d{2}-\d{2}$/.test(t.closeDate || "") ? new Date(Date.parse(t.closeDate + "T00:00:00Z") + 864e5) : null,
+    day = close ? close.toISOString().slice(0, 10) : t.date;
   return p && day ? `https://www.tradingview.com/chart/?symbol=OANDA:${p}&interval=240#tj-replay=${day}` : "";
 };
 const tvReplayBtn = t =>
