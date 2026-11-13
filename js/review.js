@@ -942,7 +942,7 @@ function rvGameRender() {
     box.innerHTML = `${shown ? rvResultHTML(shown) : ""}
       ${L.length ? `<div class="panel"><span class="eyebrow">Ongoing</span><h2>Your review sessions</h2><div class="rvlist">${L.map(x => `<div class="rvsess"><div><b>${esc(x.name || "Review session")}</b>${rvSessInfo(x)}</div><div class="rvbar"><i style="width:${Math.round((x.i / x.queue.length) * 100)}%"></i></div><div class="row" style="gap:6px"><button type="button" class="btn small ghost" data-rvdel="${x.id}">Delete</button><button type="button" class="btn small primary" data-rvres="${x.id}">Resume</button></div></div>`).join("")}</div></div>` : ""}
       <div class="panel rvsetup"><span class="eyebrow">New session</span><h2>${o.open === "form" ? "Go through trades" : "Re-analyse old trades" + (o.open ? "" : " blind")}</h2>
-      <p class="hint">${o.open === "form" ? "Opens each matching trade in the trade form, oldest first. Save goes to the next trade, Skip leaves it as it is." : o.open ? "You see the weekly, daily and 4H chart one by one with the pair and the analysis you filled in back then, and correct what you'd judge differently now. At the end it shows what you changed." : "You see the weekly, daily and 4H chart one by one, without pair or result, and fill in your analysis. At the end it shows what you filled in back then."}</p>
+      <p class="hint">${o.open === "form" ? "Opens each matching trade in the trade form, in random order. Save goes to the next trade, Skip leaves it as it is." : o.open ? "You see the weekly, daily and 4H chart one by one with the pair and the analysis you filled in back then, and correct what you'd judge differently now. At the end it shows what you changed." : "You see the weekly, daily and 4H chart one by one, without pair or result, and fill in your analysis. At the end it shows what you filled in back then."}</p>
       <div class="fields" style="margin-bottom:12px">
       ${rvF(
         "Mode",
@@ -1135,9 +1135,11 @@ $("#rvBox").addEventListener("click", e => {
     return;
   }
   if (b.id === "rvStart" && rvOpts.open === "form") {
-    const ids = rvPool(rvOpts)
-      .sort((a, b) => (a.date || "").localeCompare(b.date || ""))
-      .map(t => t.id);
+    const ids = rvPool(rvOpts).map(t => t.id);
+    for (let i = ids.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [ids[i], ids[j]] = [ids[j], ids[i]];
+    }
     const R = rvRange(rvOpts),
       who =
         rvOpts.mode === "live"

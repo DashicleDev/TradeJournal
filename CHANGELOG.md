@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.3.42 — 2026-11-13
+
+- **Trade forms walk-through is in random order** (before: oldest first), like the game.
+
 ## 1.3.41 — 2026-11-13
 
 - **Fix: the journal didn't stay locked while the Replay window was open.** TradingView cuts the link to a window the journal opens, so the journal couldn't tell it was still open. The extension (1.4.28) now tells the journal when the window closes; the Unlock button stays as a fallback. Each Replay opens a new window instead of reusing one.
