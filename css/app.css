@@ -140,7 +140,7 @@ header {
   margin-top: env(safe-area-inset-top, 0px);
   z-index: 5;
   background: var(--paper);
-  padding-block: 18px 0;
+  padding-block: 20px 0;
   border-bottom: 1px solid var(--line);
 }
 .brand {
@@ -151,14 +151,14 @@ header {
 }
 .segs.mkt {
   gap: 2px;
-  padding: 3px;
+  padding: 4px;
   border: 1px solid var(--line);
-  border-radius: 9px;
+  border-radius: 8px;
   background: var(--surface);
 }
 .segs.mkt label.seg span {
   border: 0;
-  padding: 5px 12px;
+  padding: 4px 12px;
   font-size: 13px;
   font-weight: 600;
   background: none;
@@ -170,7 +170,7 @@ header {
 .brand h1 {
   font-family: var(--display);
   font-stretch: 78%;
-  font-weight: 800;
+  font-weight: 600;
   font-size: 28px;
   letter-spacing: -0.01em;
   margin: 0;
@@ -259,13 +259,13 @@ main {
   background: var(--surface);
   border: 1px solid var(--line);
   border-radius: 10px;
-  padding: 18px 20px;
+  padding: 20px 20px;
   min-width: 0;
 }
 .panel h2 {
   font-family: var(--display);
   font-stretch: 85%;
-  font-weight: 700;
+  font-weight: 600;
   font-size: 18px;
   margin: 0 0 4px;
   text-wrap: balance;
@@ -273,13 +273,11 @@ main {
 .hint {
   color: var(--muted);
   font-size: 13px;
-  margin: 0 0 14px;
+  margin: 0 0 16px;
   max-width: 70ch;
 }
 .eyebrow {
-  font-size: 11px;
-  text-transform: uppercase;
-  letter-spacing: 0.09em;
+  font-size: 12px;
   color: var(--muted);
   font-weight: 600;
 }
@@ -308,9 +306,7 @@ td {
   white-space: nowrap;
 }
 th {
-  font-size: 11px;
-  text-transform: uppercase;
-  letter-spacing: 0.07em;
+  font-size: 12px;
   color: var(--muted);
   font-weight: 600;
 }
@@ -344,11 +340,9 @@ td.acts {
 .restag {
   display: inline-flex;
   align-items: center;
-  gap: 7px;
-  font: 700 11px var(--body);
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-  padding: 3px 8px;
+  gap: 8px;
+  font: 600 12px var(--body);
+  padding: 4px 8px;
   border-radius: 6px;
   white-space: nowrap;
 }
@@ -387,7 +381,7 @@ td.acts {
 }
 .dirar {
   display: inline-flex;
-  margin-left: 5px;
+  margin-left: 4px;
   vertical-align: -2px;
 }
 .dirar.long {
@@ -400,8 +394,8 @@ td.acts {
   display: table;
   font: 600 11px var(--body);
   color: var(--muted);
-  margin-top: 3px;
-  padding: 1px 7px;
+  margin-top: 4px;
+  padding: 1px 8px;
   border: 1px dashed currentColor;
   border-radius: 999px;
 }
@@ -417,12 +411,12 @@ td.acts {
 .chico {
   display: inline-flex;
   align-items: center;
-  gap: 5px;
+  gap: 4px;
   background: none;
   border: 1px solid var(--line, #444);
   color: inherit;
   border-radius: 6px;
-  padding: 3px 7px;
+  padding: 4px 8px;
   font: 600 12px var(--body);
   cursor: pointer;
 }
@@ -439,7 +433,7 @@ td.acts {
 .setsec {
   display: grid;
   gap: 12px;
-  padding: 14px 0;
+  padding: 16px 0;
 }
 .setsec:first-of-type {
   border-top: 0;
@@ -447,14 +441,12 @@ td.acts {
 }
 .setsec h4 {
   margin: 0;
-  font: 700 11px var(--body);
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
+  font: 600 12px var(--body);
   color: var(--muted);
 }
 .setrow.danger {
   border-top: 1px solid var(--line);
-  padding-top: 14px;
+  padding-top: 16px;
   margin-top: 4px;
   align-items: start;
 }
@@ -522,9 +514,9 @@ a.btn {
 .nrem select,
 #nLvl {
   font: 14px var(--body);
-  padding: 7px 9px;
+  padding: 8px 8px;
   border: 1px solid var(--line);
-  border-radius: 7px;
+  border-radius: 8px;
   background: var(--paper);
   color: var(--ink);
   max-width: 100%;
@@ -571,8 +563,8 @@ a.btn {
 .setbody .settabs button {
   border-bottom: 0;
   margin: 0;
-  border-radius: 7px;
-  padding: 9px 12px;
+  border-radius: 8px;
+  padding: 8px 12px;
 }
 .setbody .settabs button[aria-selected="true"] {
   background: color-mix(in srgb, var(--accent) 16%, transparent);
@@ -616,7 +608,7 @@ a.btn {
   gap: 4px;
 }
 .setsec label.seg span {
-  padding: 5px 10px;
+  padding: 4px 10px;
   font-size: 13px;
 }
 .setrow {
@@ -649,17 +641,13 @@ a.btn {
   align-items: center;
 }
 .swh span {
-  font-size: 11px;
+  font-size: 12px;
   color: var(--muted);
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
   text-align: center;
 }
 .swg {
   font: 600 12px var(--body);
   color: var(--muted);
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
   margin-top: 8px;
 }
 .swr span {
@@ -668,7 +656,7 @@ a.btn {
 .swr input {
   width: 100%;
   font: 14px var(--mono);
-  padding: 5px 6px;
+  padding: 4px 6px;
   border: 1px solid var(--line);
   border-radius: 6px;
   background: var(--paper);
@@ -684,7 +672,7 @@ a.btn {
 }
 .gcuts {
   display: flex;
-  gap: 14px;
+  gap: 16px;
   align-items: center;
   flex-wrap: wrap;
 }
@@ -716,7 +704,7 @@ a.btn {
 .gtaken {
   display: flex;
   align-items: center;
-  gap: 5px;
+  gap: 4px;
 }
 .gtaken .grade {
   min-width: 20px;
@@ -746,12 +734,12 @@ a.btn {
   align-items: center;
   padding: 10px 12px;
   border: 1px solid var(--line);
-  border-radius: 9px;
+  border-radius: 8px;
   background: var(--paper);
 }
 .rvbar {
   height: 6px;
-  border-radius: 3px;
+  border-radius: 4px;
   background: var(--soft);
   overflow: hidden;
 }
@@ -822,7 +810,7 @@ a.btn {
   right: 10px;
   bottom: 10px;
   font: 600 12px var(--body);
-  padding: 4px 9px;
+  padding: 4px 8px;
   border-radius: 999px;
   background: rgba(0, 0, 0, 0.6);
   color: #fff;
@@ -944,15 +932,13 @@ a[id^="slp-"] {
 }
 .rvdt th {
   text-align: left;
-  font-size: 11px;
+  font-size: 12px;
   color: var(--muted);
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
   padding: 6px 8px;
   border-bottom: 1px solid var(--line);
 }
 .rvdt td {
-  padding: 7px 8px;
+  padding: 8px 8px;
   border-bottom: 1px solid var(--line);
 }
 .rvdt tr[data-rvopen-t] {
@@ -965,7 +951,7 @@ a[id^="slp-"] {
   margin: 0 0 16px;
 }
 .wgrp {
-  padding: 12px 0 14px;
+  padding: 12px 0 16px;
   border-top: 1px solid var(--line);
 }
 .wgrp:first-of-type {
@@ -974,9 +960,7 @@ a[id^="slp-"] {
 }
 .wgl {
   display: block;
-  font: 600 11px var(--body);
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
+  font: 600 12px var(--body);
   color: var(--muted);
   margin: 0 0 8px;
 }
@@ -1005,7 +989,7 @@ a[id^="slp-"] {
 .taxsum {
   display: grid;
   gap: 6px;
-  margin-top: 14px;
+  margin-top: 16px;
   padding-top: 12px;
   border-top: 1px solid var(--line);
 }
@@ -1035,7 +1019,7 @@ a[id^="slp-"] {
   width: 110px !important;
   text-align: right;
   font: 14px var(--mono);
-  padding: 5px 8px;
+  padding: 4px 8px;
   flex: none;
 }
 .acwh {
@@ -1097,7 +1081,7 @@ a[id^="slp-"] {
 .urow {
   border: 1px solid var(--line);
   border-radius: 12px;
-  padding: 12px 14px;
+  padding: 12px 16px;
   display: grid;
   gap: 10px;
 }
@@ -1143,8 +1127,8 @@ a[id^="slp-"] {
 .extsteps code {
   font: 13px var(--mono);
   background: var(--soft);
-  padding: 1px 5px;
-  border-radius: 5px;
+  padding: 1px 4px;
+  border-radius: 6px;
 }
 .feattab {
   width: 100%;
@@ -1156,9 +1140,7 @@ a[id^="slp-"] {
   overflow-wrap: anywhere;
 }
 .feattab th {
-  font: 600 11px var(--body);
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
+  font: 600 12px var(--body);
   color: var(--muted);
   text-align: left;
   padding: 6px 8px;
@@ -1196,21 +1178,19 @@ a[id^="slp-"] {
   border-radius: 10px;
 }
 .featg {
-  font: 600 11px var(--body);
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
+  font: 600 12px var(--body);
   color: var(--muted);
-  margin: 10px 0 2px;
+  margin: 12px 0 2px;
 }
 .featr {
   display: flex;
   gap: 10px;
   align-items: flex-start;
-  padding: 7px 0;
+  padding: 8px 0;
   cursor: pointer;
 }
 .featr input {
-  margin-top: 3px;
+  margin-top: 4px;
 }
 .featr b {
   display: block;
@@ -1236,7 +1216,7 @@ a[id^="slp-"] {
 }
 .prhead {
   display: grid;
-  gap: 14px;
+  gap: 16px;
 }
 .prsecs {
   display: flex;
@@ -1290,7 +1270,7 @@ textarea.prgrow {
   overflow: hidden;
   min-height: 0;
   font: 15px/1.45 var(--body);
-  padding: 7px 9px;
+  padding: 8px 8px;
   width: 100%;
 }
 textarea.prtext {
@@ -1314,12 +1294,12 @@ textarea.prtext {
 .prtr {
   display: inline-flex;
   align-items: center;
-  gap: 7px;
+  gap: 8px;
   border: 1px solid var(--line);
   background: var(--paper);
   color: var(--ink);
   border-radius: 8px;
-  padding: 6px 9px;
+  padding: 6px 8px;
   font: 14px var(--body);
   cursor: pointer;
 }
@@ -1344,7 +1324,7 @@ textarea.prtext {
 }
 .prwr input {
   font: 15px var(--body);
-  padding: 7px 9px;
+  padding: 8px 8px;
 }
 .prwr input[data-f="pair"] {
   font-family: var(--mono);
@@ -1441,7 +1421,7 @@ textarea.prtext {
 .prtitle {
   display: flex;
   align-items: center;
-  gap: 14px;
+  gap: 16px;
 }
 .prtitle h2 {
   margin: 2px 0 0;
@@ -1453,7 +1433,7 @@ textarea.prtext {
   display: flex;
   flex-wrap: wrap;
   gap: 10px 36px;
-  padding-top: 14px;
+  padding-top: 16px;
   border-top: 1px solid var(--line);
 }
 .prst {
@@ -1461,9 +1441,7 @@ textarea.prtext {
   gap: 2px;
 }
 .prst span {
-  font: 600 11px var(--body);
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
+  font: 600 12px var(--body);
   color: var(--muted);
 }
 .prst b {
@@ -1476,7 +1454,7 @@ textarea.prtext {
   color: var(--muted);
 }
 #prStats .bstack {
-  margin: 14px 0 6px;
+  margin: 16px 0 6px;
 }
 .prbar {
   display: flex;
@@ -1506,7 +1484,7 @@ textarea.prtext {
 .prq3 {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 14px;
+  gap: 16px;
 }
 @media (max-width: 760px) {
   .prq3 {
@@ -1523,13 +1501,11 @@ textarea.prtext {
 }
 .prtype {
   display: inline-block;
-  font: 600 10px var(--body);
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
+  font: 600 12px var(--body);
   color: var(--muted);
   border: 1px solid var(--line);
-  border-radius: 5px;
-  padding: 1px 5px;
+  border-radius: 6px;
+  padding: 1px 4px;
   margin-right: 6px;
 }
 @media (max-width: 600px) {
@@ -1539,7 +1515,7 @@ textarea.prtext {
   }
   .prtt td,
   .prtt th {
-    padding: 7px 5px;
+    padding: 8px 4px;
   }
   .prtt td:nth-child(5),
   .prtt th:nth-child(5) {
@@ -1590,7 +1566,7 @@ textarea.prtext {
 }
 .rvb {
   font: 600 14px var(--body);
-  padding: 7px 12px;
+  padding: 8px 12px;
   border: 1px solid var(--line);
   border-radius: 8px;
   background: var(--paper);
@@ -1625,7 +1601,7 @@ textarea.prtext {
 }
 .rvchip {
   font: 600 13px var(--body);
-  padding: 6px 11px;
+  padding: 6px 12px;
   border-radius: 999px;
   border: 1px solid var(--line);
   background: var(--paper);
@@ -1649,10 +1625,8 @@ textarea.prtext {
   flex-wrap: wrap;
 }
 .rvdots span {
-  font: 600 11px var(--body);
-  letter-spacing: 0.05em;
-  text-transform: uppercase;
-  padding: 3px 9px;
+  font: 600 12px var(--body);
+  padding: 4px 8px;
   border-radius: 999px;
   background: var(--soft);
   color: var(--muted);
@@ -1666,7 +1640,7 @@ textarea.prtext {
 }
 .rvtab td,
 .rvtab th {
-  padding: 7px 10px;
+  padding: 8px 10px;
 }
 .rvtab tr.diff td {
   background: color-mix(in srgb, var(--be) 12%, transparent);
@@ -1722,9 +1696,9 @@ textarea.prtext {
 #view-review select,
 #view-review input[type="date"] {
   font: 14px var(--body);
-  padding: 7px 9px;
+  padding: 8px 8px;
   border: 1px solid var(--line);
-  border-radius: 7px;
+  border-radius: 8px;
   background: var(--paper);
   color: var(--ink);
 }
@@ -1745,9 +1719,9 @@ textarea.prtext {
   place-items: center;
   min-width: 26px;
   height: 22px;
-  padding: 0 5px;
+  padding: 0 4px;
   border-radius: 6px;
-  font: 800 12px var(--body);
+  font: 600 12px var(--body);
 }
 .grade.gA {
   background: color-mix(in srgb, var(--good) 20%, transparent);
@@ -1774,7 +1748,7 @@ textarea.prtext {
 #grEd {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
-  gap: 14px;
+  gap: 16px;
   min-width: 0;
 }
 .grov {
@@ -1794,15 +1768,13 @@ textarea.prtext {
   overflow-wrap: anywhere;
 }
 .grov th {
-  font: 700 11px var(--body);
-  letter-spacing: 0.05em;
-  text-transform: uppercase;
+  font: 600 12px var(--body);
   color: var(--muted);
   text-align: left;
   padding: 4px 8px;
 }
 .grov td {
-  padding: 7px 8px;
+  padding: 8px 8px;
   border-top: 1px solid var(--line);
   vertical-align: top;
 }
@@ -1873,7 +1845,7 @@ textarea.prtext {
 .grprev {
   border: 1px solid var(--line);
   border-radius: 12px;
-  padding: 12px 14px;
+  padding: 12px 16px;
 }
 .grtab {
   width: 100%;
@@ -1881,9 +1853,7 @@ textarea.prtext {
   margin-top: 8px;
 }
 .grtab th {
-  font: 700 11px var(--body);
-  letter-spacing: 0.05em;
-  text-transform: uppercase;
+  font: 600 12px var(--body);
   color: var(--muted);
   text-align: left;
   padding: 4px 6px;
@@ -1897,9 +1867,7 @@ textarea.prtext {
 }
 .chip {
   display: inline-block;
-  font: 600 11px var(--body);
-  letter-spacing: 0.05em;
-  text-transform: uppercase;
+  font: 600 12px var(--body);
   padding: 2px 8px;
   border-radius: 99px;
   border: 1px solid currentColor;
@@ -1913,7 +1881,7 @@ textarea.prtext {
 .pill {
   display: inline-block;
   font: 600 12px var(--body);
-  padding: 3px 10px;
+  padding: 4px 10px;
   border-radius: 6px;
   background: var(--soft);
   color: var(--muted);
@@ -1960,7 +1928,7 @@ svg text {
 .findings li {
   border-left: 4px solid var(--line);
   background: var(--soft);
-  padding: 10px 14px;
+  padding: 10px 16px;
   border-radius: 0 8px 8px 0;
 }
 .findings li.bad {
@@ -1974,7 +1942,7 @@ svg text {
 }
 .findings b {
   display: block;
-  font-weight: 700;
+  font-weight: 600;
 }
 .findings span {
   color: var(--muted);
@@ -1982,7 +1950,7 @@ svg text {
 }
 .btn {
   font: 600 14px var(--body);
-  padding: 9px 16px;
+  padding: 8px 16px;
   border-radius: 8px;
   border: 1px solid var(--line);
   background: var(--surface);
@@ -2008,7 +1976,7 @@ svg text {
   background: none;
 }
 .btn.small {
-  padding: 5px 10px;
+  padding: 4px 10px;
   font-size: 13px;
 }
 .btn.danger {
@@ -2030,7 +1998,7 @@ svg text {
   flex-wrap: wrap;
   background: color-mix(in srgb, var(--warn) 14%, var(--surface));
   border: 1px solid color-mix(in srgb, var(--warn) 40%, transparent);
-  padding: 10px 14px;
+  padding: 10px 16px;
   border-radius: 8px;
   font-size: 14px;
 }
@@ -2044,12 +2012,12 @@ svg text {
 /* desk heads */
 .desk {
   border-radius: 10px;
-  padding: 18px 20px;
+  padding: 20px 20px;
   color: var(--ink);
   border: 1px solid var(--line);
   background: var(--surface);
   display: grid;
-  gap: 14px;
+  gap: 16px;
 }
 .desk.live {
   border-top: 5px solid var(--live);
@@ -2060,7 +2028,7 @@ svg text {
 .desk h2 {
   font-family: var(--display);
   font-stretch: 80%;
-  font-weight: 800;
+  font-weight: 600;
   font-size: 24px;
   margin: 0;
 }
@@ -2115,7 +2083,7 @@ svg text {
   background: var(--soft);
   border: 1px solid var(--line);
   border-radius: 99px;
-  padding: 3px 4px 3px 11px;
+  padding: 4px 4px 4px 12px;
   font-size: 13px;
   font-weight: 600;
 }
@@ -2186,7 +2154,7 @@ svg text {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 7px 8px;
+  padding: 8px 8px;
   border-radius: 6px;
   font-size: 14px;
   cursor: pointer;
@@ -2209,7 +2177,7 @@ svg text {
   all: unset;
   cursor: pointer;
   font-size: 13px;
-  font-weight: 700;
+  font-weight: 600;
   padding: 6px 8px;
   display: block;
   color: var(--muted);
@@ -2317,7 +2285,7 @@ svg text {
   border: 1px solid var(--line);
   border-top: 4px solid;
   border-radius: 10px;
-  padding: 14px 16px;
+  padding: 16px 16px;
   display: grid;
   gap: 8px;
   align-content: start;
@@ -2344,7 +2312,7 @@ svg text {
 .scstats {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 6px 14px;
+  gap: 6px 16px;
   margin: 0;
 }
 .scstats div {
@@ -2374,7 +2342,7 @@ svg text {
 .drow2 {
   display: grid;
   grid-template-columns: minmax(90px, 180px) minmax(0, 1fr);
-  gap: 14px;
+  gap: 16px;
   align-items: center;
   padding: 8px 0;
   border-bottom: 1px solid var(--line);
@@ -2483,7 +2451,7 @@ svg text {
 .proj {
   border: 1px solid var(--line);
   border-radius: 10px;
-  padding: 14px;
+  padding: 16px;
   display: grid;
   gap: 8px;
   background: var(--surface);
@@ -2505,7 +2473,7 @@ svg text {
   font-family: var(--display);
   font-stretch: 85%;
   font-size: 16px;
-  font-weight: 700;
+  font-weight: 600;
   overflow-wrap: anywhere;
 }
 .proj .meta {
@@ -2514,7 +2482,7 @@ svg text {
 }
 .bar {
   height: 6px;
-  border-radius: 3px;
+  border-radius: 4px;
   background: var(--soft);
   overflow: hidden;
 }
@@ -2525,7 +2493,7 @@ svg text {
 }
 .proj .nums {
   display: flex;
-  gap: 14px;
+  gap: 16px;
   font: 500 13px var(--mono);
   flex-wrap: wrap;
 }
@@ -2534,7 +2502,7 @@ svg text {
   justify-items: center;
   border-style: dashed;
   color: var(--bt);
-  font-weight: 700;
+  font-weight: 600;
   min-height: 120px;
 }
 
@@ -2553,13 +2521,13 @@ form {
   margin: 0;
   font-family: var(--display);
   font-stretch: 85%;
-  font-weight: 700;
+  font-weight: 600;
   font-size: 18px;
 }
 fieldset {
   border: 1px solid var(--line);
   border-radius: 10px;
-  padding: 16px 18px;
+  padding: 16px 20px;
   margin: 0;
   min-width: 0;
   background: var(--surface);
@@ -2567,18 +2535,18 @@ fieldset {
 legend {
   font-family: var(--display);
   font-stretch: 85%;
-  font-weight: 700;
+  font-weight: 600;
   font-size: 16px;
   padding: 0 6px;
 }
 .fields {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(min(100%, 180px), 1fr));
-  gap: 14px;
+  gap: 16px;
 }
 .f {
   display: grid;
-  gap: 5px;
+  gap: 4px;
   min-width: 0;
 }
 .f > span:first-child {
@@ -2598,7 +2566,7 @@ textarea {
   color: var(--ink);
   background: var(--paper);
   border: 1px solid var(--line);
-  border-radius: 7px;
+  border-radius: 8px;
   padding: 8px 10px;
   width: 100%;
   min-width: 0;
@@ -2627,7 +2595,7 @@ label.seg span {
   display: inline-block;
   padding: 6px 12px;
   border: 1px solid var(--line);
-  border-radius: 7px;
+  border-radius: 8px;
   font-size: 14px;
   cursor: pointer;
   background: var(--paper);
@@ -2706,7 +2674,7 @@ label.seg input:checked + span {
   width: min(100%, 820px);
   background: var(--paper);
   border-radius: 14px 14px 0 0;
-  padding: 18px 18px 0;
+  padding: 20px 20px 0;
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
 }
 .closex {
@@ -2740,7 +2708,7 @@ label.seg input:checked + span {
   color: var(--paper);
   font-weight: 600;
   font-size: 14px;
-  padding: 10px 18px;
+  padding: 10px 20px;
   border-radius: 99px;
   pointer-events: none;
   opacity: 0;
@@ -2783,7 +2751,7 @@ label.seg input:checked + span {
 }
 .pastehint {
   display: grid;
-  gap: 3px;
+  gap: 4px;
   justify-items: center;
 }
 .linkrow {
@@ -2796,7 +2764,7 @@ label.seg input:checked + span {
   flex: 1;
   min-width: 0;
   font-size: 13px;
-  padding: 6px 9px;
+  padding: 6px 8px;
 }
 .shotprev {
   display: block;
@@ -2873,8 +2841,8 @@ label.seg input:checked + span {
   font: 600 11px var(--body);
   background: color-mix(in srgb, var(--ink) 70%, transparent);
   color: var(--paper);
-  padding: 3px 7px;
-  border-radius: 5px;
+  padding: 4px 8px;
+  border-radius: 6px;
   pointer-events: none;
 }
 #viewer {
@@ -2882,7 +2850,7 @@ label.seg input:checked + span {
 }
 .viewer-inner {
   width: min(100%, 1200px);
-  padding-bottom: 18px;
+  padding-bottom: 20px;
   border-radius: 14px;
   margin-bottom: 24px;
 }
@@ -2921,7 +2889,7 @@ label.seg input:checked + span {
 }
 .subsec {
   margin-top: 16px;
-  padding-top: 14px;
+  padding-top: 16px;
   border-top: 1px dashed var(--line);
 }
 .f em.opt {
@@ -2946,10 +2914,10 @@ label.seg input:checked + span {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 5px;
-  padding: 5px 30px 5px 8px;
+  gap: 4px;
+  padding: 4px 32px 4px 8px;
   border: 1px solid var(--line);
-  border-radius: 7px;
+  border-radius: 8px;
   background: var(--paper);
   cursor: pointer;
   position: relative;
@@ -2977,7 +2945,7 @@ label.seg input:checked + span {
   gap: 6px;
   font-size: 13px;
   font-weight: 600;
-  padding: 3px 4px 3px 9px;
+  padding: 4px 4px 4px 8px;
   border-radius: 6px;
 }
 .chip-sel.for {
@@ -2989,7 +2957,7 @@ label.seg input:checked + span {
   color: var(--bad);
 }
 .chip-sel .x {
-  padding: 0 5px;
+  padding: 0 4px;
   border-radius: 4px;
   cursor: pointer;
   font-size: 15px;
@@ -3016,7 +2984,7 @@ label.seg input:checked + span {
   display: flex;
   align-items: center;
   gap: 10px;
-  padding: 7px 9px;
+  padding: 8px 8px;
   border-radius: 6px;
   cursor: pointer;
   font-size: 14px;
@@ -3056,7 +3024,7 @@ label.seg input:checked + span {
 .crit {
   display: grid;
   gap: 2px;
-  margin-top: 14px;
+  margin-top: 16px;
   max-width: 560px;
 }
 .crit-head,
@@ -3067,15 +3035,13 @@ label.seg input:checked + span {
   gap: 4px;
 }
 .crit-head span {
-  font-size: 11px;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
+  font-size: 12px;
   color: var(--muted);
   font-weight: 600;
   text-align: center;
 }
 .crit-row {
-  padding: 5px 0;
+  padding: 4px 0;
   border-bottom: 1px dashed var(--line);
 }
 .crit-row > span {
@@ -3146,8 +3112,8 @@ label.cr.against input:checked + span {
   accent-color: var(--live);
 }
 .ecblock {
-  margin-top: 14px;
-  padding: 12px 14px;
+  margin-top: 16px;
+  padding: 12px 16px;
   border-left: 3px solid var(--accent);
   background: var(--soft);
   border-radius: 0 8px 8px 0;
@@ -3184,14 +3150,12 @@ fieldset.subs-closed .legend-toggle .chev {
   cursor: pointer;
   display: flex;
   align-items: center;
-  gap: 10px;
-  margin: 0 0 10px;
+  gap: 12px;
+  margin: 0 0 12px;
   font-family: var(--display);
   font-stretch: 85%;
-  font-weight: 700;
+  font-weight: 600;
   font-size: 14px;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
   color: var(--muted);
 }
 .subsec summary::-webkit-details-marker {
@@ -3218,13 +3182,11 @@ fieldset.subs-closed .legend-toggle .chev {
   color: var(--ink);
 }
 .subsec h4 {
-  margin: 0 0 10px;
+  margin: 0 0 12px;
   font-family: var(--display);
   font-stretch: 85%;
-  font-weight: 700;
+  font-weight: 600;
   font-size: 14px;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
   color: var(--muted);
 }
 /* combobox */
@@ -3232,7 +3194,7 @@ fieldset.subs-closed .legend-toggle .chev {
   position: relative;
 }
 .combo-wrap input {
-  padding-right: 34px;
+  padding-right: 32px;
 }
 .combo-btn {
   position: absolute;
@@ -3265,7 +3227,7 @@ fieldset.subs-closed .legend-toggle .chev {
   box-shadow: 0 10px 30px color-mix(in srgb, var(--ink) 18%, transparent);
 }
 .combo-list li {
-  padding: 7px 10px;
+  padding: 8px 10px;
   border-radius: 6px;
   font: 500 14px var(--mono);
   cursor: pointer;
@@ -3283,7 +3245,7 @@ fieldset.subs-closed .legend-toggle .chev {
   font-family: var(--body);
 }
 .period label.seg span {
-  padding: 5px 10px;
+  padding: 4px 10px;
   font-size: 13px;
 }
 .perlabel {
@@ -3310,7 +3272,7 @@ fieldset.subs-closed .legend-toggle .chev {
   display: grid;
   gap: 10px;
   border-top: 1px solid var(--line);
-  padding-top: 14px;
+  padding-top: 16px;
 }
 .calsum {
   font-size: 13px;
@@ -3340,7 +3302,7 @@ fieldset.subs-closed .legend-toggle .chev {
   background: var(--surface);
   border: 1px solid var(--line);
   border-radius: 10px;
-  padding: 12px 14px;
+  padding: 12px 16px;
   display: grid;
   gap: 2px;
 }
@@ -3353,7 +3315,7 @@ fieldset.subs-closed .legend-toggle .chev {
   display: flex;
   gap: 2px;
   height: 14px;
-  border-radius: 5px;
+  border-radius: 6px;
   overflow: hidden;
   margin: 10px 0 8px;
 }
@@ -3386,7 +3348,7 @@ fieldset.subs-closed .legend-toggle .chev {
   display: flex;
   justify-content: space-between;
   gap: 10px;
-  padding: 7px 0;
+  padding: 8px 0;
   border-top: 1px solid var(--line);
   font-size: 13px;
 }
@@ -3415,7 +3377,7 @@ fieldset.subs-closed .legend-toggle .chev {
   height: 100%;
 }
 .ctabs label.seg span {
-  padding: 5px 10px;
+  padding: 4px 10px;
   font-size: 13px;
 }
 .ctitle {
@@ -3467,7 +3429,7 @@ fieldset.subs-closed .legend-toggle .chev {
   background: var(--ink);
   color: var(--paper);
   font: 500 12px var(--body);
-  padding: 6px 9px;
+  padding: 6px 8px;
   border-radius: 6px;
   max-width: 260px;
   box-shadow: 0 6px 18px rgba(0, 0, 0, 0.2);
@@ -3535,7 +3497,7 @@ fieldset.subs-closed .legend-toggle .chev {
 }
 .acsec {
   border-top: 1px solid var(--line);
-  padding-top: 14px;
+  padding-top: 16px;
   display: grid;
   gap: 10px;
 }
@@ -3552,7 +3514,7 @@ fieldset.subs-closed .legend-toggle .chev {
   grid-template-columns: minmax(0, 1fr) auto;
   gap: 8px;
   align-items: center;
-  padding: 7px 0;
+  padding: 8px 0;
   border-bottom: 1px solid var(--line);
 }
 .acrow b {
@@ -3582,7 +3544,7 @@ fieldset.subs-closed .legend-toggle .chev {
   color: var(--ink);
   background: var(--paper);
   border: 1px solid var(--line);
-  border-radius: 7px;
+  border-radius: 8px;
   padding: 8px 10px;
   min-width: 0;
   width: 100%;
@@ -3602,7 +3564,7 @@ fieldset.subs-closed .legend-toggle .chev {
 }
 .acmoney label {
   display: grid;
-  gap: 3px;
+  gap: 4px;
   font-size: 12px;
   color: var(--muted);
   font-weight: 600;
@@ -3613,7 +3575,7 @@ fieldset.subs-closed .legend-toggle .chev {
   color: var(--ink);
   background: var(--paper);
   border: 1px solid var(--line);
-  border-radius: 7px;
+  border-radius: 8px;
   padding: 6px 8px;
   width: 100%;
   box-sizing: border-box;
@@ -3628,10 +3590,8 @@ fieldset.subs-closed .legend-toggle .chev {
   padding: 6px 8px;
 }
 .acbadge {
-  font: 600 11px var(--body);
-  letter-spacing: 0.05em;
-  text-transform: uppercase;
-  padding: 3px 8px;
+  font: 600 12px var(--body);
+  padding: 4px 8px;
   border-radius: 99px;
   margin-left: auto;
   margin-right: 6px;
@@ -3695,7 +3655,7 @@ fieldset.subs-closed .legend-toggle .chev {
   cursor: pointer;
   width: 30px;
   height: 30px;
-  border-radius: 7px;
+  border-radius: 8px;
   display: grid;
   place-items: center;
   color: var(--muted);
@@ -3744,7 +3704,7 @@ fieldset.subs-closed .legend-toggle .chev {
 #admSheet .sheet-inner {
   width: min(100%, 760px);
   max-width: 760px;
-  padding-bottom: 18px;
+  padding-bottom: 20px;
 }
 .admhead {
   display: flex;
@@ -3755,12 +3715,12 @@ fieldset.subs-closed .legend-toggle .chev {
   margin: 0;
 }
 #admSheet [data-admpane] {
-  padding-top: 14px;
+  padding-top: 16px;
 }
 .rolesplit {
   display: grid;
   grid-template-columns: 200px 1fr;
-  gap: 18px;
+  gap: 20px;
   align-items: start;
 }
 .rolelist {
@@ -3776,7 +3736,7 @@ fieldset.subs-closed .legend-toggle .chev {
   justify-content: space-between;
   gap: 8px;
   padding: 8px 10px;
-  border-radius: 7px;
+  border-radius: 8px;
   font: 500 14px var(--body);
   color: var(--muted);
 }
@@ -3805,7 +3765,7 @@ fieldset.subs-closed .legend-toggle .chev {
 }
 .roleedit {
   display: grid;
-  gap: 14px;
+  gap: 16px;
   min-width: 0;
 }
 .rfeats {
@@ -3850,15 +3810,13 @@ fieldset.subs-closed .legend-toggle .chev {
 }
 .utab th {
   text-align: left;
-  font: 700 11px var(--body);
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
+  font: 600 12px var(--body);
   color: var(--muted);
   padding: 6px 8px;
   border-bottom: 1px solid var(--line);
 }
 .utab td {
-  padding: 9px 8px;
+  padding: 8px 8px;
   border-bottom: 1px solid var(--line);
   vertical-align: middle;
 }
@@ -3876,7 +3834,7 @@ fieldset.subs-closed .legend-toggle .chev {
 .utab th:nth-child(4) {
   font-family: var(--mono, inherit);
   text-align: right;
-  padding-right: 18px;
+  padding-right: 20px;
 }
 .utab th:nth-child(3),
 .utab th:nth-child(4) {
@@ -3919,7 +3877,7 @@ fieldset.subs-closed .legend-toggle .chev {
 }
 .np-inner form {
   display: grid;
-  gap: 14px;
+  gap: 16px;
 }
 .np-inner h3 {
   margin: 0;
@@ -3979,7 +3937,9 @@ fieldset.subs-closed .legend-toggle .chev {
   display: grid;
   gap: 10px;
 }
-#liveNotes:empty {
+#liveNotes:empty,
+#liveSim:empty,
+#liveNews:empty {
   display: none;
 }
 .notes textarea {
@@ -3997,7 +3957,7 @@ fieldset.subs-closed .legend-toggle .chev {
 .projmeta {
   display: flex;
   align-items: center;
-  gap: 8px 14px;
+  gap: 8px 16px;
   flex-wrap: wrap;
   font-size: 13px;
   color: var(--muted);
@@ -4069,7 +4029,7 @@ fieldset.subs-closed .legend-toggle .chev {
     display: none;
   }
   nav[role="tablist"] button {
-    padding: 10px 3px;
+    padding: 10px 4px;
     font-size: 13.5px;
     min-width: 0;
   }
@@ -4083,7 +4043,7 @@ fieldset.subs-closed .legend-toggle .chev {
   }
   .rvtab td,
   .rvtab th {
-    padding: 6px 5px;
+    padding: 6px 4px;
     font-size: 12.5px;
     white-space: normal !important;
     overflow-wrap: anywhere;
@@ -4100,9 +4060,7 @@ fieldset.subs-closed .legend-toggle .chev {
   font-size: 11px;
 }
 .cal .dow {
-  font-size: 11px;
-  text-transform: uppercase;
-  letter-spacing: 0.07em;
+  font-size: 12px;
   color: var(--muted);
   font-weight: 600;
   padding: 2px 6px;
@@ -4111,7 +4069,7 @@ fieldset.subs-closed .legend-toggle .chev {
   border: 1px solid var(--line);
   border-radius: 8px;
   min-height: 74px;
-  padding: 6px 7px;
+  padding: 6px 8px;
   display: grid;
   align-content: space-between;
   background: var(--surface);
@@ -4186,7 +4144,7 @@ fieldset.subs-closed .legend-toggle .chev {
 .nwl {
   display: inline-block;
   margin-left: 8px;
-  padding: 1px 7px;
+  padding: 1px 8px;
   border-radius: 999px;
   font: 600 11px var(--body);
   vertical-align: 1px;
@@ -4222,7 +4180,7 @@ fieldset.subs-closed .legend-toggle .chev {
 }
 .nwmark:focus-visible {
   outline: 2px solid var(--accent);
-  border-radius: 3px;
+  border-radius: 4px;
 }
 .nwhit {
   font: 600 12px var(--mono);
@@ -4256,12 +4214,12 @@ fieldset.subs-closed .legend-toggle .chev {
 }
 .day.today .dn {
   color: var(--ink);
-  font-weight: 700;
+  font-weight: 600;
 }
 .wk {
   border-radius: 8px;
   background: var(--soft);
-  padding: 6px 7px;
+  padding: 6px 8px;
   display: grid;
   align-content: center;
   justify-items: end;
@@ -4277,7 +4235,7 @@ fieldset.subs-closed .legend-toggle .chev {
 
 .mk {
   grid-template-columns: repeat(auto-fit, minmax(min(100%, 180px), 1fr));
-  margin-bottom: 14px;
+  margin-bottom: 16px;
 }
 .mk .kpi {
   display: grid;
@@ -4318,7 +4276,7 @@ fieldset.subs-closed .legend-toggle .chev {
   gap: 10px;
   align-items: center;
   font-size: 14px;
-  padding: 7px 6px;
+  padding: 8px 6px;
   border-bottom: 1px solid var(--line);
   border-radius: 6px;
 }
@@ -4352,7 +4310,7 @@ fieldset.subs-closed .legend-toggle .chev {
 .dlink:focus-visible {
   outline: 2px solid var(--accent);
   outline-offset: 2px;
-  border-radius: 3px;
+  border-radius: 4px;
 }
 .clickrow {
   cursor: pointer;
@@ -4431,7 +4389,7 @@ fieldset.subs-closed .legend-toggle .chev {
 }
 .exms .ms-field {
   min-height: 34px;
-  padding: 3px 26px 3px 6px;
+  padding: 4px 24px 4px 6px;
   background: var(--paper);
 }
 .exms .chip-sel.exc {
@@ -4447,13 +4405,13 @@ fieldset.subs-closed .legend-toggle .chev {
   all: unset;
   cursor: pointer;
   font: 600 12px var(--body);
-  padding: 5px 10px;
+  padding: 4px 10px;
   border: 1px solid var(--line);
   border-radius: 99px;
   background: var(--surface);
   color: var(--ink);
   display: inline-flex;
-  gap: 5px;
+  gap: 4px;
   align-items: baseline;
 }
 .exchip small {
@@ -4476,7 +4434,7 @@ fieldset.subs-closed .legend-toggle .chev {
 .exrow label,
 .exrow .exhow {
   display: grid;
-  gap: 3px;
+  gap: 4px;
   font-size: 12px;
   color: var(--muted);
   font-weight: 600;
@@ -4493,7 +4451,7 @@ fieldset.subs-closed .legend-toggle .chev {
   color: var(--ink);
   background: var(--paper);
   border: 1px solid var(--line);
-  border-radius: 7px;
+  border-radius: 8px;
   padding: 6px 8px;
   width: 100%;
   box-sizing: border-box;
@@ -4508,7 +4466,7 @@ fieldset.subs-closed .legend-toggle .chev {
 .exsum {
   display: flex;
   flex-wrap: wrap;
-  gap: 10px 22px;
+  gap: 10px 24px;
   margin-top: 12px;
 }
 .exsum div {
@@ -4548,11 +4506,11 @@ main > *,
 }
 @media (max-width: 640px) {
   main {
-    gap: 14px;
-    padding-top: 14px;
+    gap: 16px;
+    padding-top: 16px;
   }
   .panel {
-    padding: 14px;
+    padding: 16px;
   }
   .brand h1 {
     font-size: 24px;
@@ -4566,7 +4524,7 @@ main > *,
     font-size: 14px;
     flex: 1 1 auto;
     justify-content: center;
-    gap: 5px;
+    gap: 4px;
   }
   nav button .count {
     font-size: 11px;
@@ -4581,8 +4539,8 @@ main > *,
   .segs.period {
     flex-wrap: nowrap;
     overflow-x: auto;
-    margin-inline: -14px;
-    padding-inline: 14px;
+    margin-inline: -16px;
+    padding-inline: 16px;
     scrollbar-width: none;
   }
   .segs.period::-webkit-scrollbar {
@@ -4617,13 +4575,13 @@ main > *,
   }
   .trades .c-pair {
     grid-area: pair;
-    font-weight: 700;
+    font-weight: 600;
     font-size: 16px;
   }
   .trades .c-r {
     grid-area: r;
     font-size: 16px;
-    font-weight: 700;
+    font-weight: 600;
     text-align: right;
   }
   .trades .c-res {
@@ -4706,13 +4664,13 @@ main > *,
   }
   .day .dr {
     font-size: 11px;
-    letter-spacing: -0.02em;
+    letter-spacing: 0;
   }
   .day .dn {
     font-size: 11px;
   }
   .dpairs {
-    gap: 3px;
+    gap: 4px;
   }
   .dp span {
     display: none;
@@ -4731,7 +4689,7 @@ main > *,
   .cal {
     min-width: 0;
     grid-template-columns: repeat(5, minmax(0, 1fr)) repeat(2, minmax(0, 0.45fr));
-    gap: 3px;
+    gap: 4px;
   }
   .cal .wk,
   .cal .dow.wkh {
@@ -4804,11 +4762,11 @@ main > *,
   }
   .mtab .m-p {
     grid-area: p;
-    font-weight: 700;
+    font-weight: 600;
   }
   .mtab .m-g {
     grid-area: g;
-    font-weight: 700;
+    font-weight: 600;
   }
   .mtab .m-bd {
     grid-area: bd;
@@ -4926,16 +4884,16 @@ button.pill.simpill {
 .authbox {
   width: min(100%, 380px);
   display: grid;
-  gap: 14px;
+  gap: 16px;
   background: var(--surface);
   border: 1px solid var(--line);
   border-radius: 14px;
-  padding: 26px;
+  padding: 24px;
 }
 .authbox h1 {
   font-family: var(--display);
   font-stretch: 78%;
-  font-weight: 800;
+  font-weight: 600;
   font-size: 30px;
   margin: 0;
 }
@@ -4950,7 +4908,7 @@ button.pill.simpill {
   color: var(--ink);
   background: var(--paper);
   border: 1px solid var(--line);
-  border-radius: 7px;
+  border-radius: 8px;
   padding: 10px 12px;
   width: 100%;
   box-sizing: border-box;
@@ -4970,7 +4928,7 @@ button.pill.simpill {
 .linkbtn:focus-visible {
   outline: 2px solid var(--accent);
   outline-offset: 2px;
-  border-radius: 3px;
+  border-radius: 4px;
 }
 .acct {
   display: flex;
@@ -4983,10 +4941,8 @@ button.pill.simpill {
 }
 .ms-list li.ms-grp {
   cursor: default;
-  padding: 10px 10px 4px;
-  font: 700 11px var(--body);
-  letter-spacing: 0.05em;
-  text-transform: uppercase;
+  padding: 12px 12px 4px;
+  font: 600 12px var(--body);
   color: var(--muted);
   background: none;
 }
@@ -5009,7 +4965,7 @@ button.pill.simpill {
 .grdates input,
 .grfil select {
   width: auto;
-  padding: 5px 8px;
+  padding: 4px 8px;
   font-size: 13px;
 }
 .grovh {
@@ -5020,7 +4976,7 @@ button.pill.simpill {
 /* Share link under the trade form buttons */
 .shrbar {
   margin-top: 12px;
-  padding: 12px 14px;
+  padding: 12px 16px;
   border: 1px solid var(--line);
   border-radius: 12px;
   background: var(--surface);
@@ -5084,7 +5040,7 @@ button.pill.simpill {
 #zTf {
   min-width: 64px;
   font-family: var(--body);
-  font-weight: 700;
+  font-weight: 600;
 }
 .zgap {
   width: 14px;
@@ -5168,7 +5124,7 @@ button.pill.simpill {
   margin: 0 0 12px;
 }
 .rvfilt {
-  margin-top: 14px;
+  margin-top: 16px;
   padding-top: 12px;
   border-top: 1px dashed var(--line);
 }
@@ -5222,7 +5178,7 @@ nav button .dot {
   gap: 8px;
   align-items: center;
   width: 100%;
-  padding: 5px 6px;
+  padding: 4px 6px;
   border: 0;
   border-radius: 6px;
   background: none;
@@ -5283,7 +5239,7 @@ nav button .dot {
   color: var(--muted);
 }
 .grelse {
-  padding-left: 14px;
+  padding-left: 16px;
 }
 @media (max-width: 560px) {
   .grfil {
@@ -5308,7 +5264,7 @@ nav button .dot {
 .grpre {
   display: grid;
   gap: 8px;
-  margin-bottom: 14px;
+  margin-bottom: 16px;
 }
 .grprow {
   gap: 8px;
@@ -5325,14 +5281,14 @@ nav button .dot {
   display: grid;
   gap: 8px;
   justify-items: start;
-  padding: 14px 0;
+  padding: 16px 0;
   border-bottom: 1px solid var(--line);
 }
 .datablk:first-child {
   padding-top: 0;
 }
 .datablk > b {
-  font: 700 14px var(--body);
+  font: 600 14px var(--body);
 }
 .datablk .hint {
   margin: 0;
