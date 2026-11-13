@@ -243,7 +243,7 @@ let SPLITS = {
   struct: ["4H structure", t => ({ bos: "BoS", som: "SoM" })[structOf(t)] || null, ["BoS", "SoM"]],
   room: [
     "4H room",
-    t => (structOf(t) === "som" && t.room ? (t.room === "ja" ? "Room" : "No room") : null),
+    t => (roomOk(t.entry4h, structOf(t)) && t.room ? (t.room === "ja" ? "Room" : "No room") : null),
     ["Room", "No room"],
   ],
   ectf: [

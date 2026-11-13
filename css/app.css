@@ -3108,10 +3108,6 @@ label.cr.against input:checked + span {
   accent-color: var(--accent);
   margin: 0;
 }
-.checkline:has(input:disabled) {
-  opacity: 0.45;
-  cursor: default;
-}
 .mode-live .checkline input {
   accent-color: var(--live);
 }

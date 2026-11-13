@@ -2,7 +2,7 @@
  * core.js — Shared basics: the trading plan (concepts, entries, exits), formatting and small DOM helpers.
  * Loaded first; every other file uses these.
  */
-const APP_VERSION = "1.3.36";
+const APP_VERSION = "1.3.37";
 const PLAN = {
   concepts: {
     Continuation: ["First Structure", "100 level", "Fake Out", "New Action"],
@@ -64,9 +64,17 @@ const trendAbs = t => {
 };
 const trendRel = (a, dir) => ((a === "bull" || a === "bear") && dir ? ((a === "bull") === (dir === "long") ? "for" : "against") : "");
 const TREND_LAB = { bull: "↑ Bullish", bear: "↓ Bearish", range: "↔ Ranging" };
-// 4H pros: Channel goes with Reversal, Continuation and Engulfing entries; the Engulfing candle pro goes with Reversal and Continuation
+// 4H pros: Channel goes with Reversal, Continuation and Engulfing entries; the Engulfing candle pro goes with Reversal and Continuation; Room goes with SoM and Engulfing entries
 const chanOk = e => e === "Reversal" || e === "Continuation" || e === "Engulfing Candle";
 const engOk = e => e === "Reversal" || e === "Continuation";
+const roomOk = (e, s) => s === "som" || e === "Engulfing Candle";
+// the 4H pros, keyed by the trade field each one is saved in; hproOk: does the pro fit this entry (and structure)
+const HPROS = [
+  ["engulf", "Engulfing candle"],
+  ["channel", "Channel"],
+  ["room", "Room"],
+];
+const hproOk = (k, e, s) => (k === "engulf" ? engOk(e) : k === "channel" ? chanOk(e) : roomOk(e, s));
 // 4H entry dropdown: Reversal and Continuation come with BoS or SoM; a trade still saves entry4h and struct as two fields
 const ENTRY_OPTS = [
   ["Reversal|bos", "Reversal with BoS"],

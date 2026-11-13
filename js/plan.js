@@ -8,6 +8,7 @@ const DCRIT = [
   ["sd", "S&D zone"],
 ];
 let dSel = {};
+let hSel = {}; // 4H pros: field -> "for"
 /* ---------- setup grades: rules per weekly phase (Grading tab) ---------- */
 // For the trade's phase:  C = a requirement isn't "with" you, or a red-flag item is marked "against"
 //                         A = at least `min` extras are "with" you · B = otherwise.

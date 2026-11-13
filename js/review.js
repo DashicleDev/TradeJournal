@@ -198,15 +198,16 @@ function rvChart(t, step, open) {
   return `<div class="rvimg${open ? " open" : ""}" data-rvzoom="${esc(img)}" ${open ? 'data-nomask="1"' : ""} title="Click to zoom"><img src="${esc(img)}" alt="${step} chart" referrerpolicy="no-referrer" onerror="this.parentNode.classList.add('none');this.parentNode.removeAttribute('data-rvzoom');this.parentNode.textContent='Chart could not load here. It works in the GitHub app.'">${open ? "" : '<span class="rvmask tl"></span>'}<span class="rvzhint">⤢ Zoom</span></div>`;
 }
 let rvOpen = "";
-function rvMsBox(key, label, kind, CR, get) {
+function rvMsBox(key, label, kind, CR, get, na) {
   const open = rvOpen === key,
     mine = CR.filter(([k]) => get(k) === kind);
   return `<div class="f"><span>${label}</span><div class="ms rvms${open ? " open" : ""}" data-rvbox="${key}"><button type="button" class="ms-field" data-rvopen="${key}">${mine.length ? mine.map(([k, l]) => `<span class="chip-sel ${kind}">${esc(l)}<span class="x" data-rvx="${key}:${k}">×</span></span>`).join("") : '<span class="ph">Choose criteria…</span>'}<span class="caret">▾</span></button>
   <ul class="ms-list" ${open ? "" : "hidden"}>${CR.map(([k, l]) => {
     const v = get(k),
-      other = v && v !== kind,
+      no = na && na(k),
+      other = no || (v && v !== kind),
       on = v === kind;
-    return `<li data-rvpick="${key}:${k}" class="${other ? "dis" : ""}"><span class="box ${kind}">${on ? "✓" : ""}</span>${esc(l)}${other ? `<em>in ${kind === "for" ? "cons" : "pros"}</em>` : ""}</li>`;
+    return `<li data-rvpick="${key}:${k}" class="${other ? "dis" : ""}"><span class="box ${kind}">${on ? "✓" : ""}</span>${esc(l)}${no ? "<em>not for this entry</em>" : other ? `<em>in ${kind === "for" ? "cons" : "pros"}</em>` : ""}</li>`;
   }).join("")}</ul></div></div>`;
 }
 function rvStepHTML(a, step) {
@@ -268,8 +269,9 @@ function rvStepHTML(a, step) {
     )
       .replace(/^<div class="f">/, "")
       .replace(/<\/div>$/, "")}</div></div>`;
-  return `<div class="fields">${rvF("4H entry", `<select data-rks="entryc">${entryOptHtml(entryKey(a.entry4h, a.struct))}</select>`)}${rvF("Market structure", rvMs("hMs", a.hMs))}${engOk(a.entry4h) ? rvF("Engulfing candle", rvSeg("engulf", [["yes", "Engulfing candle"]], a.engulf ? "yes" : "")) : ""}${chanOk(a.entry4h) ? rvF("Extra confirmation", rvSeg("channel", [["yes", "Channel"]], a.channel ? "yes" : "")) : ""}</div>
-    <div class="row" style="gap:16px;margin-top:12px"><label class="checkline"><input type="checkbox" data-rc="room" ${a.room ? "checked" : ""}><span>Room</span></label><label class="checkline"><input type="checkbox" data-rc="scaleIn" ${a.scaleIn ? "checked" : ""}><span>Scale-in</span></label></div>`;
+  return `<div class="fields">${rvF("4H entry", `<select data-rks="entryc">${entryOptHtml(entryKey(a.entry4h, a.struct))}</select>`)}${rvF("Market structure", rvMs("hMs", a.hMs))}</div>
+    <div class="fields" style="margin-top:12px"><div class="f wide">${rvMsBox("hp", "4H pros", "for", HPROS, k => (a[k] ? "for" : ""), k => !hproOk(k, a.entry4h, a.struct)).replace(/^<div class="f">/, "").replace(/<\/div>$/, "")}</div></div>
+    <div class="row" style="gap:16px;margin-top:12px"><label class="checkline"><input type="checkbox" data-rc="scaleIn" ${a.scaleIn ? "checked" : ""}><span>Scale-in</span></label></div>`;
 }
 const rvPick = (o, k) =>
   k === "wRange"
@@ -1100,7 +1102,9 @@ $("#rvBox").addEventListener("click", e => {
     const [key, k] = (pick.dataset.rvpick || pick.dataset.rvx).split(":"),
       a = S.cur,
       rem = !!pick.dataset.rvx;
-    if (key === "dp") a.dPros = a.dPros.includes(k) ? a.dPros.filter(x => x !== k) : rem ? a.dPros : [...a.dPros, k];
+    if (key === "hp") {
+      if (rem || hproOk(k, a.entry4h, a.struct)) a[k] = rem ? false : !a[k];
+    } else if (key === "dp") a.dPros = a.dPros.includes(k) ? a.dPros.filter(x => x !== k) : rem ? a.dPros : [...a.dPros, k];
     else {
       const kind = key === "wp" ? "for" : "against",
         v = a.weekly[k];
@@ -1347,10 +1351,7 @@ $("#rvBox").addEventListener("change", e => {
     else S.cur[k] = el.value;
     if (k === "wPat") S.cur.wPatSub = "";
     if (k === "concept") S.cur.sub = "";
-    if (k === "entryc") {
-      if (!chanOk(S.cur.entry4h)) S.cur.channel = false;
-      if (!engOk(S.cur.entry4h)) S.cur.engulf = false;
-    }
+    if (k === "entryc") HPROS.forEach(([p]) => hproOk(p, S.cur.entry4h, S.cur.struct) || (S.cur[p] = false));
     rvSave();
     return rvRender();
   }

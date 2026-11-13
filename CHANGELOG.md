@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.3.37 — 2026-11-13
+
+- **4H pros are a dropdown** like the weekly and daily pros (journal form, re-evaluate game and extension): Engulfing candle, Channel and Room. Ones that don't fit the entry are greyed out. The separate checkboxes are gone; "4H room" is now just "Room".
+- **Room also goes with Engulfing candle entries** (before: SoM only).
+
 ## 1.3.36 — 2026-11-13
 
 - **4H entry is one dropdown**: Reversal with BoS, Reversal with SoM, Continuation with BoS, Continuation with SoM, Engulfing candle and Deceleration. The BoS / SoM buttons are gone; trades still save the entry and the structure as before, so old trades work unchanged.

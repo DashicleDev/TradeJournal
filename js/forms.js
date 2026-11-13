@@ -769,7 +769,8 @@ function msRender() {
     // cons: only criteria that can be against, plus any an older trade already has, so it can still be removed
     ["#f2Cons", WCRIT.filter(([k]) => k !== "trend" && (GR_CAN_AGAINST.has(k) || wcSel[k] === "against")), wcSel],
     ["#f2DPros", DCRIT, dSel],
-  ].forEach(([id, CR, SEL]) => {
+    ["#f2HPros", HPROS, hSel, k => !hproOk(k, f2En(), f2St())],
+  ].forEach(([id, CR, SEL, NA]) => {
     const box = $(id);
     if (!box) return;
     const kind = box.dataset.kind,
@@ -777,9 +778,10 @@ function msRender() {
     const mine = CR.filter(([k]) => SEL[k] === kind);
     box.innerHTML = `<button type="button" class="ms-field" aria-haspopup="listbox" aria-expanded="${open}" aria-labelledby="${id.slice(1)}Lbl">${mine.length ? mine.map(([k, l]) => `<span class="chip-sel ${kind}">${l}<span class="x" data-msx="${k}" aria-label="Remove ${l}">×</span></span>`).join("") : '<span class="ph">Choose criteria…</span>'}<span class="caret">▾</span></button>
   <ul class="ms-list" role="listbox" aria-multiselectable="true" ${open ? "" : "hidden"}>${CR.map(([k, l]) => {
-    const other = SEL[k] && SEL[k] !== kind,
+    const na = NA && NA(k),
+      other = na || (SEL[k] && SEL[k] !== kind),
       on = SEL[k] === kind;
-    return `<li role="option" aria-selected="${on}" aria-disabled="${!!other}" data-msk="${k}" class="${other ? "dis" : ""}"><span class="box ${kind}">${on ? "✓" : ""}</span>${l}${other ? `<em>in ${kind === "for" ? "cons" : "pros"}</em>` : ""}</li>`;
+    return `<li role="option" aria-selected="${on}" aria-disabled="${!!other}" data-msk="${k}" class="${other ? "dis" : ""}"><span class="box ${kind}">${on ? "✓" : ""}</span>${l}${na ? "<em>not for this entry</em>" : other ? `<em>in ${kind === "for" ? "cons" : "pros"}</em>` : ""}</li>`;
   }).join("")}</ul>`;
   });
 }
@@ -793,7 +795,7 @@ document.addEventListener("click", e => {
   });
   if (!box) return;
   const kind = box.dataset.kind,
-    SEL = box.id === "f2DPros" ? dSel : wcSel;
+    SEL = box.id === "f2DPros" ? dSel : box.id === "f2HPros" ? hSel : wcSel;
   const x = e.target.closest("[data-msx]");
   if (x) {
     delete SEL[x.dataset.msx];
@@ -882,7 +884,8 @@ $("#seg-f2ectf").addEventListener("change", renderF2Shots);
 function f2CheckVals() {
   const en = f2En(),
     rev = en === "Reversal";
-  if (!hasStruct(en)) return { struct: "", bos: "", dfs: "", som: "", room: "" };
+  if (!hasStruct(en))
+    return { struct: "", bos: "", dfs: "", som: "", room: roomOk(en, "") ? (hSel.room ? "ja" : "nee") : "" };
   const st = f2St(),
     bos = st === "bos",
     som = st === "som";
@@ -891,21 +894,19 @@ function f2CheckVals() {
     bos: bos ? "ja" : som ? "nee" : "",
     dfs: "",
     som: som && rev ? "ja" : "",
-    room: som ? ($("#f2Room").checked ? "ja" : "nee") : "",
+    room: roomOk(en, st) ? (hSel.room ? "ja" : "nee") : "",
   };
 }
 function f2Check() {
   const v = f2CheckVals(),
     e = f2En();
-  // the 4H pros are always shown; the ones that don't fit the entry are greyed out and cleared
-  [
-    ["#f2Eng", engOk(e)],
-    ["#f2Chan", chanOk(e)],
-    ["#f2Room", v.struct === "som"],
-  ].forEach(([id, ok]) => {
-    $(id).disabled = !ok;
-    if (!ok) $(id).checked = false;
-  });
+  // the 4H pros that don't fit the entry are greyed out in the list and cleared
+  const na = HPROS.filter(([k]) => !hproOk(k, e, v.struct)).map(([k]) => k);
+  if (na.some(k => hSel[k]) || na.join() !== f2Check.na) {
+    na.forEach(k => delete hSel[k]);
+    f2Check.na = na.join();
+    msRender();
+  }
 }
 function f2Summaries() {
   f2Check();
@@ -946,10 +947,8 @@ function f2Summaries() {
     [
       lab ? lab + (e === "Engulfing Candle" && tf ? " · " + tf.toUpperCase() : "") : "",
       radio("f2hms") ? msl("f2hms") : "",
+      ...HPROS.filter(([k]) => hSel[k]).map(([, l]) => l),
       ...[
-        ["#f2Eng", "Engulfing candle"],
-        ["#f2Chan", "Channel"],
-        ["#f2Room", "Room"],
         ["#f2Scale", "Scale-in"],
       ]
         .filter(([id]) => $(id).checked && !$(id).closest("[hidden]"))
@@ -975,7 +974,7 @@ function f2Summaries() {
           fase: radio("f2fase") || "",
           concept: $("#f2Concept").value,
           entry4h: f2En(),
-          channel: chanOk(f2En()) && $("#f2Chan").checked,
+          channel: chanOk(f2En()) && !!hSel.channel,
         },
         g = gradeOf(tt);
       $("#f2Score").innerHTML = g
@@ -1154,6 +1153,7 @@ function openSheet2(t, dup) {
   f2Links = {};
   wcSel = {};
   dSel = {};
+  hSel = {};
   document.querySelectorAll(".ms.open").forEach(b => b.classList.remove("open"));
   msRender();
   $("#f2EcBlock").hidden = true;
@@ -1215,10 +1215,9 @@ function f2Fill(t) {
   f2EntrySet(entryKey(t.entry4h, t.struct || (t.bos === "ja" ? "bos" : t.bos === "nee" ? "som" : "")));
   ch($("#f2Entry"));
   setRadio("f2ectf", t.ecTf || "");
-  $("#f2Room").checked = t.room === "ja";
+  hSel = Object.fromEntries(HPROS.filter(([k]) => (k === "room" ? t.room === "ja" : t[k])).map(([k]) => [k, "for"]));
+  msRender();
   $("#f2Scale").checked = !!t.scaleIn;
-  $("#f2Chan").checked = !!t.channel;
-  $("#f2Eng").checked = !!t.engulf;
   $("#f2PlanEntry").value = t.planEntry ?? "";
   $("#f2SlPips").value = t.slPips ?? "";
   $("#f2TpPips").value = t.tpPips ?? "";
@@ -1345,8 +1344,8 @@ $("#tradeForm2").onsubmit = e => {
     wPat: $("#f2WPat").value === "?" ? "" : $("#f2WPat").value,
     wPatSub: $("#f2WPat").value && $("#f2WPat").value !== "?" ? $("#f2WPatSub").value : "",
     scaleIn: $("#f2Scale").checked,
-    channel: chanOk(f2En()) && $("#f2Chan").checked,
-    engulf: engOk(f2En()) && $("#f2Eng").checked,
+    channel: chanOk(f2En()) && !!hSel.channel,
+    engulf: engOk(f2En()) && !!hSel.engulf,
     dMs: radio("f2dms") || "",
     hMs: radio("f2hms") || "",
     weekly: wcVals(),
