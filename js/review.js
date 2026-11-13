@@ -1017,7 +1017,7 @@ function rvGameRender() {
     prog = `Trade ${S.i + 1} of ${S.queue.length}`;
   if (step < 3) {
     const st = RV_STEPS[step];
-    box.innerHTML = `<div class="panel rvstep"><div class="row spread"><div><span class="eyebrow">${prog} · step ${step + 1} of 3</span><h2>${st}${S.open ? ` <span class="hint" style="margin:0;font-size:15px">· ${esc(t.pair || "")} ${esc(fmtD(t.date))}</span>` : ""}</h2></div><div class="row" style="gap:6px"><button type="button" class="btn small ghost" id="rvEnd">End session</button><button type="button" class="btn small ghost" id="rvPause">Pause</button></div></div>
+    box.innerHTML = `<div class="panel rvstep"><div class="row spread"><div><span class="eyebrow">${prog} · step ${step + 1} of 3</span><h2>${st}${S.open ? ` <span class="hint" style="margin:0;font-size:15px">· ${esc(t.pair || "")} ${esc(fmtD(t.date))}</span>` : ""}</h2></div><div class="row" style="gap:6px">${S.open ? tvReplayBtn(t) : ""}<button type="button" class="btn small ghost" id="rvEnd">End session</button><button type="button" class="btn small ghost" id="rvPause">Pause</button></div></div>
       <div class="rvdots">${RV_STEPS.map((x, i) => `<span class="${i < step ? "done" : i === step ? "on" : ""}">${x}</span>`).join("")}<span>Reveal</span></div>
       ${
         S.open
@@ -1045,7 +1045,7 @@ function rvGameRender() {
   const nd = RV_ROWS.filter(([k]) => !rvEq(rvPick(o, k), rvPick(a, k))).length,
     oc = t.outcome || (t.r > 0 ? "win" : t.r < 0 ? "loss" : "be");
   box.innerHTML = `<div class="panel rvstep"><div class="row spread"><div><span class="eyebrow">${prog} · reveal</span><h2>${esc(t.pair || "?")} <span class="dirar ${t.dir}">${t.dir === "long" ? "↑" : t.dir === "short" ? "↓" : ""}</span> <span class="restag ${oc}">${{ win: "Win", loss: "Loss", be: "BE", open: "Open" }[oc]}${oc === "open" ? "" : `<b class="num">${fmtR(t.r)}</b>`}</span></h2>
-      <p class="hint" style="margin:2px 0 0">${esc(fmtD(t.date))} · ${t.mode === "backtest" ? "Backtest" : esc(t.account || "Live")}</p></div><button type="button" class="btn small ghost" id="rvPause">Pause</button></div>
+      <p class="hint" style="margin:2px 0 0">${esc(fmtD(t.date))} · ${t.mode === "backtest" ? "Backtest" : esc(t.account || "Live")}</p></div><div class="row" style="gap:6px">${tvReplayBtn(t)}<button type="button" class="btn small ghost" id="rvPause">Pause</button></div></div>
     <p class="rvsum">${nd ? `${nd} difference${nd > 1 ? "s" : ""} with what you filled in back then` : "Exactly the same as back then"} · grade ${go ? `<span class="grade g${go.g}" title="${esc(go.why)}">${go.g}</span>` : "—"} → ${gn ? `<span class="grade g${gn.g}" title="${esc(gn.why)}">${gn.g}</span> <span class="hint" style="margin:0">${esc(gn.why)}</span>` : "—"}</p>
     <div class="tbl"><table class="rvtab"><thead><tr><th></th><th>Back then</th><th>Now</th></tr></thead><tbody>${rows}<tr class="rvplan ${S.plan && op && S.plan !== op ? "diff" : ""}"><td>According to plan</td><td>${opL}</td><td>${S.plan ? npL : `<span class="hint" style="margin:0">answer below</span>`}</td></tr></tbody></table></div>
     ${S.plan && op && S.plan !== op ? `<p class="rvplanchg">You now think this trade was <b>${S.plan === "plan" ? "according to plan" : "not according to plan"}</b>; back then you said <b>${op === "plan" ? "according to plan" : "not according to plan"}</b>.</p>` : ""}

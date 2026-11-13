@@ -1166,6 +1166,9 @@ function openSheet2(t, dup) {
   if (t) f2Fill(t);
   $("#f2Dup").hidden = $("#f2Del").hidden = !t || !!dup;
   $("#f2Share").hidden = $("#f2CopyAn").hidden = !t || !!dup || !feat("share");
+  const rpUrl = t && !dup ? tvReplayUrl(t) : "";
+  $("#f2Replay").hidden = !rpUrl;
+  if (rpUrl) $("#f2Replay").href = rpUrl;
   f2ShareShow(t && !dup && feat("share") ? t.id : null);
   {
     const b = $("#f2Del");

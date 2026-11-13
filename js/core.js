@@ -64,6 +64,17 @@ const trendAbs = t => {
 };
 const trendRel = (a, dir) => ((a === "bull" || a === "bear") && dir ? ((a === "bull") === (dir === "long") ? "for" : "against") : "");
 const TREND_LAB = { bull: "↑ Bullish", bear: "↓ Bearish", range: "↔ Ranging" };
+// The pair's 4H chart on TradingView; the extension reads #tj-replay and starts bar replay at the trade's date
+const tvReplayUrl = t => {
+  const p = String((t && t.pair) || "")
+    .replace(/[^A-Za-z0-9]/g, "")
+    .toUpperCase();
+  return p && t.date ? `https://www.tradingview.com/chart/?symbol=${p}&interval=240#tj-replay=${t.date}` : "";
+};
+const tvReplayBtn = t =>
+  tvReplayUrl(t)
+    ? `<a class="btn small ghost" href="${esc(tvReplayUrl(t))}" target="_blank" rel="noopener" title="Open the 4H chart on TradingView; with the extension, bar replay starts at the trade's date">Replay ↗</a>`
+    : "";
 const httpsOnly = u => (/^https:\/\//i.test(u || "") ? u : "");
 const httpsLinks = o => Object.fromEntries(Object.entries(o || {}).filter(([, v]) => httpsOnly(v)));
 const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
