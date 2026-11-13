@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.3.25 — 2026-11-13
+
+- **This week's news on the Journal page**: the heavy and high events still to come (heavy only if that's your news setting), by day with time and currency, from the same feed as the news calendar. An event that hits an open trade's currency names that trade. Shown for live forex only. Forex Factory only publishes the current week, so it's nearly empty from Friday until next week's events arrive, usually on Sunday.
+
 ## 1.3.24 — 2026-11-13
 
 - Calendar: open and missed trades show just their pair with a blue or hollow dot, without the "Open" / "Missed" text or the outline around the day.

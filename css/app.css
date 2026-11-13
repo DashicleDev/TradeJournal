@@ -4159,6 +4159,49 @@ fieldset.subs-closed .legend-toggle .chev {
   flex: none;
   box-shadow: 0 0 0 1px color-mix(in srgb, var(--ink) 15%, transparent);
 }
+/* journal page: this week's news */
+.newsp h2 {
+  margin-bottom: 8px;
+}
+.nwday {
+  font: 600 12px var(--body);
+  color: var(--muted);
+  margin: 10px 0 4px;
+}
+.nwrow {
+  display: grid;
+  grid-template-columns: 48px 40px minmax(0, 1fr) auto auto;
+  gap: 10px;
+  align-items: baseline;
+  padding: 4px 0;
+  font-size: 14px;
+}
+.nwrow .nwt {
+  color: var(--muted);
+}
+.nwl {
+  font-size: 12px;
+  color: var(--muted);
+}
+.nwl.heavy {
+  color: var(--bad);
+  font-weight: 600;
+}
+.nwhit {
+  font: 600 12px var(--mono);
+  color: var(--s1, #3987e5);
+}
+.nwrow.hit .nwtt {
+  font-weight: 600;
+}
+@media (max-width: 520px) {
+  .nwrow {
+    grid-template-columns: 44px 36px minmax(0, 1fr) auto;
+  }
+  .nwl {
+    display: none;
+  }
+}
 .dp.more {
   font-family: var(--body);
 }
