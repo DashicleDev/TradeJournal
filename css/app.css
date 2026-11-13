@@ -4162,7 +4162,7 @@ fieldset.subs-closed .legend-toggle .chev {
 .dp.more {
   font-family: var(--body);
 }
-/* missed trades: hollow dot and a dashed outline on the day, not counted in its R */
+/* open trades: blue dot; missed trades: hollow dot. Neither counts in the day's R */
 .dp.miss i {
   background: none;
   box-shadow: inset 0 0 0 1.5px var(--muted);
@@ -4170,23 +4170,8 @@ fieldset.subs-closed .legend-toggle .chev {
 .dp.miss span {
   font-style: italic;
 }
-.cal .day.hasmiss {
-  outline: 1px dashed color-mix(in srgb, var(--muted) 70%, transparent);
-  outline-offset: -4px;
-}
 .dp.open i {
   background: var(--s1, #3987e5);
-}
-.cal .day.hasopen:not(.hasmiss) {
-  outline: 1px solid color-mix(in srgb, var(--s1, #3987e5) 60%, transparent);
-  outline-offset: -4px;
-}
-.day .dr.dmiss.dopen {
-  color: var(--s1, #3987e5);
-}
-.day .dr.dmiss {
-  font: 600 12px var(--body);
-  color: var(--muted);
 }
 .day .dc {
   font-size: 11px;

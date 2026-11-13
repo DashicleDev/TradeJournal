@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.3.24 — 2026-11-13
+
+- Calendar: open and missed trades show just their pair with a blue or hollow dot, without the "Open" / "Missed" text or the outline around the day.
+
 ## 1.3.23 — 2026-11-13
 
 - **Open trades show in the calendar**: on their day with a blue dot (and "Open" when the day has no closed trades), and as "1 open" in the week and month totals. Like missed trades, they don't count in the day's R or colour until they're closed.

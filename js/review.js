@@ -1592,7 +1592,7 @@ function renderLive() {
     days[t.date].n++;
     if (t.r > 0) days[t.date].w++;
   });
-  // open and missed trades: shown on their day (blue dot / hollow dot), never counted in the day's R or colour
+  // open and missed trades: only their pair with a blue / hollow dot on their day, never counted in the day's R or colour
   const isOpenT = t => t.status === "taken" && (t.r == null || isNaN(t.r)),
     extra = {};
   month
@@ -1653,7 +1653,7 @@ function renderLive() {
     const tint = a
       ? `background:color-mix(in srgb,var(${a.r > 0 ? "--good" : a.r < 0 ? "--bad" : "--be"}) ${a.r ? Math.round(10 + (Math.abs(a.r) / maxAbs) * 28) : 22}%,var(--surface))`
       : "";
-    cells += `<button type="button" class="day ${we ? "we" : ""} ${we && !a && !ms.length ? "off" : ""} ${ds === today ? "today" : ""} ${nMiss ? "hasmiss" : ""} ${nOpen ? "hasopen" : ""}" data-day="${ds}" aria-pressed="${selDay === ds}" style="${tint}" aria-label="${d} ${MONTHS[m - 1]}${a ? `, ${fmtR(a.r)}, ${a.n} trades` : ", no trades"}${nOpen ? `, ${nOpen} open` : ""}${nMiss ? `, ${nMiss} missed` : ""}"><span class="dn">${d}</span>${
+    cells += `<button type="button" class="day ${we ? "we" : ""} ${we && !a && !ms.length ? "off" : ""} ${ds === today ? "today" : ""}" data-day="${ds}" aria-pressed="${selDay === ds}" style="${tint}" aria-label="${d} ${MONTHS[m - 1]}${a ? `, ${fmtR(a.r)}, ${a.n} trades` : ", no trades"}${nOpen ? `, ${nOpen} open` : ""}${nMiss ? `, ${nMiss} missed` : ""}"><span class="dn">${d}</span>${
       a
         ? `<span class="dr ${a.r > 0 ? "pos" : a.r < 0 ? "neg" : ""}">${fmtR(a.r)}</span><span class="dpairs">${a.tr
             .slice(0, 3)
@@ -1663,7 +1663,7 @@ function renderLive() {
             )
             .join("")}${a.tr.length > 3 ? `<span class="dp more">+${a.tr.length - 3}</span>` : ""}${mchips}</span>`
         : ms.length
-          ? `<span class="dr dmiss${nOpen ? " dopen" : ""}">${nOpen ? "Open" : "Missed"}</span><span class="dpairs">${mchips}${ms.length > 3 ? `<span class="dp more">+${ms.length - 3}</span>` : ""}</span>`
+          ? `<span class="dr" aria-hidden="true">&nbsp;</span><span class="dpairs">${mchips}${ms.length > 3 ? `<span class="dp more">+${ms.length - 3}</span>` : ""}</span>`
           : ""
     }</button>`;
     if (a) {
