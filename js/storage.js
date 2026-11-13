@@ -280,6 +280,7 @@ async function startSession(user) {
         await ensureShotUrls([t]);
         lsSave();
         render();
+        f2Remote(t);
       }
     )
     .on("postgres_changes", { event: "DELETE", schema: "public", table: "docs" }, p => {

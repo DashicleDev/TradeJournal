@@ -2,7 +2,7 @@
  * core.js — Shared basics: the trading plan (concepts, entries, exits), formatting and small DOM helpers.
  * Loaded first; every other file uses these.
  */
-const APP_VERSION = "1.3.38";
+const APP_VERSION = "1.3.39";
 const PLAN = {
   concepts: {
     Continuation: ["First Structure", "100 level", "Fake Out", "New Action"],

@@ -96,10 +96,9 @@ function rvPool(o) {
   return docs.filter(
     t =>
       !t.kind &&
-      (!o.unrev || !(t.reviews && t.reviews.length)) &&
+      (!o.unrev || o.open === "form" || !(t.reviews && t.reviews.length)) &&
       mktOf(t) === "fx" &&
-      t.status !== "missed" &&
-      t.r != null &&
+      (o.open === "form" || (t.status !== "missed" && t.r != null)) &&
       (o.mode === "both" || t.mode === o.mode) &&
       (o.mode !== "live" || !o.acct || t.account === o.acct) &&
       (o.mode !== "backtest" || !o.proj || t.project === o.proj) &&
@@ -107,8 +106,7 @@ function rvPool(o) {
         const r = rvRange(o);
         return (!r.from || (t.date || "") >= r.from) && (!r.to || (t.date || "") <= r.to);
       })() &&
-      t.shotLinks &&
-      (t.shotLinks.weekly || t.shotLinks.daily || t.shotLinks.h4) &&
+      (o.open === "form" || (t.shotLinks && (t.shotLinks.weekly || t.shotLinks.daily || t.shotLinks.h4))) &&
       // the same filters as Analyze (phase, grade, pros, result, …)
       applySet({ mode: "all", project: "all", ...(o.f || {}) }, [t]).length > 0
   );
@@ -943,14 +941,15 @@ function rvGameRender() {
     ];
     box.innerHTML = `${shown ? rvResultHTML(shown) : ""}
       ${L.length ? `<div class="panel"><span class="eyebrow">Ongoing</span><h2>Your review sessions</h2><div class="rvlist">${L.map(x => `<div class="rvsess"><div><b>${esc(x.name || "Review session")}</b>${rvSessInfo(x)}</div><div class="rvbar"><i style="width:${Math.round((x.i / x.queue.length) * 100)}%"></i></div><div class="row" style="gap:6px"><button type="button" class="btn small ghost" data-rvdel="${x.id}">Delete</button><button type="button" class="btn small primary" data-rvres="${x.id}">Resume</button></div></div>`).join("")}</div></div>` : ""}
-      <div class="panel rvsetup"><span class="eyebrow">New session</span><h2>Re-analyse old trades${o.open ? "" : " blind"}</h2>
-      <p class="hint">${o.open ? "You see the weekly, daily and 4H chart one by one with the pair and the analysis you filled in back then, and correct what you'd judge differently now. At the end it shows what you changed." : "You see the weekly, daily and 4H chart one by one, without pair or result, and fill in your analysis. At the end it shows what you filled in back then."}</p>
+      <div class="panel rvsetup"><span class="eyebrow">New session</span><h2>${o.open === "form" ? "Go through trades" : "Re-analyse old trades" + (o.open ? "" : " blind")}</h2>
+      <p class="hint">${o.open === "form" ? "Opens each matching trade in the trade form, oldest first. Save goes to the next trade, Skip leaves it as it is." : o.open ? "You see the weekly, daily and 4H chart one by one with the pair and the analysis you filled in back then, and correct what you'd judge differently now. At the end it shows what you changed." : "You see the weekly, daily and 4H chart one by one, without pair or result, and fill in your analysis. At the end it shows what you filled in back then."}</p>
       <div class="fields" style="margin-bottom:12px">
       ${rvF(
-        "Previous analysis",
+        "Mode",
         `<div class="segs">${[
-          ["", "Hidden (blind)"],
-          ["1", "Shown"],
+          ["", "Blind re-analysis"],
+          ["1", "Re-analysis, shown"],
+          ["form", "Trade forms"],
         ]
           .map(
             ([v, l]) =>
@@ -974,7 +973,7 @@ function rvGameRender() {
       )}
       ${o.mode === "live" ? rvF("Account", `<select data-ros="acct"><option value="">All accounts</option>${acs.map(a => `<option ${a.name === o.acct ? "selected" : ""}>${esc(a.name)}</option>`).join("")}</select>`) : ""}
       ${o.mode === "backtest" ? rvF("Project", `<select data-ros="proj"><option value="">All projects</option>${ps.map(p => `<option value="${p.id}" ${p.id === o.proj ? "selected" : ""}>${esc(p.name)}</option>`).join("")}</select>`) : ""}
-      ${rvF(
+      ${o.open === "form" ? "" : rvF(
         "Include",
         `<div class="segs">${[
           ["", "All"],
@@ -989,7 +988,7 @@ function rvGameRender() {
       <div class="rvfilt"><span class="eyebrow">Only trades with</span><div class="fchips">${fchipsOf(o.f || {}, "__rv").join("")}<button type="button" class="addf" data-addf="__rv">+ Add filter</button></div></div>
       <div class="f" style="margin-top:12px"><span>Period</span><div class="segs">${per.map(([v, l]) => `<button type="button" class="rvb${o.per === v ? " on" : ""}" data-ro="per" data-rv="${v}">${l}</button>`).join("")}</div></div>
       ${o.per === "custom" ? `<div class="fields" style="margin-top:10px">${rvF("From", `<input type="date" data-ros="from" value="${esc(o.from || "")}">`)}${rvF("To", `<input type="date" data-ros="to" value="${esc(o.to || "")}">`)}</div>` : o.per === "all" ? "" : `<div class="rvper"><button type="button" class="btn small" data-rvshift="-1" aria-label="Previous">‹</button><b>${esc(R.label)}</b><button type="button" class="btn small" data-rvshift="1" aria-label="Next">›</button>${o.anchor && o.anchor !== isoD(new Date()) ? `<button type="button" class="btn small ghost" data-rvshift="0">Today</button>` : ""}</div>`}
-      <div class="row" style="gap:10px;align-items:center;margin-top:16px"><button type="button" class="btn primary" id="rvStart" ${n ? "" : "disabled"}>Start review</button><span class="hint" style="margin:0">${n} trade${n === 1 ? "" : "s"} with charts${R.from || R.to ? " in " + esc(R.label) : ""}, in random order${(() => {
+      <div class="row" style="gap:10px;align-items:center;margin-top:16px"><button type="button" class="btn primary" id="rvStart" ${n ? "" : "disabled"}>${o.open === "form" ? "Open first trade" : "Start review"}</button><span class="hint" style="margin:0">${n} trade${n === 1 ? "" : "s"} ${o.open === "form" ? "" : " with charts"}${R.from || R.to ? " in " + esc(R.label) : ""}${o.open === "form" ? "" : ", in random order"}${o.open === "form" ? "" : (() => {
         const all = rvPool({ ...o, unrev: "" }),
           d = all.filter(t => t.reviews && t.reviews.length).length;
         return all.length ? ` · ${d} of ${all.length} already re-evaluated` : "";
@@ -1134,6 +1133,13 @@ $("#rvBox").addEventListener("click", e => {
       rvRender();
     }
     return;
+  }
+  if (b.id === "rvStart" && rvOpts.open === "form") {
+    const ids = rvPool(rvOpts)
+      .sort((a, b) => (a.date || "").localeCompare(b.date || ""))
+      .map(t => t.id);
+    walk = { ids, i: 0 };
+    return editTrade(ids[0]);
   }
   if (b.id === "rvStart") {
     const o = { ...rvOpts },

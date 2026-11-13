@@ -1166,6 +1166,14 @@ function openSheet2(t, dup) {
   f2FillVariant();
   f2SetupShow();
   if (t) f2Fill(t);
+  f2Dirty = false;
+  $("#f2Stale").hidden = true;
+  $("#f2Walk").hidden = !(walk && t && !dup);
+  if (walk && t && !dup) {
+    $("#f2WNum").textContent = `${walk.i + 1} of ${walk.ids.length}`;
+    $("#f2WPrev").disabled = walk.i === 0;
+    $("#f2Save").textContent = "Save & next";
+  }
   $("#f2Dup").hidden = $("#f2Del").hidden = !t || !!dup;
   $("#f2Share").hidden = $("#f2CopyAn").hidden = !t || !!dup || !feat("share");
   const rpUrl = t && !dup ? tvReplayUrl(t) : "";
@@ -1291,7 +1299,7 @@ function editTrade(id) {
     activeProject = projName(t.project) ? t.project : "none";
     btOpen = true;
   }
-  if (tab !== "analyze" && tab !== "grading") show(t.mode === "live" ? "live" : "backtest");
+  if (tab !== "analyze" && tab !== "grading" && tab !== "review") show(t.mode === "live" ? "live" : "backtest");
   openSheet2(t);
 }
 $("#f2Dup").onclick = () => {
@@ -1319,11 +1327,40 @@ $("#f2Del").onclick = e => {
   deleteDoc(id);
   toast("Trade deleted");
 };
+// the trade open in the form was saved elsewhere (the extension): an untouched form shows the saved values, an edited one asks first
+let f2Dirty = false;
+$("#tradeForm2").addEventListener("input", e => e.isTrusted && (f2Dirty = true));
+$("#tradeForm2").addEventListener("change", e => e.isTrusted && (f2Dirty = true));
+$("#tradeForm2").addEventListener("click", e => e.isTrusted && (f2Dirty = true));
+function f2Remote(t) {
+  if (t.id !== editingId || $("#sheet2").hidden) return;
+  if (f2Dirty) return void ($("#f2Stale").hidden = false);
+  const y = $("#sheet2").scrollTop;
+  openSheet2(t);
+  $("#sheet2").scrollTop = y;
+}
+$("#f2Reload").onclick = () => {
+  const t = docs.find(x => x.id === editingId);
+  if (t) openSheet2(t);
+};
+let walk = null; // going through trades from the Review tab: { ids, i }
 function closeSheet2() {
   $("#sheet2").hidden = true;
   document.body.style.overflow = "";
   editingId = null;
+  walk = null;
 }
+function walkGo(d) {
+  const w = walk;
+  let i = w.i + d;
+  while (i >= 0 && i < w.ids.length && !docs.some(x => x.id === w.ids[i])) i += d;
+  closeSheet2();
+  if (i < 0 || i >= w.ids.length) return toast("That was the last trade");
+  walk = { ...w, i };
+  editTrade(w.ids[i]);
+}
+$("#f2WPrev").onclick = () => walkGo(-1);
+$("#f2WNext").onclick = () => walkGo(1);
 $("#tradeForm2").onsubmit = e => {
   e.preventDefault();
   const old = editingId ? docs.find(d => d.id === editingId) : null,
@@ -1373,6 +1410,7 @@ $("#tradeForm2").onsubmit = e => {
     created: Date.now(),
   };
   if (old) t.created = old.created || t.created;
+  const w = walk;
   saveDoc(old ? { ...old, ...t } : t);
   acRemember("fx", t.account);
   if (t.date && !old) {
@@ -1381,6 +1419,10 @@ $("#tradeForm2").onsubmit = e => {
   }
   toast(old ? "Changes saved" : "Trade saved");
   closeSheet2();
+  if (w) {
+    walk = w;
+    walkGo(1);
+  }
 };
 document.addEventListener("keydown", e => {
   if (e.key !== "Escape") return;

@@ -592,8 +592,17 @@
             <div class="formhead">
               <span class="chip" id="f2Chip">Live</span>
               <h3 id="f2Title">New trade</h3>
+              <span class="row" id="f2Walk" hidden style="gap:6px;align-items:center"
+                ><button type="button" class="btn small ghost" id="f2WPrev">‹ Back</button
+                ><small class="hint" style="margin:0" id="f2WNum"></small
+                ><button type="button" class="btn small ghost" id="f2WNext">Skip ›</button></span
+              >
               <button type="button" class="btn small ghost closex" data-closesheet2>Close</button>
             </div>
+            <p class="hint" id="f2Stale" hidden>
+              This trade was saved elsewhere. <button type="button" class="btn small" id="f2Reload">Load the saved version</button>
+              (your changes here are lost)
+            </p>
             <fieldset>
               <legend>Context</legend>
               <div class="fields">

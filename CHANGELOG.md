@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.3.39 — 2026-11-13
+
+- **Review: go through your trades in the trade form.** Pick "Trade forms" in the Re-evaluate setup, filter the trades as usual (setups, grade, pros, period, account…) and each one opens in the form, oldest first. Save & next saves and moves on, Skip and Back move without saving.
+- **A trade open in the form updates when you save it in the extension**, instead of showing the old values and overwriting your change on Save. If you had already changed something in the form, it asks before replacing your changes.
+
 ## 1.3.38 — 2026-11-13
 
 - **Deceleration entries can also have the Engulfing candle pro and Room.** Same in the extension (1.4.26).
