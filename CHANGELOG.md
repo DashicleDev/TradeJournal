@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.3.41 — 2026-11-13
+
+- **Fix: the journal didn't stay locked while the Replay window was open.** TradingView cuts the link to a window the journal opens, so the journal couldn't tell it was still open. The extension (1.4.28) now tells the journal when the window closes; the Unlock button stays as a fallback. Each Replay opens a new window instead of reusing one.
+- **Trade forms walk-through is saved like a game session.** It shows under "Your review sessions" with where you stopped; Resume opens the trade you were on. It's removed when you get past the last trade.
+
 ## 1.3.40 — 2026-11-13
 
 - **Replay opens its own chart window.** The click no longer depends on the extension reaching the journal tab, so nothing has to be reloaded after the extension updates. The same window is reused for the next Replay. With extension 1.4.27 the trade opens in its panel and the window closes when you save it. While the window is open the journal is locked (Show window / Unlock buttons). Replay from the trade form saves what you've changed in the form first, so the extension starts from it.

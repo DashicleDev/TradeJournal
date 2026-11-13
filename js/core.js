@@ -2,7 +2,7 @@
  * core.js — Shared basics: the trading plan (concepts, entries, exits), formatting and small DOM helpers.
  * Loaded first; every other file uses these.
  */
-const APP_VERSION = "1.3.40";
+const APP_VERSION = "1.3.41";
 const PLAN = {
   concepts: {
     Continuation: ["First Structure", "100 level", "Fake Out", "New Action"],
@@ -113,31 +113,30 @@ const tvReplayBtn = t =>
   tvReplayUrl(t)
     ? `<a class="btn small ghost tvrp" href="${esc(tvReplayUrl(t))}" target="_blank" rel="noopener" title="Open the 4H chart on TradingView; with the extension, bar replay starts at the trade's date">Replay ↗</a>`
     : "";
-// Replay opens a chart window of its own (the next Replay reuses it). The extension's panel there loads the trade from the
-// address and the window closes when you save it. This goes first, so no extension script has to catch the click.
-// While that window is open the journal is locked; closing it unlocks again.
-function replayLock(win) {
+// Replay opens a chart window of its own. The extension's panel there loads the trade from the address and the window
+// closes when you save it. This goes first, so no extension script has to catch the click. While that window is open the
+// journal is locked. TradingView cuts the link to a window it opens, so the journal can't see it close: the extension
+// says so (postMessage from replay-link.js), and Unlock is there if that doesn't arrive.
+let rpOff = null;
+function replayLock() {
+  if (rpOff) return;
   const o = document.createElement("div");
   o.className = "rplock";
-  o.innerHTML = `<div class="rpbox"><b>Replay window is open</b><p>The trade is being edited there. This unlocks when you close that window.</p><div class="row" style="gap:8px"><button type="button" class="btn small" data-rpshow>Show window</button><button type="button" class="btn small ghost" data-rpoff>Unlock</button></div></div>`;
-  const off = () => {
-    clearInterval(iv);
+  o.innerHTML = `<div class="rpbox"><b>Replay window is open</b><p>The trade is being edited there. This unlocks when you close that window.</p><button type="button" class="btn small ghost">Unlock</button></div>`;
+  rpOff = () => {
+    rpOff = null;
     o.remove();
     document.body.inert = false;
     const t = typeof editingId !== "undefined" && docs.find(x => x.id === editingId);
     if (t) f2Remote(t); // an open form shows what was saved in the window
   };
-  const iv = setInterval(() => win.closed && off(), 500);
   o.addEventListener("keydown", e => e.stopPropagation());
-  o.onclick = e => {
-    const b = e.target.closest("button");
-    if (b && "rpshow" in b.dataset) win.focus();
-    if (b && "rpoff" in b.dataset) off();
-  };
+  o.querySelector("button").onclick = rpOff;
   document.documentElement.appendChild(o);
   document.body.inert = true;
   o.querySelector("button").focus();
 }
+addEventListener("message", e => e.source === window && e.data && e.data.tjReplay === "closed" && rpOff && rpOff());
 addEventListener(
   "click",
   e => {
@@ -150,10 +149,10 @@ addEventListener(
     const w = Math.min(1400, screen.availWidth),
       h = Math.min(900, screen.availHeight),
       // opened now (inside the click), pointed at the chart once the form is saved
-      win = window.open("", "tjreplay", `popup=yes,width=${w},height=${h},left=${(screen.availWidth - w) / 2},top=${(screen.availHeight - h) / 2}`);
+      win = window.open("", "_blank", `popup=yes,width=${w},height=${h},left=${(screen.availWidth - w) / 2},top=${(screen.availHeight - h) / 2}`);
     if (!win) return void window.open(a.href, "_blank"); // pop-ups blocked: a normal tab
     win.focus();
-    replayLock(win);
+    replayLock();
     (async () => {
       // a trade open in the form: save what's in it first, so the extension starts from your changes
       if (inForm) await f2Submit(true).catch(() => {});

@@ -893,7 +893,7 @@ function rvSessInfo(x) {
     line = (...p) => `<small class="hint" style="margin:0;display:block">${p.filter(Boolean).join(" · ")}</small>`;
   return (
     line(
-      x.open ? "Previous analysis shown" : "Blind",
+      x.form ? "Trade forms" : x.open ? "Previous analysis shown" : "Blind",
       `${x.i} of ${x.queue.length} reviewed`,
       x.started ? "started " + d(x.started) : "",
       "last used " + d(x.touched || x.started || Date.now())
@@ -1138,8 +1138,16 @@ $("#rvBox").addEventListener("click", e => {
     const ids = rvPool(rvOpts)
       .sort((a, b) => (a.date || "").localeCompare(b.date || ""))
       .map(t => t.id);
-    walk = { ids, i: 0 };
-    return editTrade(ids[0]);
+    const R = rvRange(rvOpts),
+      who =
+        rvOpts.mode === "live"
+          ? rvOpts.acct || "Live"
+          : rvOpts.mode === "backtest"
+            ? (projects().find(p => p.id === rvOpts.proj) || {}).name || "Backtest"
+            : "Live + backtest",
+      s = { id: "rv_" + Date.now().toString(36), kind: "review", form: true, name: `${who} · ${R.label} · trade forms`, opts: { ...rvOpts }, queue: ids, i: 0, started: Date.now(), touched: Date.now() };
+    saveDoc(s); // saved like a game session: Resume continues where you stopped
+    return walkAt({ ids, i: 0, sid: s.id }, 1);
   }
   if (b.id === "rvStart") {
     const o = { ...rvOpts },
@@ -1195,6 +1203,10 @@ $("#rvBox").addEventListener("click", e => {
   if (b.dataset.rvclose) {
     rvShow = null;
     return rvRender();
+  }
+  if (b.dataset.rvres && (docs.find(d => d.id === b.dataset.rvres) || {}).form) {
+    const x = docs.find(d => d.id === b.dataset.rvres);
+    return walkAt({ ids: x.queue, i: x.i, sid: x.id }, 1);
   }
   if (b.dataset.rvres) {
     rvActive = b.dataset.rvres;

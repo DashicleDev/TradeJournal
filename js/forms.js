@@ -1350,15 +1350,23 @@ function closeSheet2() {
   editingId = null;
   walk = null;
 }
-function walkGo(d) {
-  const w = walk;
-  let i = w.i + d;
+// open trade w.ids[w.i] in the form (skipping deleted ones in direction d); the session is saved with where you are,
+// and removed when you get past the last trade
+function walkAt(w, d) {
+  let i = w.i;
   while (i >= 0 && i < w.ids.length && !docs.some(x => x.id === w.ids[i])) i += d;
   closeSheet2();
-  if (i < 0 || i >= w.ids.length) return toast("That was the last trade");
+  if (i >= w.ids.length) {
+    if (docs.some(x => x.id === w.sid)) deleteDoc(w.sid);
+    return toast("That was the last trade");
+  }
+  if (i < 0) return;
   walk = { ...w, i };
+  const s = docs.find(x => x.id === w.sid);
+  if (s) saveDoc({ ...s, i, touched: Date.now() });
   editTrade(w.ids[i]);
 }
+const walkGo = d => walkAt({ ...walk, i: walk.i + d }, d);
 $("#f2WPrev").onclick = () => walkGo(-1);
 $("#f2WNext").onclick = () => walkGo(1);
 // stay: save without closing the form (Replay saves first); returns the save
