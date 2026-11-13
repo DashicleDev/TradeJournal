@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.3.31 — 2026-11-13
+
+- Replay ↗ starts bar replay at the trade's **close date** when it has one, otherwise at its open date.
+
 ## 1.3.30 — 2026-11-13
 
 - The Replay ↗ link opens the pair on the OANDA feed (e.g. OANDA:EURUSD) instead of TradingView's default.
