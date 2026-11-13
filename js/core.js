@@ -64,12 +64,12 @@ const trendAbs = t => {
 };
 const trendRel = (a, dir) => ((a === "bull" || a === "bear") && dir ? ((a === "bull") === (dir === "long") ? "for" : "against") : "");
 const TREND_LAB = { bull: "↑ Bullish", bear: "↓ Bearish", range: "↔ Ranging" };
-// The pair's 4H chart on TradingView; the extension reads #tj-replay and starts bar replay at the trade's date
+// The pair's 4H OANDA chart on TradingView; the extension reads #tj-replay and starts bar replay at the trade's date
 const tvReplayUrl = t => {
   const p = String((t && t.pair) || "")
     .replace(/[^A-Za-z0-9]/g, "")
     .toUpperCase();
-  return p && t.date ? `https://www.tradingview.com/chart/?symbol=${p}&interval=240#tj-replay=${t.date}` : "";
+  return p && t.date ? `https://www.tradingview.com/chart/?symbol=OANDA:${p}&interval=240#tj-replay=${t.date}` : "";
 };
 const tvReplayBtn = t =>
   tvReplayUrl(t)

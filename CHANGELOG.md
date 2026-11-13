@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.3.30 — 2026-11-13
+
+- The Replay ↗ link opens the pair on the OANDA feed (e.g. OANDA:EURUSD) instead of TradingView's default.
+
 ## 1.3.29 — 2026-11-13
 
 - **Replay a trade on TradingView**: a Replay ↗ button in the trade sheet opens the pair's 4H chart. With the TradingView extension (1.4.19+), bar replay starts at the trade's date, so you can step through it again (for example to fill in Max R reached). The re-evaluate game has it too: on every step in an open session, and on the reveal in a blind one (earlier would give away the pair and date).
