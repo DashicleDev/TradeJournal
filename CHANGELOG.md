@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.3.27 — 2026-11-13
+
+- News panel: **USD heavy news marks every open trade**, not only USD pairs, since it moves the whole market (also for USD events an admin marked heavy). Other news still only marks pairs with its currency.
+
 ## 1.3.26 — 2026-11-13
 
 - **News panel colours**: a level pill right after each event (Heavy red, High amber, Medium yellow), and a heavy event's currency in red.

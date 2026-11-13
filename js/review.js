@@ -1603,7 +1603,11 @@ async function renderNews(C) {
     .sort((a, b) => a.start.localeCompare(b.start));
   const dayOf = e => new Date(e.start).toLocaleDateString("en-GB", { weekday: "short", day: "numeric", month: "short" }),
     timeOf = e => new Date(e.start).toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" }),
-    hits = e => open.filter(t => t.pair.toUpperCase().includes(e.cur)).map(t => t.pair.toUpperCase());
+    // USD heavy news moves every pair, so it hits all open trades; anything else only pairs with its currency
+    hits = e =>
+      open
+        .filter(t => (e.cur === "USD" && nLevel(e) === "Heavy") || t.pair.toUpperCase().includes(e.cur))
+        .map(t => t.pair.toUpperCase());
   let last = "";
   const rows = ev
     .map(e => {
@@ -1611,7 +1615,7 @@ async function renderNews(C) {
         d = dayOf(e),
         head = d !== last ? `<div class="nwday">${esc(d)}</div>` : "";
       last = d;
-      return `${head}<div class="nwrow${h.length ? " hit" : ""}"><span class="num nwt">${esc(timeOf(e))}</span><b class="nwc">${esc(e.cur)}</b><span class="nwtt">${esc(e.title)}<span class="nwl ${nLevel(e).toLowerCase()}">${esc(nLevel(e))}</span></span><span class="nwend">${h.length ? `<span class="nwhit" title="Open trade in this currency">${esc(h.join(", "))}</span>` : ""}${
+      return `${head}<div class="nwrow${h.length ? " hit" : ""}"><span class="num nwt">${esc(timeOf(e))}</span><b class="nwc">${esc(e.cur)}</b><span class="nwtt">${esc(e.title)}<span class="nwl ${nLevel(e).toLowerCase()}">${esc(nLevel(e))}</span></span><span class="nwend">${h.length ? `<span class="nwhit" title="${e.cur === "USD" && nLevel(e) === "Heavy" ? "USD heavy news moves every pair" : "Open trade in this currency"}">${esc(h.join(", "))}</span>` : ""}${
         // the feed's own heavy events (CPI, NFP, rate decisions…) are always heavy, so only others get the toggle
         APPADMIN && e.level !== "Heavy"
           ? `<button type="button" class="nwmark" data-nwmark="${esc(nKey(e))}" aria-pressed="${newsMarks.has(nKey(e))}" title="${newsMarks.has(nKey(e)) ? "Heavy (marked by an admin): click to unmark" : "Mark as heavy, every time it comes around"}">${newsMarks.has(nKey(e)) ? "★" : "☆"}</button>`
