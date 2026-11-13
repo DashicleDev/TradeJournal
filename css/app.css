@@ -2664,6 +2664,27 @@ label.seg input:checked + span {
   padding: calc(24px + env(safe-area-inset-top, 0px)) max(12px, env(safe-area-inset-right, 0px)) 0
     max(12px, env(safe-area-inset-left, 0px));
 }
+.rplock {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: color-mix(in srgb, var(--ink) 55%, transparent);
+}
+.rpbox {
+  background: var(--surface);
+  color: var(--ink);
+  border-radius: 14px;
+  padding: 20px 24px;
+  width: min(92vw, 380px);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+}
+.rpbox p {
+  margin: 6px 0 14px;
+  color: var(--muted);
+}
 .scrim {
   position: fixed;
   inset: 0;

@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.3.40 — 2026-11-13
+
+- **Replay opens its own chart window.** The click no longer depends on the extension reaching the journal tab, so nothing has to be reloaded after the extension updates. The same window is reused for the next Replay. With extension 1.4.27 the trade opens in its panel and the window closes when you save it. While the window is open the journal is locked (Show window / Unlock buttons). Replay from the trade form saves what you've changed in the form first, so the extension starts from it.
+
 ## 1.3.39 — 2026-11-13
 
 - **Review: go through your trades in the trade form.** Pick "Trade forms" in the Re-evaluate setup, filter the trades as usual (setups, grade, pros, period, account…) and each one opens in the form, oldest first. Save & next saves and moves on, Skip and Back move without saving.

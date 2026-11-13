@@ -1361,8 +1361,8 @@ function walkGo(d) {
 }
 $("#f2WPrev").onclick = () => walkGo(-1);
 $("#f2WNext").onclick = () => walkGo(1);
-$("#tradeForm2").onsubmit = e => {
-  e.preventDefault();
+// stay: save without closing the form (Replay saves first); returns the save
+function f2Submit(stay) {
   const old = editingId ? docs.find(d => d.id === editingId) : null,
     mode = old ? old.mode : f2Mode || formMode();
   const t = {
@@ -1410,19 +1410,27 @@ $("#tradeForm2").onsubmit = e => {
     created: Date.now(),
   };
   if (old) t.created = old.created || t.created;
-  const w = walk;
-  saveDoc(old ? { ...old, ...t } : t);
+  const w = walk,
+    saved = saveDoc(old ? { ...old, ...t } : t);
   acRemember("fx", t.account);
   if (t.date && !old) {
     calMonth = t.date.slice(0, 7);
     calTouched = true;
   }
   toast(old ? "Changes saved" : "Trade saved");
+  if (stay) {
+    f2Dirty = false;
+    return saved;
+  }
   closeSheet2();
   if (w) {
     walk = w;
     walkGo(1);
   }
+}
+$("#tradeForm2").onsubmit = e => {
+  e.preventDefault();
+  f2Submit();
 };
 document.addEventListener("keydown", e => {
   if (e.key !== "Escape") return;
