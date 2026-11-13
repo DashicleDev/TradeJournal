@@ -99,7 +99,7 @@ const critV = (t, k) =>
         : "for"
       : ""
     : k === "chan"
-      ? t.channel && t.entry4h === "Reversal"
+      ? t.channel && chanOk(t.entry4h)
         ? "for"
         : ""
       : k === "dMs"

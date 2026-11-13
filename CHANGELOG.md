@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.3.36 — 2026-11-13
+
+- **4H entry is one dropdown**: Reversal with BoS, Reversal with SoM, Continuation with BoS, Continuation with SoM, Engulfing candle and Deceleration. The BoS / SoM buttons are gone; trades still save the entry and the structure as before, so old trades work unchanged.
+- **4H pros**: Engulfing candle (new, on Reversal and Continuation entries), Channel and Room are always shown; the ones that don't fit the entry are greyed out.
+- **Channel now also counts on Continuation and Engulfing entries** (grades, Analyze, share page, export, re-evaluate game). New Analyze filter and split: Engulfing candle pro.
+
 ## 1.3.35 — 2026-11-13
 
 - The Replay ↗ link also carries the trade's id, so the TradingView extension (1.4.22+) opens that trade in its panel for editing.

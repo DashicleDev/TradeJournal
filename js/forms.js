@@ -857,16 +857,19 @@ document.querySelectorAll(".mstf input").forEach(i => {
     (i.form || $("#tradeForm2")).dispatchEvent(new Event("change"));
   });
 });
-seg("seg-f2struct", "f2struct", [
-  ["bos", "Break of structure (BoS)"],
-  ["som", "Switch of momentum (SoM)"],
-]);
+// the dropdown value is "Reversal|bos" and the like: f2En is the entry, f2St the structure
+const f2En = () => entrySplit($("#f2Entry").value).entry4h,
+  f2St = () => entrySplit($("#f2Entry").value).struct;
+const f2EntrySet = k => {
+  $("#f2Entry").innerHTML = entryOptHtml(k);
+};
+f2EntrySet("");
 seg("seg-f2ectf", "f2ectf", [
   ["1h", "1 hour"],
   ["2h", "2 hour"],
 ]);
 $("#f2Entry").addEventListener("change", () => {
-  const ec = $("#f2Entry").value === "Engulfing Candle";
+  const ec = f2En() === "Engulfing Candle";
   $("#f2EcBlock").hidden = !ec;
   if (!ec) {
     delete f2Shots.ltf;
@@ -877,10 +880,10 @@ $("#f2Entry").addEventListener("change", () => {
 });
 $("#seg-f2ectf").addEventListener("change", renderF2Shots);
 function f2CheckVals() {
-  const en = $("#f2Entry").value,
+  const en = f2En(),
     rev = en === "Reversal";
   if (!hasStruct(en)) return { struct: "", bos: "", dfs: "", som: "", room: "" };
-  const st = radio("f2struct"),
+  const st = f2St(),
     bos = st === "bos",
     som = st === "som";
   return {
@@ -893,18 +896,16 @@ function f2CheckVals() {
 }
 function f2Check() {
   const v = f2CheckVals(),
-    e = $("#f2Entry").value;
-  const sv = hasStruct(e);
-  $("#f2StructF").hidden = !sv;
-  if (!sv) {
-    setRadio("f2struct", "");
-    $("#f2Room").checked = false;
-  }
-  $("#f2RoomL").hidden = v.room === "";
-  // Channel: an extra confirmation on a Reversal entry (no effect on the take / invalid check)
-  const rev = e === "Reversal";
-  $("#f2ChanL").hidden = !rev;
-  if (!rev) $("#f2Chan").checked = false;
+    e = f2En();
+  // the 4H pros are always shown; the ones that don't fit the entry are greyed out and cleared
+  [
+    ["#f2Eng", engOk(e)],
+    ["#f2Chan", chanOk(e)],
+    ["#f2Room", v.struct === "som"],
+  ].forEach(([id, ok]) => {
+    $(id).disabled = !ok;
+    if (!ok) $(id).checked = false;
+  });
 }
 function f2Summaries() {
   f2Check();
@@ -938,16 +939,17 @@ function f2Summaries() {
     ]
       .filter(Boolean)
       .join(" · ") + n("daily");
-  const e = $("#f2Entry").value,
+  const e = f2En(),
+    lab = $("#f2Entry").selectedOptions[0]?.text || "",
     tf = radio("f2ectf");
   $("#f2SumH").textContent =
     [
-      e ? e + (e === "Engulfing Candle" && tf ? " · " + tf.toUpperCase() : "") : "",
+      lab ? lab + (e === "Engulfing Candle" && tf ? " · " + tf.toUpperCase() : "") : "",
       radio("f2hms") ? msl("f2hms") : "",
-      radio("f2struct") && !$("#f2StructF").hidden ? radio("f2struct").replace("bos", "BoS").replace("som", "SoM") : "",
       ...[
-        ["#f2Room", "Room"],
+        ["#f2Eng", "Engulfing candle"],
         ["#f2Chan", "Channel"],
+        ["#f2Room", "Room"],
         ["#f2Scale", "Scale-in"],
       ]
         .filter(([id]) => $(id).checked && !$(id).closest("[hidden]"))
@@ -972,8 +974,8 @@ function f2Summaries() {
           wStruct: radio("f2wstruct") || "",
           fase: radio("f2fase") || "",
           concept: $("#f2Concept").value,
-          entry4h: $("#f2Entry").value,
-          channel: $("#f2Entry").value === "Reversal" && $("#f2Chan").checked,
+          entry4h: f2En(),
+          channel: chanOk(f2En()) && $("#f2Chan").checked,
         },
         g = gradeOf(tt);
       $("#f2Score").innerHTML = g
@@ -1210,13 +1212,13 @@ function f2Fill(t) {
   msRender();
   dSel = Object.fromEntries(dProsOf(t).map(k => [k, "for"]));
   msRender();
-  $("#f2Entry").value = t.entry4h || "";
+  f2EntrySet(entryKey(t.entry4h, t.struct || (t.bos === "ja" ? "bos" : t.bos === "nee" ? "som" : "")));
   ch($("#f2Entry"));
   setRadio("f2ectf", t.ecTf || "");
-  setRadio("f2struct", t.struct || (t.bos === "ja" ? "bos" : t.bos === "nee" ? "som" : ""));
   $("#f2Room").checked = t.room === "ja";
   $("#f2Scale").checked = !!t.scaleIn;
   $("#f2Chan").checked = !!t.channel;
+  $("#f2Eng").checked = !!t.engulf;
   $("#f2PlanEntry").value = t.planEntry ?? "";
   $("#f2SlPips").value = t.slPips ?? "";
   $("#f2TpPips").value = t.tpPips ?? "";
@@ -1343,7 +1345,8 @@ $("#tradeForm2").onsubmit = e => {
     wPat: $("#f2WPat").value === "?" ? "" : $("#f2WPat").value,
     wPatSub: $("#f2WPat").value && $("#f2WPat").value !== "?" ? $("#f2WPatSub").value : "",
     scaleIn: $("#f2Scale").checked,
-    channel: $("#f2Entry").value === "Reversal" && $("#f2Chan").checked,
+    channel: chanOk(f2En()) && $("#f2Chan").checked,
+    engulf: engOk(f2En()) && $("#f2Eng").checked,
     dMs: radio("f2dms") || "",
     hMs: radio("f2hms") || "",
     weekly: wcVals(),
@@ -1358,12 +1361,12 @@ $("#tradeForm2").onsubmit = e => {
     evaluation: radio("f2eval"),
     onPlan: radio("f2eval") ? radio("f2eval") === "plan" : null,
     exitReason: $("#f2Exit").value,
-    entry4h: $("#f2Entry").value,
+    entry4h: f2En(),
     planEntry: num("f2PlanEntry"),
     slPips: num("f2SlPips"),
     tpPips: num("f2TpPips"),
     ...f2CheckVals(),
-    ecTf: $("#f2Entry").value === "Engulfing Candle" ? radio("f2ectf") : "",
+    ecTf: f2En() === "Engulfing Candle" ? radio("f2ectf") : "",
     shots: Object.fromEntries(Object.entries(f2Shots).filter(([, v]) => v && v !== "uploading")),
     shotLinks: httpsLinks(f2Links),
     pair: $("#f2Pair").value.trim().toUpperCase(),
@@ -1504,6 +1507,7 @@ function analysisText(t, link) {
     block("4h", L.h4, [
       t.entry4h ? t.entry4h + (t.ecTf ? " " + t.ecTf.toUpperCase() : "") : "",
       { bos: "Break of structure", som: "Switch of momentum" }[t.struct] || "",
+      t.engulf ? "Engulfing candle" : "",
       t.channel ? "Channel" : "",
       t.hMs ? ok("MS", t.hMs) : "",
     ]),

@@ -797,10 +797,6 @@
                     ><span>4H entry</span
                     ><select id="f2Entry">
                       <option value="">Choose…</option>
-                      <option>Reversal</option>
-                      <option>Continuation</option>
-                      <option>Deceleration</option>
-                      <option>Engulfing Candle</option>
                     </select></label
                   >
                   <div class="f">
@@ -813,16 +809,19 @@
                     </div>
                   </div>
                 </div>
-                <div class="f" id="f2StructF" style="margin-top: 12px" hidden>
-                  <span>4H structure</span>
-                  <div class="segs" id="seg-f2struct"></div>
+                <div class="f" style="margin-top: 12px">
+                  <span>4H pros</span>
+                  <div class="checks">
+                    <label class="checkline" id="f2EngL"
+                      ><input type="checkbox" id="f2Eng" /><span>Engulfing candle</span></label
+                    ><label class="checkline" id="f2ChanL"
+                      ><input type="checkbox" id="f2Chan" /><span>Channel</span></label
+                    ><label class="checkline" id="f2RoomL"
+                      ><input type="checkbox" id="f2Room" /><span>4H room</span></label
+                    >
+                  </div>
                 </div>
                 <div class="checks">
-                  <label class="checkline" id="f2RoomL" hidden
-                    ><input type="checkbox" id="f2Room" /><span>4H room</span></label
-                  ><label class="checkline" id="f2ChanL" hidden
-                    ><input type="checkbox" id="f2Chan" /><span>Channel</span></label
-                  >
                   <label class="checkline"><input type="checkbox" id="f2Scale" /><span>Scale-in</span></label>
                 </div>
                 <div class="shots" id="f2ShotH" style="margin-top: 14px"></div>

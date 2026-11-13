@@ -216,10 +216,11 @@ let SPLITS = {
     ["3/3 with", "2/3 with", "1/3 with", "0/3 with", "2/2 with", "1/2 with", "0/2 with", "1/1 with", "0/1 with"],
   ],
   scale: ["Scale-in", t => (t.scaleIn ? "Scale-in" : "Not a scale-in"), ["Scale-in", "Not a scale-in"]],
-  chan: [
-    "Channel (reversal)",
-    t => (t.entry4h === "Reversal" ? (t.channel ? "Channel" : "No channel") : null),
-    ["Channel", "No channel"],
+  chan: ["Channel", t => (chanOk(t.entry4h) ? (t.channel ? "Channel" : "No channel") : null), ["Channel", "No channel"]],
+  eng: [
+    "Engulfing candle pro",
+    t => (engOk(t.entry4h) ? (t.engulf ? "Engulfing candle" : "No engulfing candle") : null),
+    ["Engulfing candle", "No engulfing candle"],
   ],
   dms: [
     "Daily market structure",
@@ -352,7 +353,7 @@ const blankSet = mode => ({
 let SPLITGROUPS = [
   ["Weekly", ["fase", "wpat", "wpatsub", "wstruct", "wms", "wtrend", "wrange", "align", "wpro", "wcon", "wscore"]],
   ["Daily", ["dms", "concept", "sub", "dpro"]],
-  ["4H", ["hms", "entry4h", "struct", "room", "chan", "scale", "ectf", "rr", "sl"]],
+  ["4H", ["hms", "entry4h", "struct", "room", "chan", "eng", "scale", "ectf", "rr", "sl"]],
   [
     "Context",
     ["grade", "cwhy", "pair", "dir", "status", "weekday", "month", "account", "actype", "project", "btmonth", "btlag"],
@@ -529,13 +530,24 @@ let FDEF = [
   ],
   [
     "chan",
-    "Channel (reversal)",
+    "eng",
+    "Channel",
     () => [
       ["", "Any"],
       ["yes", "Channel"],
       ["no", "No channel"],
     ],
-    t => (t.entry4h === "Reversal" ? (t.channel ? "yes" : "no") : ""),
+    t => (chanOk(t.entry4h) ? (t.channel ? "yes" : "no") : ""),
+  ],
+  [
+    "eng",
+    "Engulfing candle pro",
+    () => [
+      ["", "Any"],
+      ["yes", "Engulfing candle"],
+      ["no", "No engulfing candle"],
+    ],
+    t => (engOk(t.entry4h) ? (t.engulf ? "yes" : "no") : ""),
   ],
   [
     "dms",
@@ -748,7 +760,7 @@ function describe(f) {
 let FGROUPS = [
   ["Weekly", ["fase", "wpat", "wstruct", "wms", "wtrend", "wrange", "align", "pro", "con"]],
   ["Daily", ["dms", "concept", "sub", "dpro"]],
-  ["4H", ["hms", "entry4h", "struct", "room", "chan", "scale", "ectf"]],
+  ["4H", ["hms", "entry4h", "struct", "room", "chan", "eng", "scale", "ectf"]],
   ["Context", ["grade", "cwhy", "pair", "dir", "account", "actype", "dates"]],
   ["Result", ["outcome", "eval", "rev", "exit"]],
 ];

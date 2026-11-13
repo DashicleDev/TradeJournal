@@ -135,7 +135,8 @@ function rvOrig(t) {
     dPros: dProsOf(t),
     entry4h: t.entry4h || "",
     hMs: t.hMs || "",
-    channel: !!t.channel && t.entry4h === "Reversal",
+    channel: !!t.channel && chanOk(t.entry4h),
+    engulf: !!t.engulf && engOk(t.entry4h),
     struct: t.struct || (t.bos === "ja" ? "bos" : t.bos === "nee" ? "som" : ""),
     room: t.room === "ja",
     scaleIn: !!t.scaleIn,
@@ -151,7 +152,7 @@ const rvAsTrade = a => ({
   fase: a.fase, // the grade rules are per phase
   concept: a.concept,
   entry4h: a.entry4h,
-  channel: !!a.channel && a.entry4h === "Reversal",
+  channel: !!a.channel && chanOk(a.entry4h),
 });
 const rvBlank = () => ({
   wRange: false,
@@ -169,6 +170,7 @@ const rvBlank = () => ({
   entry4h: "",
   hMs: "",
   channel: false,
+  engulf: false,
   struct: "",
   room: false,
   scaleIn: false,
@@ -266,28 +268,14 @@ function rvStepHTML(a, step) {
     )
       .replace(/^<div class="f">/, "")
       .replace(/<\/div>$/, "")}</div></div>`;
-  return `<div class="fields">${rvF("4H entry", rvSel("entry4h", PLAN.entries, a.entry4h, "Choose…"))}${rvF("Market structure", rvMs("hMs", a.hMs))}${
-    hasStruct(a.entry4h)
-      ? rvF(
-          "4H structure",
-          rvSeg(
-            "struct",
-            [
-              ["bos", "BoS"],
-              ["som", "SoM"],
-            ],
-            a.struct
-          )
-        )
-      : ""
-  }${a.entry4h === "Reversal" ? rvF("Extra confirmation", rvSeg("channel", [["yes", "Channel"]], a.channel ? "yes" : "")) : ""}</div>
+  return `<div class="fields">${rvF("4H entry", `<select data-rks="entryc">${entryOptHtml(entryKey(a.entry4h, a.struct))}</select>`)}${rvF("Market structure", rvMs("hMs", a.hMs))}${engOk(a.entry4h) ? rvF("Engulfing candle", rvSeg("engulf", [["yes", "Engulfing candle"]], a.engulf ? "yes" : "")) : ""}${chanOk(a.entry4h) ? rvF("Extra confirmation", rvSeg("channel", [["yes", "Channel"]], a.channel ? "yes" : "")) : ""}</div>
     <div class="row" style="gap:16px;margin-top:12px"><label class="checkline"><input type="checkbox" data-rc="room" ${a.room ? "checked" : ""}><span>Room</span></label><label class="checkline"><input type="checkbox" data-rc="scaleIn" ${a.scaleIn ? "checked" : ""}><span>Scale-in</span></label></div>`;
 }
 const rvPick = (o, k) =>
   k === "wRange"
     ? !!(o.wRange || (o.weekly || {}).trend === "range")
     : k === "channel"
-      ? !!o.channel && o.entry4h === "Reversal"
+      ? !!o.channel && chanOk(o.entry4h)
       : k === "trend"
         ? trendAbs(o)
         : k === "wpros" || k === "wcons"
@@ -305,7 +293,7 @@ function rvLab(k, v) {
   if (k === "wms" || k === "dMs" || k === "hMs") return v === "for" ? "✓ With" : "✗ Against";
   if (k === "wStruct") return v === "inner" ? "Inner" : "Outer";
   if (k === "struct") return v === "bos" ? "BoS" : "SoM";
-  if (k === "room" || k === "scaleIn" || k === "wRange" || k === "channel") return v ? "Yes" : "No";
+  if (k === "room" || k === "scaleIn" || k === "wRange" || k === "channel" || k === "engulf") return v ? "Yes" : "No";
   if (k === "dPros") return v.map(x => (DCRIT.find(c => c[0] === x) || [, x])[1]).join(", ");
   if (k === "weekly") {
     const e = Object.entries(v).filter(([, x]) => x);
@@ -332,6 +320,7 @@ const RV_ROWS = [
   ["entry4h", "4H entry"],
   ["hMs", "4H MS"],
   ["struct", "4H structure"],
+  ["engulf", "Engulfing candle"],
   ["channel", "Channel"],
   ["room", "Room"],
   ["scaleIn", "Scale-in"],
@@ -1096,7 +1085,8 @@ function rvApply(t, a, plan, repl) {
       entry4h: a.entry4h,
       hMs: a.hMs,
       struct: hasStruct(a.entry4h) ? a.struct : "",
-      channel: a.entry4h === "Reversal" && !!a.channel,
+      channel: chanOk(a.entry4h) && !!a.channel,
+      engulf: engOk(a.entry4h) && !!a.engulf,
       room: a.room ? "ja" : "nee",
       scaleIn: a.scaleIn,
     });
@@ -1298,7 +1288,7 @@ $("#rvBox").addEventListener("click", e => {
     return rvRender();
   }
   const a = S.cur;
-  if (b.dataset.rk === "wRange" || b.dataset.rk === "channel") {
+  if (b.dataset.rk === "wRange" || b.dataset.rk === "channel" || b.dataset.rk === "engulf") {
     a[b.dataset.rk] = !a[b.dataset.rk];
     rvSave();
     return rvRender();
@@ -1353,11 +1343,14 @@ $("#rvBox").addEventListener("change", e => {
   if (!S || !S.cur) return;
   if (el.dataset.rks) {
     const k = el.dataset.rks;
-    S.cur[k] = el.value;
+    if (k === "entryc") Object.assign(S.cur, entrySplit(el.value));
+    else S.cur[k] = el.value;
     if (k === "wPat") S.cur.wPatSub = "";
     if (k === "concept") S.cur.sub = "";
-    if (k === "entry4h" && !hasStruct(el.value)) S.cur.struct = "";
-    if (k === "entry4h" && el.value !== "Reversal") S.cur.channel = false;
+    if (k === "entryc") {
+      if (!chanOk(S.cur.entry4h)) S.cur.channel = false;
+      if (!engOk(S.cur.entry4h)) S.cur.engulf = false;
+    }
     rvSave();
     return rvRender();
   }

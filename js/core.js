@@ -2,7 +2,7 @@
  * core.js — Shared basics: the trading plan (concepts, entries, exits), formatting and small DOM helpers.
  * Loaded first; every other file uses these.
  */
-const APP_VERSION = "1.3.35";
+const APP_VERSION = "1.3.36";
 const PLAN = {
   concepts: {
     Continuation: ["First Structure", "100 level", "Fake Out", "New Action"],
@@ -64,6 +64,30 @@ const trendAbs = t => {
 };
 const trendRel = (a, dir) => ((a === "bull" || a === "bear") && dir ? ((a === "bull") === (dir === "long") ? "for" : "against") : "");
 const TREND_LAB = { bull: "↑ Bullish", bear: "↓ Bearish", range: "↔ Ranging" };
+// 4H pros: Channel goes with Reversal, Continuation and Engulfing entries; the Engulfing candle pro goes with Reversal and Continuation
+const chanOk = e => e === "Reversal" || e === "Continuation" || e === "Engulfing Candle";
+const engOk = e => e === "Reversal" || e === "Continuation";
+// 4H entry dropdown: Reversal and Continuation come with BoS or SoM; a trade still saves entry4h and struct as two fields
+const ENTRY_OPTS = [
+  ["Reversal|bos", "Reversal with BoS"],
+  ["Reversal|som", "Reversal with SoM"],
+  ["Continuation|bos", "Continuation with BoS"],
+  ["Continuation|som", "Continuation with SoM"],
+  ["Engulfing Candle", "Engulfing candle"],
+  ["Deceleration", "Deceleration"],
+];
+const entryKey = (e, s) => (e || "") + (e && s ? "|" + s : "");
+const entrySplit = v => {
+  const [entry4h, struct] = String(v || "").split("|");
+  return { entry4h, struct: struct || "" };
+};
+// a saved trade whose entry isn't one of the six (no BoS/SoM logged, Pattern in Pattern) still shows what it was
+const entryOpts = k =>
+  !k || ENTRY_OPTS.some(o => o[0] === k)
+    ? ENTRY_OPTS
+    : [...ENTRY_OPTS, [k, k.replace("|bos", " with BoS").replace("|som", " with SoM")]];
+const entryOptHtml = k =>
+  `<option value="">Choose…</option>${entryOpts(k).map(([v, l]) => `<option value="${esc(v)}"${v === k ? " selected" : ""}>${esc(l)}</option>`).join("")}`;
 // The pair's 4H OANDA chart on TradingView; the extension reads #tj-replay and starts bar replay at the trade's close date (else its date)
 const tvReplayUrl = t => {
   const p = String((t && t.pair) || "")
