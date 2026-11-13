@@ -77,7 +77,7 @@ const tvReplayUrl = t => {
 };
 const tvReplayBtn = t =>
   tvReplayUrl(t)
-    ? `<a class="btn small ghost" href="${esc(tvReplayUrl(t))}" target="_blank" rel="noopener" title="Open the 4H chart on TradingView; with the extension, bar replay starts at the trade's date">Replay ↗</a>`
+    ? `<a class="btn small ghost tvrp" href="${esc(tvReplayUrl(t))}" target="_blank" rel="noopener" title="Open the 4H chart on TradingView; with the extension, bar replay starts at the trade's date">Replay ↗</a>`
     : "";
 const httpsOnly = u => (/^https:\/\//i.test(u || "") ? u : "");
 const httpsLinks = o => Object.fromEntries(Object.entries(o || {}).filter(([, v]) => httpsOnly(v)));

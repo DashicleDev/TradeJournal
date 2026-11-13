@@ -490,6 +490,9 @@ td.acts {
   text-underline-offset: 2px;
 }
 a.btn {
+  /* like a <button>, so a link button lines up with the real ones */
+  display: inline-block;
+  line-height: normal;
   text-decoration: none;
 }
 .nrems {
@@ -5346,4 +5349,10 @@ nav button .dot {
 }
 .dangerblk > b {
   color: var(--bad);
+}
+/* Replay ↗ needs the TradingView extension, which phones and tablets don't have */
+@media (pointer: coarse) {
+  .tvrp {
+    display: none !important;
+  }
 }

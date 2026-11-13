@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.3.33 — 2026-11-13
+
+- The Replay ↗ button is hidden on phones and tablets (touch screens): it needs the TradingView extension.
+- The trade sheet's Replay ↗ moved from the bottom bar to next to **View charts**, so the bottom bar is back to Copy analysis, Share, Duplicate and Delete. Link buttons now line up with normal buttons.
+
 ## 1.3.32 — 2026-11-13
 
 - Replay ↗ at the close date now shows the whole close day (it jumped to the start of that day, so the exit wasn't visible yet).
