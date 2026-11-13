@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.3.28 — 2026-11-13
+
+- News panel: the admins' "Show medium" checkbox is now a small button. It shows every lower level: "Show medium" when your news setting is heavy + high, "Show high & medium" when it's heavy only.
+
 ## 1.3.27 — 2026-11-13
 
 - News panel: **USD heavy news marks every open trade**, not only USD pairs, since it moves the whole market (also for USD events an admin marked heavy). Other news still only marks pairs with its currency.

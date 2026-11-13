@@ -1576,7 +1576,7 @@ document.addEventListener(
 let newsFeed = null,
   newsAt = 0,
   newsMarks = new Set(),
-  newsMed = false, // admins: also show medium events, to mark them
+  newsMed = false, // admins: also show the lower levels (high and/or medium), to mark them
   newsC = null;
 const nKey = e => e.cur + "|" + e.title,
   nLevel = e => (newsMarks.has(nKey(e)) ? "Heavy" : e.level);
@@ -1594,7 +1594,8 @@ async function renderNews(C) {
     newsMarks = new Set(await TJF.newsMarks().catch(() => []));
   }
   const st = docs.find(x => x.id === "settings") || {},
-    lv = [...(st.newsLvl === "news-heavy" ? ["Heavy"] : ["Heavy", "High"]), ...(APPADMIN && newsMed ? ["Medium"] : [])],
+    heavyOnly = st.newsLvl === "news-heavy",
+    lv = APPADMIN && newsMed ? ["Heavy", "High", "Medium"] : heavyOnly ? ["Heavy"] : ["Heavy", "High"],
     now = Date.now(),
     open = C.list.filter(t => t.status === "taken" && (t.r == null || isNaN(t.r)) && t.pair);
   // still to come (or started in the last 30 minutes)
@@ -1624,12 +1625,19 @@ async function renderNews(C) {
     })
     .join("");
   box.innerHTML = `<div class="panel newsp"><div class="row spread"><div><span class="eyebrow">News</span><h2>This week</h2></div>${
-    APPADMIN ? `<label class="checkline"><input type="checkbox" id="nwMed" ${newsMed ? "checked" : ""}><span>Show medium</span></label>` : ""
+    APPADMIN
+      ? `<button type="button" class="btn small ghost" id="nwMed" aria-pressed="${newsMed}" title="Admins: show the lower levels too, to mark them heavy">${newsMed ? "Hide " : "Show "}${heavyOnly ? "high & medium" : "medium"}</button>`
+      : ""
   }</div>${
-    rows || `<p class="hint" style="margin:0">No ${lv.length > 1 ? "heavy or high" : "heavy"} news left this week. Next week's events usually come in on Sunday.</p>`
+    rows || `<p class="hint" style="margin:0">No ${["heavy", "heavy or high", "heavy, high or medium"][lv.length - 1]} news left this week. Next week's events usually come in on Sunday.</p>`
   }</div>`;
 }
 document.addEventListener("click", async e => {
+  if (e.target.closest("#nwMed")) {
+    newsMed = !newsMed;
+    if (newsC) renderNews(newsC);
+    return;
+  }
   const b = e.target.closest("[data-nwmark]");
   if (!b) return;
   const k = b.dataset.nwmark,
@@ -1641,11 +1649,6 @@ document.addEventListener("click", async e => {
   } catch {
     toast("Couldn't save the mark.");
   }
-  if (newsC) renderNews(newsC);
-});
-document.addEventListener("change", e => {
-  if (e.target.id !== "nwMed") return;
-  newsMed = e.target.checked;
   if (newsC) renderNews(newsC);
 });
 function renderLive() {
