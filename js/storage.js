@@ -173,6 +173,18 @@ async function loadAll() {
   return all;
 }
 window.TJF = {
+  // news events admins marked as heavy ("CUR|Title"); empty when offline or not set up
+  newsMarks: async () => {
+    if (!SB) return [];
+    const { data, error } = await SB.from("news_heavy").select("key");
+    return error ? [] : data.map(r => r.key);
+  },
+  newsMark: async (key, on) => {
+    const { error } = on
+      ? await SB.from("news_heavy").insert({ key })
+      : await SB.from("news_heavy").delete().eq("key", key);
+    if (error) throw error;
+  },
   admin: async () => {
     if (!SB || !ME) return false;
     const { data, error } = await SB.rpc("is_app_admin");

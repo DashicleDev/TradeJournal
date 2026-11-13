@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.3.26 — 2026-11-13
+
+- **News panel colours**: a level pill right after each event (Heavy red, High amber, Medium yellow), and a heavy event's currency in red.
+- **Admins mark events as heavy**: a ☆ on each news row marks that event (currency + title) as heavy every time it comes around; ★ unmarks it. Admins can turn on **Show medium** to mark medium events too. The news bot reads the marks (table `news_heavy`), so the heavy calendars follow within 3 hours. The built-in heavy list (CPI, NFP, rate decisions…) stays as it was.
+
 ## 1.3.25 — 2026-11-13
 
 - **This week's news on the Journal page**: the heavy and high events still to come (heavy only if that's your news setting), by day with time and currency, from the same feed as the news calendar. An event that hits an open trade's currency names that trade. Shown for live forex only. Forex Factory only publishes the current week, so it's nearly empty from Friday until next week's events arrive, usually on Sunday.

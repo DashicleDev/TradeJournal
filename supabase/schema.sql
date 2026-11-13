@@ -173,3 +173,16 @@ language sql volatile security definer set search_path to '' as $$
   update public.shares set views = views + 1, last_view = now() where token = tok $$;
 revoke all on function public.share_view(text) from public;
 grant execute on function public.share_view(text) to anon, authenticated;
+
+-- News events an admin marked as heavy ("CUR|Title"), so they count as heavy every time they come around.
+-- Read by everyone (the news bot reads it with the public key); only admins add or remove marks.
+create table public.news_heavy (
+  key text primary key check (key ~ '^[A-Z]{3}\|.{1,200}$'),
+  added_at timestamptz not null default now()
+);
+alter table public.news_heavy enable row level security;
+create policy "Anyone reads heavy marks"  on public.news_heavy for select to anon, authenticated using (true);
+create policy "Admins add heavy marks"    on public.news_heavy for insert to authenticated with check ((select public.is_app_admin()));
+create policy "Admins remove heavy marks" on public.news_heavy for delete to authenticated using ((select public.is_app_admin()));
+grant select on public.news_heavy to anon, authenticated;
+grant insert, delete on public.news_heavy to authenticated;

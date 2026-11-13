@@ -21,6 +21,24 @@ for k in (1, 2):
         REMINDERS["-r" + "-".join(map(str, combo))] = tuple(_trig(m) for m in combo)
 NAMES = {"news.ics": "Forex news (heavy, high, medium)", "news-high.ics": "Forex news (heavy + high)", "news-heavy.ics": "Forex news (heavy only)"}
 
+MARKS = set()  # "CUR|Title" of events admins marked heavy in the journal (table news_heavy)
+
+def heavy_marks():
+    """Read the admins' heavy marks with the journal's public key (config.js); empty if Supabase can't be reached."""
+    import json, os
+    try:
+        cfg = open(os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "config.js"), encoding="utf-8").read()
+        url, key = re.search(r'url:\s*"([^"]+)"', cfg)[1], re.search(r'anonKey:\s*"([^"]+)"', cfg)[1]
+        req = urllib.request.Request(url + "/rest/v1/news_heavy?select=key", headers={"apikey": key, "Authorization": "Bearer " + key})
+        with urllib.request.urlopen(req, timeout=20) as r:
+            return {row["key"] for row in json.load(r)}
+    except Exception as ex:
+        print("Heavy marks not read, using the built-in list only:", ex)
+        return set()
+
+def is_heavy(cur, title):
+    return bool(HEAVY.search(title)) or f"{cur}|{title}" in MARKS
+
 def fetch():
     req = urllib.request.Request(URL, headers={"User-Agent": "Mozilla/5.0 (TradeJournal news feed)"})
     with urllib.request.urlopen(req, timeout=30) as r:
@@ -36,7 +54,7 @@ def parse(raw):
             continue  # skips All Day / Tentative / unknown
         h = int(m[1]) % 12 + (12 if m[3] == "pm" else 0)
         start = datetime.strptime(date, "%m-%d-%Y").replace(hour=h, minute=int(m[2]), tzinfo=timezone.utc)  # feed times are UTC
-        level = "Heavy" if HEAVY.search(title) else imp
+        level = "Heavy" if is_heavy(cur, title) else imp
         out.append(dict(title=title, cur=cur, imp=imp, level=level, start=start))
     return out
 
@@ -72,10 +90,12 @@ def with_history(events, out_dir):
         if st.date() in week or st < cutoff:
             continue
         imp = r.get("imp") or ("High" if r["level"] == "Heavy" else r["level"])
-        old.append(dict(title=r["title"], cur=r["cur"], imp=imp, level="Heavy" if HEAVY.search(r["title"]) else r["level"], start=st))
+        # from the event's own impact, so an admin's unmark also takes effect on past weeks
+        old.append(dict(title=r["title"], cur=r["cur"], imp=imp, level="Heavy" if is_heavy(r["cur"], r["title"]) else imp, start=st))
     return old + events
 
 def main(out_dir="news"):
+    MARKS.update(heavy_marks())
     events = parse(fetch())
     if not events:
         sys.exit("No events parsed; keeping the old files.")
@@ -89,7 +109,7 @@ def main(out_dir="news"):
         print(fn, len(sel), "events")
     # JSON for the journal's own calendar: this week + a growing history
     import json, os
-    rows = [dict(cur=e["cur"], title=e["title"], level=e["level"], start=e["start"].strftime("%Y-%m-%dT%H:%M:%SZ")) for e in events]
+    rows = [dict(cur=e["cur"], title=e["title"], level=e["level"], imp=e["imp"], start=e["start"].strftime("%Y-%m-%dT%H:%M:%SZ")) for e in events]
     hist_path = f"{out_dir}/history.json"
     hist = {}
     if os.path.exists(hist_path):

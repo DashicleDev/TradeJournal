@@ -1571,10 +1571,18 @@ document.addEventListener(
   });
 }
 // This week's heavy / high news from the feed the news bot builds (news/history.json), with the open trades it hits.
+// Admins can mark an event heavy (☆), saved as "CUR|Title" so it's heavy every time it comes around; the news bot
+// reads the same marks for the calendars.
 let newsFeed = null,
-  newsAt = 0;
+  newsAt = 0,
+  newsMarks = new Set(),
+  newsMed = false, // admins: also show medium events, to mark them
+  newsC = null;
+const nKey = e => e.cur + "|" + e.title,
+  nLevel = e => (newsMarks.has(nKey(e)) ? "Heavy" : e.level);
 async function renderNews(C) {
   const box = $("#liveNews");
+  newsC = C;
   if (market === "stocks" || C.key.startsWith("bt:")) return (box.innerHTML = "");
   if (!newsFeed || Date.now() - newsAt > 6e5) {
     newsAt = Date.now();
@@ -1583,14 +1591,15 @@ async function renderNews(C) {
     } catch {
       newsFeed = newsFeed || [];
     }
+    newsMarks = new Set(await TJF.newsMarks().catch(() => []));
   }
   const st = docs.find(x => x.id === "settings") || {},
-    lv = st.newsLvl === "news-heavy" ? ["Heavy"] : ["Heavy", "High"],
+    lv = [...(st.newsLvl === "news-heavy" ? ["Heavy"] : ["Heavy", "High"]), ...(APPADMIN && newsMed ? ["Medium"] : [])],
     now = Date.now(),
     open = C.list.filter(t => t.status === "taken" && (t.r == null || isNaN(t.r)) && t.pair);
   // still to come (or started in the last 30 minutes)
   const ev = (Array.isArray(newsFeed) ? newsFeed : [])
-    .filter(e => lv.includes(e.level) && Date.parse(e.start) > now - 18e5)
+    .filter(e => lv.includes(nLevel(e)) && Date.parse(e.start) > now - 18e5)
     .sort((a, b) => a.start.localeCompare(b.start));
   const dayOf = e => new Date(e.start).toLocaleDateString("en-GB", { weekday: "short", day: "numeric", month: "short" }),
     timeOf = e => new Date(e.start).toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" }),
@@ -1602,13 +1611,39 @@ async function renderNews(C) {
         d = dayOf(e),
         head = d !== last ? `<div class="nwday">${esc(d)}</div>` : "";
       last = d;
-      return `${head}<div class="nwrow${h.length ? " hit" : ""}"><span class="num nwt">${esc(timeOf(e))}</span><b class="nwc">${esc(e.cur)}</b><span class="nwtt">${esc(e.title)}</span><span class="nwl ${e.level === "Heavy" ? "heavy" : ""}">${esc(e.level)}</span>${h.length ? `<span class="nwhit" title="Open trade in this currency">${esc(h.join(", "))}</span>` : ""}</div>`;
+      return `${head}<div class="nwrow${h.length ? " hit" : ""}"><span class="num nwt">${esc(timeOf(e))}</span><b class="nwc">${esc(e.cur)}</b><span class="nwtt">${esc(e.title)}<span class="nwl ${nLevel(e).toLowerCase()}">${esc(nLevel(e))}</span></span><span class="nwend">${h.length ? `<span class="nwhit" title="Open trade in this currency">${esc(h.join(", "))}</span>` : ""}${
+        // the feed's own heavy events (CPI, NFP, rate decisions…) are always heavy, so only others get the toggle
+        APPADMIN && e.level !== "Heavy"
+          ? `<button type="button" class="nwmark" data-nwmark="${esc(nKey(e))}" aria-pressed="${newsMarks.has(nKey(e))}" title="${newsMarks.has(nKey(e)) ? "Heavy (marked by an admin): click to unmark" : "Mark as heavy, every time it comes around"}">${newsMarks.has(nKey(e)) ? "★" : "☆"}</button>`
+          : ""
+      }</span></div>`;
     })
     .join("");
-  box.innerHTML = `<div class="panel newsp"><span class="eyebrow">News</span><h2>This week</h2>${
+  box.innerHTML = `<div class="panel newsp"><div class="row spread"><div><span class="eyebrow">News</span><h2>This week</h2></div>${
+    APPADMIN ? `<label class="checkline"><input type="checkbox" id="nwMed" ${newsMed ? "checked" : ""}><span>Show medium</span></label>` : ""
+  }</div>${
     rows || `<p class="hint" style="margin:0">No ${lv.length > 1 ? "heavy or high" : "heavy"} news left this week. Next week's events usually come in on Sunday.</p>`
   }</div>`;
 }
+document.addEventListener("click", async e => {
+  const b = e.target.closest("[data-nwmark]");
+  if (!b) return;
+  const k = b.dataset.nwmark,
+    on = !newsMarks.has(k);
+  try {
+    await TJF.newsMark(k, on);
+    on ? newsMarks.add(k) : newsMarks.delete(k);
+    toast(on ? "Marked as heavy. Calendars follow within 3 hours." : "No longer heavy.");
+  } catch {
+    toast("Couldn't save the mark.");
+  }
+  if (newsC) renderNews(newsC);
+});
+document.addEventListener("change", e => {
+  if (e.target.id !== "nwMed") return;
+  newsMed = e.target.checked;
+  if (newsC) renderNews(newsC);
+});
 function renderLive() {
   const C = jvCtx();
   jvSwap(C.key);

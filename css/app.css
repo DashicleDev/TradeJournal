@@ -4170,7 +4170,7 @@ fieldset.subs-closed .legend-toggle .chev {
 }
 .nwrow {
   display: grid;
-  grid-template-columns: 48px 40px minmax(0, 1fr) auto auto;
+  grid-template-columns: 48px 40px minmax(0, 1fr) auto;
   gap: 10px;
   align-items: baseline;
   padding: 4px 0;
@@ -4179,13 +4179,47 @@ fieldset.subs-closed .legend-toggle .chev {
 .nwrow .nwt {
   color: var(--muted);
 }
+/* level pill right after the event: heavy red, high orange */
 .nwl {
-  font-size: 12px;
-  color: var(--muted);
+  display: inline-block;
+  margin-left: 8px;
+  padding: 1px 7px;
+  border-radius: 999px;
+  font: 600 11px var(--body);
+  vertical-align: 1px;
+  color: var(--nwc);
+  background: color-mix(in srgb, var(--nwc) 16%, transparent);
 }
 .nwl.heavy {
+  --nwc: var(--bad);
+}
+.nwl.high {
+  --nwc: var(--warn);
+}
+.nwl.medium {
+  --nwc: var(--be);
+}
+.nwrow:has(.nwl.heavy) .nwc {
   color: var(--bad);
-  font-weight: 600;
+}
+.nwend {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 8px;
+}
+.nwmark {
+  all: unset;
+  cursor: pointer;
+  color: var(--muted);
+  font-size: 15px;
+  line-height: 1;
+}
+.nwmark[aria-pressed="true"] {
+  color: var(--bad);
+}
+.nwmark:focus-visible {
+  outline: 2px solid var(--accent);
+  border-radius: 3px;
 }
 .nwhit {
   font: 600 12px var(--mono);
@@ -4197,9 +4231,6 @@ fieldset.subs-closed .legend-toggle .chev {
 @media (max-width: 520px) {
   .nwrow {
     grid-template-columns: 44px 36px minmax(0, 1fr) auto;
-  }
-  .nwl {
-    display: none;
   }
 }
 .dp.more {
