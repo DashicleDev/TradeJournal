@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.3.34 — 2026-11-13
+
+- **Calmer look (unslop polish)**: labels, table headers, tags and calendar days in sentence case instead of spaced capitals; lighter headings (no bold 700/800); spacing on a 4px grid; buttons, segments and inputs share one corner radius. No empty gap above the news panel any more. Colours, fonts and layout stay as they were. Polish done with unslop by Damir Sokolovsky (@heydamir), CC BY 4.0.
+
 ## 1.3.33 — 2026-11-13
 
 - The Replay ↗ button is hidden on phones and tablets (touch screens): it needs the TradingView extension.
