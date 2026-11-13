@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.3.38 — 2026-11-13
+
+- **Deceleration entries can also have the Engulfing candle pro and Room.** Same in the extension (1.4.26).
+- **Analyze: the Engulfing candle pro filter and split also include trades whose entry is Engulfing candle** (they count as "Engulfing candle").
+
 ## 1.3.37 — 2026-11-13
 
 - **4H pros are a dropdown** like the weekly and daily pros (journal form, re-evaluate game and extension): Engulfing candle, Channel and Room. Ones that don't fit the entry are greyed out. The separate checkboxes are gone; "4H room" is now just "Room".

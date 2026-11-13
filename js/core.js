@@ -2,7 +2,7 @@
  * core.js — Shared basics: the trading plan (concepts, entries, exits), formatting and small DOM helpers.
  * Loaded first; every other file uses these.
  */
-const APP_VERSION = "1.3.37";
+const APP_VERSION = "1.3.38";
 const PLAN = {
   concepts: {
     Continuation: ["First Structure", "100 level", "Fake Out", "New Action"],
@@ -64,10 +64,10 @@ const trendAbs = t => {
 };
 const trendRel = (a, dir) => ((a === "bull" || a === "bear") && dir ? ((a === "bull") === (dir === "long") ? "for" : "against") : "");
 const TREND_LAB = { bull: "↑ Bullish", bear: "↓ Bearish", range: "↔ Ranging" };
-// 4H pros: Channel goes with Reversal, Continuation and Engulfing entries; the Engulfing candle pro goes with Reversal and Continuation; Room goes with SoM and Engulfing entries
+// 4H pros: Channel goes with Reversal, Continuation and Engulfing entries; the Engulfing candle pro goes with Reversal, Continuation and Deceleration; Room goes with SoM, Engulfing and Deceleration entries
 const chanOk = e => e === "Reversal" || e === "Continuation" || e === "Engulfing Candle";
-const engOk = e => e === "Reversal" || e === "Continuation";
-const roomOk = (e, s) => s === "som" || e === "Engulfing Candle";
+const engOk = e => e === "Reversal" || e === "Continuation" || e === "Deceleration";
+const roomOk = (e, s) => s === "som" || e === "Engulfing Candle" || e === "Deceleration";
 // the 4H pros, keyed by the trade field each one is saved in; hproOk: does the pro fit this entry (and structure)
 const HPROS = [
   ["engulf", "Engulfing candle"],

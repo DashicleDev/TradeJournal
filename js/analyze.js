@@ -138,6 +138,8 @@ const WLAB = k =>
   })[k] || k;
 const WKEYS = ["ms", "trend", "fibc", "fiba", "ic", "pattern", "whl", "sd", "pz", "lcc", "ec"];
 const hasStruct = e => e === "Reversal" || e === "Continuation" || e === "Pattern in Pattern";
+// engulfing candle: the pro on a Reversal / Continuation / Deceleration entry, or the Engulfing entry itself
+const engOf = t => (t.entry4h === "Engulfing Candle" || (engOk(t.entry4h) && t.engulf) ? true : engOk(t.entry4h) ? false : null);
 const structOf = t => t.struct || (t.bos === "ja" ? "bos" : t.bos === "nee" && hasStruct(t.entry4h) ? "som" : "");
 const rrOf = t => (t.slPips > 0 && t.tpPips != null ? t.tpPips / t.slPips : null);
 const daysOpen = t => (t.date && t.closeDate ? Math.round((new Date(t.closeDate) - new Date(t.date)) / 864e5) : null);
@@ -219,7 +221,7 @@ let SPLITS = {
   chan: ["Channel", t => (chanOk(t.entry4h) ? (t.channel ? "Channel" : "No channel") : null), ["Channel", "No channel"]],
   eng: [
     "Engulfing candle pro",
-    t => (engOk(t.entry4h) ? (t.engulf ? "Engulfing candle" : "No engulfing candle") : null),
+    t => (engOf(t) === null ? null : engOf(t) ? "Engulfing candle" : "No engulfing candle"),
     ["Engulfing candle", "No engulfing candle"],
   ],
   dms: [
@@ -547,7 +549,7 @@ let FDEF = [
       ["yes", "Engulfing candle"],
       ["no", "No engulfing candle"],
     ],
-    t => (engOk(t.entry4h) ? (t.engulf ? "yes" : "no") : ""),
+    t => (engOf(t) === null ? "" : engOf(t) ? "yes" : "no"),
   ],
   [
     "dms",
