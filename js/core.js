@@ -73,7 +73,9 @@ const tvReplayUrl = t => {
   // the open date stays at its start, so the entry isn't shown yet
   const close = /^\d{4}-\d{2}-\d{2}$/.test(t.closeDate || "") ? new Date(Date.parse(t.closeDate + "T00:00:00Z") + 864e5) : null,
     day = close ? close.toISOString().slice(0, 10) : t.date;
-  return p && day ? `https://www.tradingview.com/chart/?symbol=OANDA:${p}&interval=240#tj-replay=${day}` : "";
+  // &tj-trade: the extension (1.4.22+) also opens the trade in its panel for editing
+  const id = /^[A-Za-z0-9_-]{1,40}$/.test(t.id || "") ? `&tj-trade=${t.id}` : "";
+  return p && day ? `https://www.tradingview.com/chart/?symbol=OANDA:${p}&interval=240#tj-replay=${day}${id}` : "";
 };
 const tvReplayBtn = t =>
   tvReplayUrl(t)
