@@ -1539,7 +1539,6 @@ function analysisText(t, link) {
     `${t.pair || "Trade"}${t.dir ? " - " + (t.dir === "long" ? "Long" : "Short") : ""}`,
     t.fase ? "Phase " + t.fase : "",
     t.mode === "backtest" ? "Backtest" : "",
-    t.date ? fmtD(t.date) : "",
   ]
     .filter(Boolean)
     .join(" · ");
@@ -1612,7 +1611,7 @@ function investText(t, link) {
       return [title + ":", link || "", ...items.map(i => "- " + i)].filter(Boolean).join("\n");
     };
   const head =
-    [t.ticker || t.pair || "Trade", t.mode === "backtest" ? "Backtest" : "", t.date ? fmtD(t.date) : ""]
+    [t.ticker || t.pair || "Trade", t.mode === "backtest" ? "Backtest" : ""]
       .filter(Boolean)
       .join(" · ") + (ph ? "\nPhase " + ph : "");
   return [

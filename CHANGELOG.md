@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.3.50 — 2026-11-14
+
+- **Chat text no longer includes the trade date**, for forex and Invest. It starts with the pair (and direction), then the phase.
+
 ## 1.3.49 — 2026-11-14
 
 - **Invest: no "Open" tag before you have an entry.** A trade with no entry price yet (limit not set) shows no result tag on the share page or in the Invest list. It reads Open once the entry is filled in.
