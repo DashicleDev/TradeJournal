@@ -197,7 +197,7 @@ window.TJF = {
     if (!SB || !ME) return "user";
     const { data, error } = await SB.from("app_members").select("role").eq("user_id", ME).maybeSingle();
     if (error) throw error;
-    return (data && data.role) || "user";
+    return (data && data.role) || "pending"; // an account nobody has approved has no member row
   },
   roles: async () => {
     const { data, error } = await SB.from("app_roles").select("key,name,features,sort");
@@ -349,7 +349,7 @@ $("#aMode").onclick = () => {
   $("#authMsg").textContent =
     authMode === "in"
       ? "Sign in to your journal."
-      : "Create the account for your journal. Use a password of at least 8 characters.";
+      : "Create your account. Use a password of at least 8 characters. It needs approval before you can use it.";
 };
 $("#authForm").onsubmit = async e => {
   e.preventDefault();

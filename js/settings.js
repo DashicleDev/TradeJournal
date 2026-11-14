@@ -78,6 +78,16 @@ let MYF = (() => {
   admTab = "roles",
   roleDel = false;
 const roleSort = l => l.sort((a, b) => (a.sort ?? 100) - (b.sort ?? 100) || a.name.localeCompare(b.name));
+// a new account waits for an admin's approval: it sees only this screen (the database shows it no data either)
+function pendShow() {
+  $("#auth").hidden = false;
+  $("#authForm").hidden = true;
+  $("#pendBox").hidden = false;
+  if (!pendShow.t)
+    pendShow.t = setInterval(() => TJF.me().then(r => r !== "pending" && location.reload()).catch(() => {}), 30000);
+}
+$("#pendCheck").onclick = () => location.reload();
+$("#pendOut").onclick = () => $("#signOut").click();
 async function flagsLoad() {
   try {
     APPADMIN = !!(await TJF.admin());
@@ -103,6 +113,7 @@ async function flagsLoad() {
       localStorage.setItem("tj-myfeat", JSON.stringify(MYF));
     } catch {}
   }
+  if (MYROLE === "pending") return pendShow();
   if (TJF.seen) TJF.seen().catch(() => {});
   useMarketDefs();
   applySettings();

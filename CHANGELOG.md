@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.3.58 — 2026-11-14
+
+- **New accounts need approval.** Anyone can still create an account, but it starts as Pending: it sees only "waiting for approval" (and the database shows it no data) until you approve it in Admin → Users, where Pending people sit at the top with an **Approve** button. The waiting screen rechecks by itself. Everyone who had an account stays approved.
+
 ## 1.3.57 — 2026-11-14
 
 - **Bin for deleted trades.** Deleting a trade moves it to the bin instead of removing it. Settings → Data → Bin lists them with the days left; **Restore** brings one back, **Delete forever** removes it now. After 7 days they are removed for good (when you open the app). A binned trade's share link stops working until you restore it, and the extension's Replay skips it (1.4.35). Projects, accounts and reviews still delete straight away; "Delete data" also empties the bin.

@@ -186,3 +186,15 @@ create policy "Admins add heavy marks"    on public.news_heavy for insert to aut
 create policy "Admins remove heavy marks" on public.news_heavy for delete to authenticated using ((select public.is_app_admin()));
 grant select on public.news_heavy to anon, authenticated;
 grant insert, delete on public.news_heavy to authenticated;
+
+-- Approval for new accounts (applied 2026-11-14): a sign-up has no app_members row = "pending". It can sign in but
+-- the policies below show it no data and let it store nothing until an admin gives it a role (Admin menu → Approve).
+insert into public.app_roles(key, name, features, sort) values ('pending', 'Pending', '{}'::jsonb, 200) on conflict (key) do nothing;
+-- (existing accounts were given a row with role 'user' first, so nobody was locked out)
+create or replace function public.is_approved() returns boolean language sql stable security definer set search_path to '' as $$
+  select exists (select 1 from public.app_members where user_id = auth.uid() and role <> 'pending')
+      or public.is_app_admin() $$;
+revoke all on function public.is_approved() from public;
+grant execute on function public.is_approved() to authenticated;
+-- docs "own rows", shares "own shares" and the three "own shots …" storage policies above now also require (select public.is_approved());
+-- admin_usage() reports an account without a member row as 'pending'.

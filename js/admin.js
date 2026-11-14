@@ -38,10 +38,10 @@ function admRender() {
       return `<button type="button" data-role="${esc(r.key)}" aria-selected="${r.key === admRole}"><span>${esc(r.name)}</span>${n == null ? "" : `<small>${n}</small>`}</button>`;
     }).join("") + `<button type="button" class="rnew" data-act="rolenew">+ New role</button>`;
   const r = L.find(x => x.key === admRole),
-    fixed = r && (r.key === "admin" || r.key === "user");
+    fixed = r && (r.key === "admin" || r.key === "user" || r.key === "pending");
   $("#roleEdit").innerHTML = r
     ? `<label class="f"><span>Name</span><input type="text" id="roleName" value="${esc(r.name)}" maxlength="40"></label>
-    <p class="hint" style="margin:0">${r.key === "admin" ? "Admins also get this Admin menu." : r.key === "user" ? "Everyone who signs up starts as User." : "Features people with this role get."}</p>
+    <p class="hint" style="margin:0">${r.key === "admin" ? "Admins also get this Admin menu." : r.key === "user" ? "Approved people start as User." : r.key === "pending" ? "New sign-ups wait here, with no access, until you approve them." : "Features people with this role get."}</p>
     <div class="rfeats">${FEATS.map(f => `<label class="rfeat"><span><b>${f[1]}</b><small>${f[2]}</small></span><input type="checkbox" data-rfeat="${f[0]}" ${r.features && r.features[f[0]] ? "checked" : ""}></label>`).join("")}</div>
     ${fixed ? "" : `<div class="rolefoot">${roleDel ? `<span class="hint">Delete ${esc(r.name)}?${cnt(r.key) ? ` Its ${cnt(r.key)} ${cnt(r.key) === 1 ? "person goes" : "people go"} back to User.` : ""}</span><button type="button" class="btn small dangerb" data-act="roledel2">Delete</button><button type="button" class="btn small ghost" data-act="roledelno">Cancel</button>` : `<button type="button" class="btn small ghost danger" data-act="roledel">Delete role</button>`}</div>`}`
     : "";
@@ -56,13 +56,16 @@ function usersRender() {
   }
   const L = ROLES || [],
     list = [...USERS].sort(
-      (a, b) => (b.last_day || "").localeCompare(a.last_day || "") || (b.days30 || 0) - (a.days30 || 0)
+      (a, b) =>
+        (b.role === "pending") - (a.role === "pending") ||
+        (b.last_day || "").localeCompare(a.last_day || "") ||
+        (b.days30 || 0) - (a.days30 || 0)
     );
   box.innerHTML = `<table class="utab"><thead><tr><th>User</th><th>Last active</th><th>Active days<small> · 30d</small></th><th>Trades</th><th>Role</th></tr></thead><tbody>${list
     .map(u => {
       const me = u.id === ME;
       return `<tr><td>${esc(u.email || "(no email)")}${me ? ' <span class="hint">· you</span>' : ""}<small class="hint ujoin">Joined ${new Date(u.created_at).toLocaleDateString(undefined, { day: "numeric", month: "short", year: "numeric" })}</small></td><td class="seen">${dayAgo(u.last_day)}</td><td class="num">${u.days30 || 0}</td><td class="num">${u.trades || 0}</td>
-    <td><select data-urole="${esc(u.id)}" ${me ? "disabled" : ""} aria-label="Role for ${esc(u.email || "")}">${L.map(r => `<option value="${esc(r.key)}" ${u.role === r.key ? "selected" : ""}>${esc(r.name)}</option>`).join("")}</select></td></tr>`;
+    <td>${u.role === "pending" ? `<button type="button" class="btn small primary" data-act="approve" data-uid="${esc(u.id)}">Approve</button> ` : ""}<select data-urole="${esc(u.id)}" ${me ? "disabled" : ""} aria-label="Role for ${esc(u.email || "")}">${L.map(r => `<option value="${esc(r.key)}" ${u.role === r.key ? "selected" : ""}>${esc(r.name)}</option>`).join("")}</select></td></tr>`;
     })
     .join("")}</tbody></table>`;
 }
@@ -115,6 +118,20 @@ document.addEventListener("click", async e => {
     return;
   }
   const a = b.dataset.act;
+  if (a === "approve") {
+    const u = (USERS || []).find(x => x.id === b.dataset.uid);
+    if (!u) return;
+    admMsg("Approving…");
+    try {
+      await TJF.setRole(u.id, "user");
+      u.role = "user";
+      admMsg("Approved " + (u.email || ""));
+    } catch (er) {
+      admMsg("Couldn't approve: " + (er.message || er));
+    }
+    admRender();
+    return;
+  }
   if (a === "rolenew") {
     let n = 1;
     while ((ROLES || []).some(r => r.name === "New role" + (n > 1 ? " " + n : ""))) n++;
