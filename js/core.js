@@ -2,7 +2,7 @@
  * core.js — Shared basics: the trading plan (concepts, entries, exits), formatting and small DOM helpers.
  * Loaded first; every other file uses these.
  */
-const APP_VERSION = "1.3.45";
+const APP_VERSION = "1.3.46";
 const PLAN = {
   concepts: {
     Continuation: ["First Structure", "100 level", "Fake Out", "New Action"],
@@ -64,12 +64,11 @@ const trendAbs = t => {
 };
 const trendRel = (a, dir) => ((a === "bull" || a === "bear") && dir ? ((a === "bull") === (dir === "long") ? "for" : "against") : "");
 const TREND_LAB = { bull: "↑ Bullish", bear: "↓ Bearish", range: "↔ Ranging" };
-// the 4H pros, keyed by the trade field each one is saved in; all of them can be picked with any entry (your call).
+// the 4H pros, keyed by the trade field each one is saved in; they can be picked with any entry (your call). (Room was dropped in 1.3.46: old trades keep it, nothing shows or writes it.)
 // An Engulfing entry carries the Engulfing candle pro itself: it shows ticked and locked, and nothing is saved for it
 const HPROS = [
   ["engulf", "Engulfing candle"],
   ["channel", "Channel"],
-  ["room", "Room"],
 ];
 const engImplied = (k, e) => k === "engulf" && e === "Engulfing Candle";
 // 4H entry dropdown: Reversal and Continuation come with BoS or SoM; a trade still saves entry4h and struct as two fields

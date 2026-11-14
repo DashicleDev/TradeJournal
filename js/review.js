@@ -136,7 +136,6 @@ function rvOrig(t) {
     channel: !!t.channel,
     engulf: !!t.engulf && t.entry4h !== "Engulfing Candle",
     struct: t.struct || (t.bos === "ja" ? "bos" : t.bos === "nee" ? "som" : ""),
-    room: t.room === "ja",
     scaleIn: !!t.scaleIn,
   };
 }
@@ -170,7 +169,6 @@ const rvBlank = () => ({
   channel: false,
   engulf: false,
   struct: "",
-  room: false,
   scaleIn: false,
 });
 const rvSeg = (k, opts, v) =>
@@ -293,7 +291,7 @@ function rvLab(k, v) {
   if (k === "wms" || k === "dMs" || k === "hMs") return v === "for" ? "✓ With" : "✗ Against";
   if (k === "wStruct") return v === "inner" ? "Inner" : "Outer";
   if (k === "struct") return v === "bos" ? "BoS" : "SoM";
-  if (k === "room" || k === "scaleIn" || k === "wRange" || k === "channel" || k === "engulf") return v ? "Yes" : "No";
+  if (k === "scaleIn" || k === "wRange" || k === "channel" || k === "engulf") return v ? "Yes" : "No";
   if (k === "dPros") return v.map(x => (DCRIT.find(c => c[0] === x) || [, x])[1]).join(", ");
   if (k === "weekly") {
     const e = Object.entries(v).filter(([, x]) => x);
@@ -322,7 +320,6 @@ const RV_ROWS = [
   ["struct", "4H structure"],
   ["engulf", "Engulfing candle"],
   ["channel", "Channel"],
-  ["room", "Room"],
   ["scaleIn", "Scale-in"],
 ];
 const rvEq = (a, b) =>
@@ -1088,7 +1085,6 @@ function rvApply(t, a, plan, repl) {
       struct: hasStruct(a.entry4h) ? a.struct : "",
       channel: !!a.channel,
       engulf: !!a.engulf && !engImplied("engulf", a.entry4h),
-      room: a.room ? "ja" : "nee",
       scaleIn: a.scaleIn,
     });
   saveDoc(n);

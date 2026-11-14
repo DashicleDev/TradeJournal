@@ -346,6 +346,13 @@ seg("seg-swpat", "swpat", [
   ["BM", "BM"],
   ["IHS", "IHS"],
 ]);
+// 3M and Monthly pros (invest): field is "s3" / "s1" + the key
+const SPROS = [
+  ["bm", "BM"],
+  ["cc", "Bullish CC"],
+];
+let s3Sel = {},
+  s1Sel = {};
 function s12Vis() {
   const m = radio("s12mss");
   document.querySelectorAll("#stockForm .s12w").forEach(e => (e.hidden = m !== "for"));
@@ -385,22 +392,9 @@ function sSum() {
         ? [radio("s6bm") ? "BM " + radio("s6bm") : ""]
         : []),
   ]);
-  const t3 = j([
-    M("s3mss"),
-    ...(ph === "B"
-      ? [c("s3roomB") ? "Room" : ""]
-      : ph === "A"
-        ? [c("s3bm") ? "BM" : "", c("s3room") ? "Room" : ""]
-        : []),
-  ]);
-  const tm = j([
-    M("s1mss"),
-    ...(ph === "B"
-      ? [c("s1cc") ? "Bullish CC" : ""]
-      : ph === "A"
-        ? [c("s1room") ? "Room" : "", c("s1cc") ? "Bullish CC" : ""]
-        : []),
-  ]);
+  const pl = S => SPROS.filter(([k]) => S[k]).map(([, l]) => l),
+    t3 = j([M("s3mss"), ...pl(s3Sel)]),
+    tm = j([M("s1mss"), ...pl(s1Sel)]);
   const p = radio("swpat"),
     tw = j([M("swmss"), p]);
   [
@@ -463,7 +457,10 @@ function openStock(t, dup) {
   setRadio("s6bm", A.s6bm || "");
   setRadio("s6ret", A.s6ret || "");
   setRadio("swpat", A.swPat || "");
-  ["s3bm", "s3room", "s3roomB", "s1room", "s1cc"].forEach(k => ($("#" + k).checked = !!A[k]));
+  s3Sel = Object.fromEntries(SPROS.filter(([k]) => A["s3" + k]).map(([k]) => [k, "for"]));
+  s1Sel = Object.fromEntries(SPROS.filter(([k]) => A["s1" + k]).map(([k]) => [k, "for"]));
+  document.querySelectorAll("#stockForm .ms.open").forEach(b => b.classList.remove("open"));
+  msRender();
   setRadio("s12mss", A.s12Ms || "");
   setRadio("s12bm", A.s12bm || "");
   setRadio("s12ret", A.s12ret || "");
@@ -549,7 +546,10 @@ $("#stockForm").onsubmit = e => {
     s6bm: radio("s6bm"),
     s6ret: radio("s6ret"),
     swPat: radio("swpat"),
-    ...Object.fromEntries(["s3bm", "s3room", "s3roomB", "s1room", "s1cc"].map(k => [k, $("#" + k).checked])),
+    s3bm: !!s3Sel.bm,
+    s3cc: !!s3Sel.cc,
+    s1bm: !!s1Sel.bm,
+    s1cc: !!s1Sel.cc,
     s12Ms: radio("s12mss"),
     s12bm: radio("s12mss") === "for" ? radio("s12bm") : "",
     s12ret: radio("s12mss") === "against" ? radio("s12ret") : "",
@@ -770,6 +770,8 @@ function msRender() {
     ["#f2Cons", WCRIT.filter(([k]) => k !== "trend" && (GR_CAN_AGAINST.has(k) || wcSel[k] === "against")), wcSel],
     ["#f2DPros", DCRIT, dSel],
     ["#f2HPros", HPROS, hSel, k => engImplied(k, f2En())],
+    ["#sPros3", SPROS, s3Sel],
+    ["#sPros1", SPROS, s1Sel],
   ].forEach(([id, CR, SEL, IMP]) => {
     const box = $(id);
     if (!box) return;
@@ -795,12 +797,13 @@ document.addEventListener("click", e => {
   });
   if (!box) return;
   const kind = box.dataset.kind,
-    SEL = box.id === "f2DPros" ? dSel : box.id === "f2HPros" ? hSel : wcSel;
+    SEL = { f2DPros: dSel, f2HPros: hSel, sPros3: s3Sel, sPros1: s1Sel }[box.id] || wcSel,
+    FORM = $(box.id.startsWith("sPros") ? "#stockForm" : "#tradeForm2");
   const x = e.target.closest("[data-msx]");
   if (x) {
     delete SEL[x.dataset.msx];
     msRender();
-    $("#tradeForm2").dispatchEvent(new Event("change"));
+    FORM.dispatchEvent(new Event("change"));
     return;
   }
   const li = e.target.closest("[data-msk]");
@@ -810,7 +813,7 @@ document.addEventListener("click", e => {
     if (SEL[k] === kind) delete SEL[k];
     else SEL[k] = kind;
     msRender();
-    $("#tradeForm2").dispatchEvent(new Event("change"));
+    FORM.dispatchEvent(new Event("change"));
     return;
   }
   if (e.target.closest(".ms-field")) {
@@ -885,7 +888,7 @@ function f2CheckVals() {
   const en = f2En(),
     rev = en === "Reversal";
   if (!hasStruct(en))
-    return { struct: "", bos: "", dfs: "", som: "", room: hSel.room ? "ja" : "nee" };
+    return { struct: "", bos: "", dfs: "", som: "" };
   const st = f2St(),
     bos = st === "bos",
     som = st === "som";
@@ -894,7 +897,6 @@ function f2CheckVals() {
     bos: bos ? "ja" : som ? "nee" : "",
     dfs: "",
     som: som && rev ? "ja" : "",
-    room: hSel.room ? "ja" : "nee",
   };
 }
 function f2Check() {
@@ -1221,7 +1223,7 @@ function f2Fill(t) {
   f2EntrySet(entryKey(t.entry4h, t.struct || (t.bos === "ja" ? "bos" : t.bos === "nee" ? "som" : "")));
   ch($("#f2Entry"));
   setRadio("f2ectf", t.ecTf || "");
-  hSel = Object.fromEntries(HPROS.filter(([k]) => (k === "room" ? t.room === "ja" : t[k])).map(([k]) => [k, "for"]));
+  hSel = Object.fromEntries(HPROS.filter(([k]) => t[k]).map(([k]) => [k, "for"]));
   msRender();
   $("#f2Scale").checked = !!t.scaleIn;
   $("#f2PlanEntry").value = t.planEntry ?? "";
@@ -1629,10 +1631,10 @@ function investText(t, link) {
     ]),
     block("3M", L.m3, [
       ms(t.s3Ms),
-      ph === "A" && t.s3bm ? "BM" : "",
-      (ph === "A" && t.s3room) || (ph === "B" && t.s3roomB) ? "Room" : "",
+      t.s3bm ? "BM" : "",
+      t.s3cc ? "Bullish CC" : "",
     ]),
-    block("Monthly", L.mo, [ms(t.s1Ms), ph === "A" && t.s1room ? "Room" : "", t.s1cc ? "Bullish CC" : ""]),
+    block("Monthly", L.mo, [ms(t.s1Ms), t.s1bm ? "BM" : "", t.s1cc ? "Bullish CC" : ""]),
     block("Weekly", L.wk, [ms(t.swMs), t.swPat || ""]),
     t.notes || "",
   ]

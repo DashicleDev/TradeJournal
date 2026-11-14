@@ -126,12 +126,12 @@
       ]),
       card("3 Monthly", [
         row("Market structure", ms(t.s3Ms)),
-        row("BM", ph === "A" ? yes(t.s3bm) : ""),
-        row("Room", ph === "A" ? yes(t.s3room) : ph === "B" ? yes(t.s3roomB) : ""),
+        row("BM", yes(t.s3bm)),
+        row("Bullish CC", yes(t.s3cc)),
       ]),
       card("Monthly", [
         row("Market structure", ms(t.s1Ms)),
-        row("Room", ph === "A" ? yes(t.s1room) : ""),
+        row("BM", yes(t.s1bm)),
         row("Bullish CC", yes(t.s1cc)),
       ]),
       card("Weekly", [row("Market structure", ms(t.swMs)), row("Pattern", esc(t.swPat || ""))]),
@@ -176,7 +176,6 @@
       <section class="shr-card"><span class="eyebrow">4H</span>
         ${row("Entry", t.entry4h ? esc(t.entry4h + (t.ecTf ? " · " + t.ecTf.toUpperCase() : "")) : "")}
         ${row("Confirmation", esc(struct))}
-        ${row("4H room", t.room === "ja" ? "Yes" : t.room === "nee" ? "No" : "")}
         ${row("Engulfing candle", t.engulf ? "Yes" : "")}
         ${row("Channel", t.channel ? "Yes" : "")}
         ${row("Scale-in", t.scaleIn ? "Yes" : "")}

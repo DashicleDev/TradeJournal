@@ -218,11 +218,9 @@ let SPLITS = {
     ["3/3 with", "2/3 with", "1/3 with", "0/3 with", "2/2 with", "1/2 with", "0/2 with", "1/1 with", "0/1 with"],
   ],
   scale: ["Scale-in", t => (t.scaleIn ? "Scale-in" : "Not a scale-in"), ["Scale-in", "Not a scale-in"]],
-  chan: ["Channel", t => (t.entry4h ? (t.channel ? "Channel" : "No channel") : null), ["Channel", "No channel"]],
-  eng: [
-    "Engulfing candle pro",
-    t => (engOf(t) === null ? null : engOf(t) ? "Engulfing candle" : "No engulfing candle"),
-    ["Engulfing candle", "No engulfing candle"],
+  hpro: [
+    "4H pros",
+    t => (t.entry4h ? HPROS.filter(([k]) => (k === "engulf" ? engOf(t) : t.channel)).map(p => p[1]).join(" + ") || "No pros" : null),
   ],
   dms: [
     "Daily market structure",
@@ -243,11 +241,6 @@ let SPLITS = {
   ],
   entry4h: ["4H entry", t => t.entry4h || null, PLAN.entries],
   struct: ["4H structure", t => ({ bos: "BoS", som: "SoM" })[structOf(t)] || null, ["BoS", "SoM"]],
-  room: [
-    "4H room",
-    t => (t.room ? (t.room === "ja" ? "Room" : "No room") : null),
-    ["Room", "No room"],
-  ],
   ectf: [
     "Reversal timeframe (engulfing)",
     t => (t.entry4h === "Engulfing Candle" && t.ecTf ? t.ecTf.toUpperCase() : null),
@@ -340,7 +333,6 @@ const blankSet = mode => ({
   dpro: "",
   entry4h: "",
   struct: "",
-  room: "",
   ectf: "",
   pair: "",
   dir: "",
@@ -355,7 +347,7 @@ const blankSet = mode => ({
 let SPLITGROUPS = [
   ["Weekly", ["fase", "wpat", "wpatsub", "wstruct", "wms", "wtrend", "wrange", "align", "wpro", "wcon", "wscore"]],
   ["Daily", ["dms", "concept", "sub", "dpro"]],
-  ["4H", ["hms", "entry4h", "struct", "room", "chan", "eng", "scale", "ectf", "rr", "sl"]],
+  ["4H", ["hms", "entry4h", "struct", "hpro", "scale", "ectf", "rr", "sl"]],
   [
     "Context",
     ["grade", "cwhy", "pair", "dir", "status", "weekday", "month", "account", "actype", "project", "btmonth", "btlag"],
@@ -531,24 +523,10 @@ let FDEF = [
     t => (t.scaleIn ? "yes" : "no"),
   ],
   [
-    "chan",
-    "4H channel",
-    () => [
-      ["", "Any"],
-      ["yes", "Channel"],
-      ["no", "No channel"],
-    ],
-    t => (t.entry4h ? (t.channel ? "yes" : "no") : ""),
-  ],
-  [
-    "eng",
-    "4H engulfing candle",
-    () => [
-      ["", "Any"],
-      ["yes", "Engulfing candle"],
-      ["no", "No engulfing candle"],
-    ],
-    t => (engOf(t) === null ? "" : engOf(t) ? "yes" : "no"),
+    "hpro",
+    "4H pros",
+    () => [["", "Any"], ...HPROS],
+    (t, v) => (v === "engulf" ? engOf(t) === true : !!t.channel),
   ],
   [
     "dms",
@@ -588,16 +566,6 @@ let FDEF = [
       ["som", "SoM"],
     ],
     t => structOf(t),
-  ],
-  [
-    "room",
-    "4H room",
-    () => [
-      ["", "Any"],
-      ["ja", "Room"],
-      ["nee", "No room"],
-    ],
-    t => t.room,
   ],
   [
     "ectf",
@@ -690,7 +658,6 @@ const FMAIN = [
   "concept",
   "entry4h",
   "struct",
-  "room",
   "pair",
   "dir",
   "outcome",
@@ -748,6 +715,8 @@ function describe(f) {
           ? "Pro: " + l
           : k === "dpro"
             ? "Daily pro: " + l
+            : k === "hpro"
+              ? "4H pro: " + l
             : k === "con"
               ? "Con: " + l
               : ["fase", "pair", "concept", "sub", "outcome", "status", "sphase", "swpat", "sstate"].includes(k)
@@ -761,7 +730,7 @@ function describe(f) {
 let FGROUPS = [
   ["Weekly", ["fase", "wpat", "wstruct", "wms", "wtrend", "wrange", "pro", "con"]],
   ["Daily", ["dms", "concept", "sub", "dpro"]],
-  ["4H", ["entry4h", "struct", "ectf", "hms", "eng", "chan", "room", "scale"]],
+  ["4H", ["entry4h", "struct", "ectf", "hms", "hpro", "scale"]],
   ["Context", ["grade", "cwhy", "align", "pair", "dir", "account", "actype", "dates"]],
   ["Result", ["outcome", "eval", "rev", "exit"]],
 ];
@@ -843,17 +812,30 @@ const ST_DEFS = {
       t => t.s6bm || "",
     ],
     ["s3ms", "3M market structure", MSO, t => t.s3Ms || ""],
-    [
-      "s3room",
-      "3M room",
+    ...[
+      ["s3bm", "3M BM", "BM"],
+      ["s3cc", "3M bullish CC", "Bullish CC"],
+    ].map(([k, l, v]) => [
+      k,
+      l,
       () => [
         ["", "Any"],
-        ["yes", "Room"],
-        ["no", "No room"],
+        ["yes", v],
+        ["no", "No " + v.toLowerCase()],
       ],
-      t => ((t.sPhase === "B" ? t.s3roomB : t.s3room) ? "yes" : "no"),
-    ],
+      t => (t[k] ? "yes" : "no"),
+    ]),
     ["s1ms", "Monthly market structure", MSO, t => t.s1Ms || ""],
+    [
+      "s1bm",
+      "Monthly BM",
+      () => [
+        ["", "Any"],
+        ["yes", "BM"],
+        ["no", "No BM"],
+      ],
+      t => (t.s1bm ? "yes" : "no"),
+    ],
     [
       "s1cc",
       "Monthly bullish CC",
@@ -933,8 +915,8 @@ const ST_DEFS = {
     ],
   ],
   FGROUPS: [
-    ["Higher timeframes", ["sphase", "salign", "s12ms", "s6ms", "s6bm", "s3ms", "s3room"]],
-    ["Monthly & weekly", ["s1ms", "s1cc", "swms", "swpat"]],
+    ["Higher timeframes", ["sphase", "salign", "s12ms", "s6ms", "s6bm", "s3ms", "s3bm", "s3cc"]],
+    ["Monthly & weekly", ["s1ms", "s1bm", "s1cc", "swms", "swpat"]],
     ["Context", ["sstate", "pair", "account", "dates"]],
     ["Result", ["outcome", "exit"]],
   ],
@@ -946,6 +928,9 @@ const ST_DEFS = {
     s6bm: ["6M BM", t => (t.sPhase === "B" ? (t.s6ret ? "Back to " + t.s6ret : null) : t.s6bm || null)],
     s3ms: ["3M market structure", t => msL(t.s3Ms), ["With", "Against"]],
     s1ms: ["Monthly market structure", t => msL(t.s1Ms), ["With", "Against"]],
+    s3bm: ["3M BM", t => (t.s3bm ? "BM" : "No BM")],
+    s3cc: ["3M bullish CC", t => (t.s3cc ? "Bullish CC" : "No bullish CC")],
+    s1bm: ["Monthly BM", t => (t.s1bm ? "BM" : "No BM")],
     s1cc: ["Monthly bullish CC", t => (t.s1cc ? "Bullish CC" : "No bullish CC")],
     swms: ["Weekly market structure", t => msL(t.swMs), ["With", "Against"]],
     swpat: ["Weekly pattern", t => t.swPat || null, ["BM", "IHS"]],
@@ -974,8 +959,8 @@ const ST_DEFS = {
     btmonth: ["Backtested in (month)", t => (t.mode === "backtest" && t.btDate ? t.btDate.slice(0, 7) : null)],
   },
   SPLITGROUPS: [
-    ["Higher timeframes", ["sphase", "salign", "s12ms", "s6ms", "s6bm", "s3ms"]],
-    ["Monthly & weekly", ["s1ms", "s1cc", "swms", "swpat"]],
+    ["Higher timeframes", ["sphase", "salign", "s12ms", "s6ms", "s6bm", "s3ms", "s3bm", "s3cc"]],
+    ["Monthly & weekly", ["s1ms", "s1bm", "s1cc", "swms", "swpat"]],
     ["Result", ["exit", "hold", "outcome"]],
     ["Context", ["pair", "account", "status", "month", "btmonth"]],
   ],

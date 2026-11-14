@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.3.46 — 2026-11-14
+
+- **Analyze: one "4H pros" filter** (Engulfing candle, Channel; pick one or more) instead of separate Channel and Engulfing candle filters, like Weekly and Daily pros. "Group by 4H pros" does the same: Engulfing candle, Channel, both, or none. An Engulfing entry counts as Engulfing candle.
+- **Room is gone** from the trade form, the Re-evaluate game, Analyze (filter and split), the share page and the extension (1.4.32). In your data it was ticked on 89 of 91 live to-plan trades, so it couldn't show an effect. Trades keep any Room they already have (also when edited), and the CSV export still has the column. New trades don't get one.
+- **Invest: Room is gone from the 3M and Monthly sections too** (form, share page, Analyze filter), and both now have a **Pros** dropdown like the weekly pros, with BM and Bullish CC (replacing the BM and Bullish CC checkboxes). Shown in the section summary, the share page, the chat text and the CSV export (new columns "3M bullish CC", "Monthly BM"). Existing BM / Bullish CC ticks carry over; old trades keep their Room. Analyze (Invest) has filters and "Group by" options for them: 3M BM, 3M bullish CC, Monthly BM (Monthly bullish CC was there already).
+
 ## 1.3.45 — 2026-11-14
 
 - **The 4H pros can be picked with any entry** (Engulfing candle, Channel, Room): no more greying out, your call. The only locked one is Engulfing candle on an Engulfing entry, which has it by itself. Channel now counts for the grade whatever the entry; Room is saved as yes/no for every trade, and Analyze's Channel, Room and Engulfing candle filters include all trades with a 4H entry. Same in the extension (1.4.31).
