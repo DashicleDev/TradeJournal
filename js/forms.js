@@ -450,7 +450,7 @@ function openStock(t, dup) {
   $("#sTicker").value = t ? t.ticker || "" : "";
   $("#sDate").value = t ? t.date || "" : new Date().toISOString().slice(0, 10);
   $("#sClose").value = t ? t.closeDate || "" : "";
-  $("#sStatus").value = t && (t.status === "missed" || t.status === "pending") ? t.status : "taken";
+  $("#sStatus").value = t && ["missed", "pending", "expired"].includes(t.status) ? t.status : "taken";
   acFill("#sAccount", "stocks", t ? t.account || "" : null);
   const A = t || {};
   setRadio("sphase", A.sPhase || "");
@@ -539,7 +539,7 @@ $("#stockForm").onsubmit = e => {
     pair: $("#sTicker").value.trim().toUpperCase(),
     date: $("#sDate").value,
     closeDate: $("#sClose").value,
-    status: (old ? old.mode : sMode) === "live" ? $("#sStatus").value : "taken", // only live trades can be missed or pending
+    status: (old ? old.mode : sMode) === "live" ? $("#sStatus").value : "taken", // only live trades can be missed, pending or expired
     account: $("#sAccount").value,
     btDate: (old ? old.mode : sMode) === "backtest" ? $("#sBtDate").value || todayISO() : null,
     sPhase: radio("sphase"),
@@ -1201,7 +1201,7 @@ function f2Fill(t) {
   $("#f2Pair").value = t.pair || "";
   $("#f2Date").value = t.date || "";
   $("#f2Close").value = t.closeDate || "";
-  $("#f2Status").value = t.status === "missed" || t.status === "pending" ? t.status : "taken";
+  $("#f2Status").value = ["missed", "pending", "expired"].includes(t.status) ? t.status : "taken";
   acFill("#f2Account", "fx", t.account || "");
   setRadio("f2dir", t.dir || "");
   $("#f2Concept").value = t.concept || "";
@@ -1378,7 +1378,7 @@ function f2Submit(stay) {
     mode,
     market: old ? mktOf(old) : f2Market,
     project: mode === "backtest" && $("#f2Project").value !== "none" ? $("#f2Project").value : null,
-    status: mode === "live" ? $("#f2Status").value : "taken", // only live trades can be missed or pending
+    status: mode === "live" ? $("#f2Status").value : "taken", // only live trades can be missed, pending or expired
     account: $("#f2Account").value,
     btDate: mode === "backtest" ? $("#f2BtDate").value || todayISO() : null,
     date: $("#f2Date").value,

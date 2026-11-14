@@ -198,7 +198,7 @@ function overviewHTML(tk, ps, o, P) {
         ? (() => {
             const rs = tk.map(t => t.retPct).filter(v => v != null),
               ar = rs.length ? rs.reduce((a, b) => a + b, 0) / rs.length : null,
-              open = trades().filter(t => t.status !== "missed" && !isPend(t) && !t.closeDate).length;
+              open = trades().filter(t => t.status !== "missed" && !unfilled(t) && !t.closeDate).length;
             const oi = o.openN ?? tk.filter(t => t.openR).length,
               cn = tk.filter(t => !t.openR).length;
             return (
@@ -629,7 +629,7 @@ const fmtRate = v => (v ? (+v).toFixed(4).replace(/0+$/, "").replace(/\.$/, "") 
 function taxSales() {
   const out = [];
   docs
-    .filter(t => !t.kind && mktOf(t) === "stocks" && t.mode === "live" && t.status !== "missed" && !isPend(t))
+    .filter(t => !t.kind && mktOf(t) === "stocks" && t.mode === "live" && t.status !== "missed" && !unfilled(t))
     .forEach(t => {
       const cur = stCur(t),
         en = Number(t.sEntry) || 0;
@@ -824,7 +824,7 @@ function simOf(t, o) {
 }
 const sSold = t => (t.sExits || []).reduce((a, x) => a + (Number(x.shares) || 0), 0);
 const sIsOpen = t =>
-  t.status !== "missed" && !isPend(t) && !(t.closeDate && (!Number(t.sShares) || sSold(t) >= Number(t.sShares) - 1e-6));
+  t.status !== "missed" && !unfilled(t) && !(t.closeDate && (!Number(t.sShares) || sSold(t) >= Number(t.sShares) - 1e-6));
 const daysBetween = (a, b) =>
   Math.max(
     0,
@@ -837,7 +837,7 @@ function stocksOverviewHTML(all, per, P) {
     cur = stCur;
   const open = all.filter(sIsOpen).sort((a, b) => (a.date || "").localeCompare(b.date || ""));
   const closed = per
-    .filter(t => t.status !== "missed" && !sIsOpen(t) && t.pnl != null)
+    .filter(t => t.status !== "missed" && !unfilled(t) && !sIsOpen(t) && t.pnl != null)
     .sort((a, b) => (a.closeDate || a.date || "").localeCompare(b.closeDate || b.date || ""));
   const realised = t =>
     (t.sExits || []).reduce(
@@ -919,7 +919,8 @@ function stockTableHTML(list, title) {
   const res = t => {
     const sold = (t.sExits || []).reduce((a, x) => a + (Number(x.shares) || 0), 0),
       sh = Number(t.sShares) || 0,
-      hol = t.status === "missed" ? " hollow" : "";
+      hol = t.status === "missed" || t.status === "expired" ? " hollow" : "";
+    if (t.status === "expired" && !t.outcome && t.pnl == null) return `<span class="restag open${hol}">Expired</span>`;
     if (!(t.closeDate && (!sh || sold >= sh)))
       return isPend(t)
         ? `<span class="restag open${hol}">Pending</span>`
@@ -979,7 +980,7 @@ function tableHTML(list, title, showMode) {
       .map(t => {
         const oc = t.outcome || (t.r > 0 ? "win" : t.r < 0 ? "loss" : t.r === 0 ? "be" : ""),
           err = t.evaluation && t.evaluation !== "plan";
-        return `<tr class="clickrow${err ? " errrow" : ""}${t.status === "missed" ? " missrow" : ""}" data-edit="${t.id}" tabindex="0" title="Open trade"><td class="num c-date">${esc(t.date)}</td><td class="c-pair">${esc(t.pair)} ${t.dir ? `<span class="dirar ${t.dir}" title="${t.dir === "long" ? "Long" : "Short"}"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round">${t.dir === "long" ? '<path d="M12 19V5M6 11l6-6 6 6"/>' : '<path d="M12 5v14M6 13l6 6 6-6"/>'}</svg></span>` : ""}${t.status === "missed" ? `<span class="misstag">Missed</span>` : isPend(t) ? `<span class="misstag">Pending</span>` : ""}</td><td class="num c-phase">${t.fase || "—"}</td><td class="c-concept">${esc(t.concept || "—")}${t.sub && t.sub !== "—" ? `<br><span class="hint" style="margin:0">${esc(t.sub)}</span>` : ""}<span class="monly">${t.fase ? " · Phase " + t.fase : ""}${t.entry4h ? " · " + esc(t.entry4h) : ""}${tGrade(t) ? `<span class="grade g${tGrade(t)}">${tGrade(t)}</span>` : ""}</span></td><td class="c-entry">${esc(t.entry4h || "—")}</td><td class="c-score">${(g => (g ? `<span class="grade g${g.g}" title="${esc(g.why)}">${g.g}</span>` : ""))(gradeOf(t))}</td><td class="c-res">${oc ? `<span class="restag ${oc}${t.status === "missed" ? " hollow" : ""}">${{ win: "Win", loss: "Loss", be: "BE", open: "Open" }[oc]}${oc === "open" ? "" : `<b class="num">${fmtR(t.r)}</b>`}</span>` : "—"}</td><td class="c-eval">${err ? `<span class="errtag">Not to plan</span>` : ""}</td><td class="c-charts">${shotCount(t) ? `<button class="camb chico" data-view="${t.id}" title="View charts"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 3v18h18"/><path d="M7 15l4-4 3 3 5-6"/></svg>${shotCount(t)}</button>` : ""}</td>
+        return `<tr class="clickrow${err ? " errrow" : ""}${t.status === "missed" ? " missrow" : ""}" data-edit="${t.id}" tabindex="0" title="Open trade"><td class="num c-date">${esc(t.date)}</td><td class="c-pair">${esc(t.pair)} ${t.dir ? `<span class="dirar ${t.dir}" title="${t.dir === "long" ? "Long" : "Short"}"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round">${t.dir === "long" ? '<path d="M12 19V5M6 11l6-6 6 6"/>' : '<path d="M12 5v14M6 13l6 6 6-6"/>'}</svg></span>` : ""}${t.status === "missed" ? `<span class="misstag">Missed</span>` : unfilled(t) ? `<span class="misstag">${isPend(t) ? "Pending" : "Expired"}</span>` : ""}</td><td class="num c-phase">${t.fase || "—"}</td><td class="c-concept">${esc(t.concept || "—")}${t.sub && t.sub !== "—" ? `<br><span class="hint" style="margin:0">${esc(t.sub)}</span>` : ""}<span class="monly">${t.fase ? " · Phase " + t.fase : ""}${t.entry4h ? " · " + esc(t.entry4h) : ""}${tGrade(t) ? `<span class="grade g${tGrade(t)}">${tGrade(t)}</span>` : ""}</span></td><td class="c-entry">${esc(t.entry4h || "—")}</td><td class="c-score">${(g => (g ? `<span class="grade g${g.g}" title="${esc(g.why)}">${g.g}</span>` : ""))(gradeOf(t))}</td><td class="c-res">${oc ? `<span class="restag ${oc}${t.status === "missed" || t.status === "expired" ? " hollow" : ""}">${{ win: "Win", loss: "Loss", be: "BE", open: "Open" }[oc]}${oc === "open" ? "" : `<b class="num">${fmtR(t.r)}</b>`}</span>` : "—"}</td><td class="c-eval">${err ? `<span class="errtag">Not to plan</span>` : ""}</td><td class="c-charts">${shotCount(t) ? `<button class="camb chico" data-view="${t.id}" title="View charts"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 3v18h18"/><path d="M7 15l4-4 3 3 5-6"/></svg>${shotCount(t)}</button>` : ""}</td>
 </tr>`;
       })
       .join("")}

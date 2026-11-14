@@ -2,7 +2,7 @@
  * core.js — Shared basics: the trading plan (concepts, entries, exits), formatting and small DOM helpers.
  * Loaded first; every other file uses these.
  */
-const APP_VERSION = "1.3.54";
+const APP_VERSION = "1.3.55";
 const PLAN = {
   concepts: {
     Continuation: ["First Structure", "100 level", "Fake Out", "New Action"],
@@ -38,6 +38,8 @@ const esc = s =>
   );
 // a live trade whose limit order hasn't filled yet: no position, no result, kept out of stats
 const isPend = t => t.status === "pending";
+// Expired = the limit never filled; its result fields (if any) are what it would have made, so it is kept out of every count like Pending
+const unfilled = t => t.status === "pending" || t.status === "expired";
 const fmtR = v =>
   v == null || isNaN(v) ? "—" : (v > 0 ? "+" : "") + (market === "stocks" ? v.toFixed(1) + "%" : v.toFixed(2) + "R");
 const stLbl = h =>

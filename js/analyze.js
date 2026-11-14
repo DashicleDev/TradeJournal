@@ -263,7 +263,7 @@ let SPLITS = {
   ],
   pair: ["Pair", t => t.pair || null],
   dir: ["Direction", t => (t.dir ? (t.dir === "long" ? "Long" : "Short") : null)],
-  status: ["Status", t => ({ taken: "Taken", missed: "Missed" })[t.status] || null, ["Taken", "Missed"]],
+  status: ["Status", t => ({ taken: "Taken", missed: "Missed", pending: "Pending", expired: "Expired" })[t.status] || null, ["Taken", "Missed", "Pending", "Expired"]],
   outcome: [
     "Outcome",
     t =>
@@ -415,10 +415,11 @@ let FDEF = [
     () => [
       ["", "Taken only"],
       ["missed", "Missed only (hypothetical R)"],
+      ["expired", "Expired only (hypothetical R)"],
       ["all", "Taken + missed (hypothetical R)"],
       ["taken", "Taken"], // older saved sets
     ],
-    (t, v) => v === "all" || t.status === v,
+    (t, v) => (v === "all" ? !unfilled(t) : t.status === v),
   ],
   [
     "fase",
@@ -680,7 +681,7 @@ function applySet(f, list) {
       (!f.to || (t.date || "") <= f.to)
   );
   const vs = fvals(f.status);
-  return vs.includes("missed") || vs.includes("all") ? out.map(t => ({ ...t, status: "taken" })) : out;
+  return vs.some(v => ["missed", "expired", "all"].includes(v)) ? out.map(t => ({ ...t, status: "taken" })) : out;
 }
 // short names for compared sets: only the parts of describe() that differ between them ("Grade A", "Grade B", …)
 function setNames(sets) {
@@ -744,7 +745,7 @@ const MSO = () => [
 const msL = v => (v === "for" ? "With" : v === "against" ? "Against" : null);
 const sHows = t => [...new Set((t.sExits || []).flatMap(x => (Array.isArray(x.hows) ? x.hows : x.how ? [x.how] : [])))];
 const sState = t =>
-  t.status === "missed" ? "missed" : isPend(t) ? "pending" : typeof sIsOpen === "function" && sIsOpen(t) ? "open" : "closed";
+  t.status === "missed" ? "missed" : t.status === "expired" ? "expired" : isPend(t) ? "pending" : typeof sIsOpen === "function" && sIsOpen(t) ? "open" : "closed";
 const sAlign = t => {
   const v = [t.s12Ms, t.s6Ms, t.s3Ms, t.s1Ms, t.swMs].filter(Boolean);
   return v.length ? `${v.filter(x => x === "for").length}/${v.length} with` : null;
@@ -757,10 +758,11 @@ const ST_DEFS = {
       () => [
         ["", "Taken only"],
         ["missed", "Missed only"],
+        ["expired", "Expired only"],
         ["all", "Taken + missed"],
         ["taken", "Taken"], // older saved sets
       ],
-      (t, v) => v === "all" || t.status === v,
+      (t, v) => (v === "all" ? !unfilled(t) : t.status === v),
     ],
     [
       "sstate",
@@ -769,6 +771,7 @@ const ST_DEFS = {
         ["", "Any"],
         ["open", "Open"],
         ["pending", "Pending"],
+        ["expired", "Expired"],
         ["closed", "Closed"],
       ],
       t => sState(t),
@@ -950,7 +953,7 @@ const ST_DEFS = {
     ],
     pair: ["Ticker", t => t.ticker || t.pair || null],
     account: ["Account", t => acKey(t)],
-    status: ["Status", t => (t.status === "missed" ? "Missed" : isPend(t) ? "Pending" : "Taken"), ["Taken", "Pending", "Missed"]],
+    status: ["Status", t => (t.status === "missed" ? "Missed" : t.status === "expired" ? "Expired" : isPend(t) ? "Pending" : "Taken"), ["Taken", "Pending", "Expired", "Missed"]],
     outcome: [
       "Outcome",
       t => ({ win: "Win", be: "BE", loss: "Loss", open: "Open" })[t.outcome] || null,
@@ -1024,11 +1027,12 @@ function setControls(st, i) {
     ["backtest", "Backtest"],
   ];
   const sv = fvals(f.status),
-    miss = sv.includes("all") || (sv.includes("taken") && sv.includes("missed")) ? "all" : sv.includes("missed") ? "missed" : "";
+    miss = sv.includes("all") || (sv.includes("taken") && sv.includes("missed")) ? "all" : sv.includes("missed") ? "missed" : sv.includes("expired") ? "expired" : "";
   const misses = [
     ["", "Taken"],
     ["all", "Taken + missed"],
     ["missed", "Missed only"],
+    ["expired", "Expired only"],
   ];
   return `<div class="panel setpanel" style="border-top-color:${scol(st)}">
   <div class="row spread"><span class="eyebrow"><i class="sdot" style="background:${scol(st)}"></i>Set ${i + 1}</span><div class="row" style="gap:2px"><button type="button" class="btn small ghost" data-dupset="${k}" ${sets.length >= MAXSETS ? "disabled" : ""}>Duplicate</button><button type="button" class="btn small ghost" data-resetset="${k}">Reset</button>${sets.length > 1 ? `<button type="button" class="btn small ghost danger" data-rmset="${k}" aria-label="Remove set ${i + 1}">Remove</button>` : ""}</div></div>

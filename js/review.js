@@ -98,7 +98,7 @@ function rvPool(o) {
       !t.kind &&
       (!o.unrev || o.open === "form" || !(t.reviews && t.reviews.length)) &&
       mktOf(t) === "fx" &&
-      (o.open === "form" || (t.status !== "missed" && t.r != null)) &&
+      (o.open === "form" || (t.status !== "missed" && !unfilled(t) && t.r != null)) &&
       (o.mode === "both" || t.mode === o.mode) &&
       (o.mode !== "live" || !o.acct || t.account === o.acct) &&
       (o.mode !== "backtest" || !o.proj || t.project === o.proj) &&
@@ -402,7 +402,7 @@ const prSid = () => "s" + Date.now().toString(36) + Math.random().toString(36).s
 let prCur = { sec: {} };
 const prTF = (type, list) => {
   const fx = market === "fx",
-    tk = list.filter(t => t.status !== "missed" && !isPend(t));
+    tk = list.filter(t => t.status !== "missed" && !unfilled(t));
   return type === "missed"
     ? list.filter(t => t.status === "missed")
     : type === "good"

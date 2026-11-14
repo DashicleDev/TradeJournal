@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.3.55 — 2026-11-14
+
+- **Expired status** (forex and Invest, next to Pending): the limit never filled. It stays out of every count, win rate and chart like Pending, but you can still log what the price did afterwards (win, loss, BE and the result), kept as "if filled". Tag in the lists and on the share page ("Expired · +2R if filled"). Analyze: "Expired only" in the Status filter and in each set's Taken / Missed switch (hypothetical results, like Missed), an Expired group in "Group by status", and "Taken + missed" no longer picks up Pending or Expired trades. Extension 1.4.34 keeps it when editing.
+
 ## 1.3.54 — 2026-11-14
 
 - **Invest: a Pending orders panel** under Open positions (only shown when you have Pending trades): ticker, setup, date set and days waiting, entry and stop. Click a row to open the trade and set it to Taken once it fills. Pending trades stay out of the counts, win rate and chart.
