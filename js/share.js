@@ -58,7 +58,8 @@
     ["ec", "Engulfing candle"],
   ];
   const DCRIT = { fc: "FC", dcc: "Last CC", sd: "S&D zone" };
-  const INV = t.market === "stocks";
+  const INV = t.market === "stocks",
+    isPend = t => t.status === "pending"; // same as core.js (the share page doesn't load it)
   const SLOTS = INV
     ? [
         ["m12", "12M"],
@@ -143,7 +144,7 @@
       ]),
       card("Weekly", [row("Market structure", ms(t.swMs)), row("Pattern", esc(t.swPat || ""))]),
       card("Result", [
-        row("ROI", roiTxt || (oc ? "—" : "Open")),
+        row("ROI", roiTxt || (oc ? "—" : isPend(t) ? "Pending" : "Open")),
         row("Entry", px(t.sEntry)),
         row("Stop", px(t.sStop)),
         // each exit: price on the row, date and how in small type under it
@@ -160,7 +161,7 @@
         <p class="hint">${esc([t.dir ? (t.dir === "long" ? "Long" : "Short") : "", t.mode === "backtest" ? "Backtest" : "Live", t.status === "missed" ? "Missed" : ""].filter(Boolean).join(" · "))}</p>
         ${INV && ph ? `<p class="shr-concept"><span>Phase</span> ${esc(ph)}</p>` : ""}
         ${!INV && t.concept ? `<p class="shr-concept"><span>Concept</span> ${t.concept === "Weekly - 4H" ? "Weekly - 4H" : "Weekly - Daily - 4H"}</p>` : ""}</div>
-      ${oc ? `<span class="restag ${oc} shr-res">${{ win: "Win", loss: "Loss", be: "BE", open: "Open" }[oc]}${oc === "open" ? "" : `<b class="num">${INV ? pct(t.retPct) : fmtR(t.r)}</b>`}</span>` : INV && t.status !== "missed" && Number(t.sShares) ? `<span class="restag open shr-res">Open${t.roi != null && sold ? `<b class="num">${pct(t.roi)}</b>` : ""}</span>` : ""}
+      ${oc ? `<span class="restag ${oc} shr-res">${{ win: "Win", loss: "Loss", be: "BE", open: "Open" }[oc]}${oc === "open" ? "" : `<b class="num">${INV ? pct(t.retPct) : fmtR(t.r)}</b>`}</span>` : isPend(t) ? `<span class="restag open shr-res">Pending</span>` : INV && t.status !== "missed" ? `<span class="restag open shr-res">Open${t.roi != null && sold ? `<b class="num">${pct(t.roi)}</b>` : ""}</span>` : ""}
     </div>
     <div class="shr-grid">${
       INV
@@ -188,7 +189,7 @@
         ${row("Market structure", ms(t.hMs))}
       </section>
       <section class="shr-card"><span class="eyebrow">Result</span>
-        ${row("Result", oc && oc !== "open" ? esc(fmtR(t.r)) : "Open")}
+        ${row("Result", oc && oc !== "open" ? esc(fmtR(t.r)) : isPend(t) ? "Pending" : "Open")}
         ${row("Max reached", t.maxR != null ? esc(fmtR(t.maxR)) : "")}
         ${row("Exit", esc(t.exitReason || ""))}
         ${row("According to plan", t.evaluation ? (t.evaluation === "plan" ? "Yes" : "No") : "")}

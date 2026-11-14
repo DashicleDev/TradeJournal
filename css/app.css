@@ -4361,14 +4361,10 @@ fieldset.subs-closed .legend-toggle .chev {
   border-color: var(--bad);
   color: #fff;
 }
-/* only live trades can be missed */
-#tradeForm2:not(.mode-live) .f-missed,
-#stockForm:not(.mode-live) .f-missed {
+/* only live trades can be missed or pending */
+#tradeForm2:not(.mode-live) .f-status,
+#stockForm:not(.mode-live) .f-status {
   display: none;
-}
-.f-missed {
-  align-self: end;
-  min-height: 40px;
 }
 .exits {
   margin-top: 16px;

@@ -744,7 +744,7 @@ const MSO = () => [
 const msL = v => (v === "for" ? "With" : v === "against" ? "Against" : null);
 const sHows = t => [...new Set((t.sExits || []).flatMap(x => (Array.isArray(x.hows) ? x.hows : x.how ? [x.how] : [])))];
 const sState = t =>
-  t.status === "missed" ? "missed" : typeof sIsOpen === "function" && sIsOpen(t) ? "open" : "closed";
+  t.status === "missed" ? "missed" : isPend(t) ? "pending" : typeof sIsOpen === "function" && sIsOpen(t) ? "open" : "closed";
 const sAlign = t => {
   const v = [t.s12Ms, t.s6Ms, t.s3Ms, t.s1Ms, t.swMs].filter(Boolean);
   return v.length ? `${v.filter(x => x === "for").length}/${v.length} with` : null;
@@ -768,6 +768,7 @@ const ST_DEFS = {
       () => [
         ["", "Any"],
         ["open", "Open"],
+        ["pending", "Pending"],
         ["closed", "Closed"],
       ],
       t => sState(t),
@@ -949,7 +950,7 @@ const ST_DEFS = {
     ],
     pair: ["Ticker", t => t.ticker || t.pair || null],
     account: ["Account", t => acKey(t)],
-    status: ["Status", t => (t.status === "missed" ? "Missed" : "Taken"), ["Taken", "Missed"]],
+    status: ["Status", t => (t.status === "missed" ? "Missed" : isPend(t) ? "Pending" : "Taken"), ["Taken", "Pending", "Missed"]],
     outcome: [
       "Outcome",
       t => ({ win: "Win", be: "BE", loss: "Loss", open: "Open" })[t.outcome] || null,

@@ -252,9 +252,7 @@
                   ><span>Account</span
                   ><select id="sAccount"></select
                 ></label>
-                <label class="checkline f-missed"
-                  ><input type="checkbox" id="sMissed" /><span>Missed trade</span></label
-                >
+                <label class="f f-status"><span>Status</span><select id="sStatus"><option value="taken">Taken</option><option value="pending">Pending (limit not filled)</option><option value="missed">Missed</option></select></label>
               </div>
             </fieldset>
             <fieldset>
@@ -633,9 +631,7 @@
                   <span>Direction</span>
                   <div class="segs" id="seg-f2dir"></div>
                 </div>
-                <label class="checkline f-missed"
-                  ><input type="checkbox" id="f2Missed" /><span>Missed trade</span></label
-                >
+                <label class="f f-status"><span>Status</span><select id="f2Status"><option value="taken">Taken</option><option value="pending">Pending (limit not filled)</option><option value="missed">Missed</option></select></label>
               </div>
             </fieldset>
             <fieldset id="f2Analysis" class="collapsible">

@@ -402,7 +402,7 @@ const prSid = () => "s" + Date.now().toString(36) + Math.random().toString(36).s
 let prCur = { sec: {} };
 const prTF = (type, list) => {
   const fx = market === "fx",
-    tk = list.filter(t => t.status !== "missed");
+    tk = list.filter(t => t.status !== "missed" && !isPend(t));
   return type === "missed"
     ? list.filter(t => t.status === "missed")
     : type === "good"
@@ -790,13 +790,13 @@ document.addEventListener("click", e => {
     if (market === "stocks") {
       openStock();
       $("#sDate").value = dt;
-      $("#sMissed").checked = miss;
-      $("#sMissed").dispatchEvent(new Event("change", { bubbles: true }));
+      $("#sStatus").value = miss ? "missed" : "taken";
+      $("#sStatus").dispatchEvent(new Event("change", { bubbles: true }));
     } else {
       openSheet2();
       $("#f2Date").value = dt;
-      $("#f2Missed").checked = miss;
-      $("#f2Missed").dispatchEvent(new Event("change", { bubbles: true }));
+      $("#f2Status").value = miss ? "missed" : "taken";
+      $("#f2Status").dispatchEvent(new Event("change", { bubbles: true }));
       if (ty === "good") setRadio("f2eval", "plan");
       if (ty === "bad") setRadio("f2eval", "off");
     }
