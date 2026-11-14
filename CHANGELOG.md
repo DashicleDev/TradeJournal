@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.3.48 — 2026-11-14
+
+- **Review: saved reviews list.** The Notes column (it only repeated your SMB pairs) is now a Win rate column. Trades also counts open and missed trades next to the closed ones ("0 + 1 open · 1 missed"), so a week no longer reads 0 trades when it has some.
+
 ## 1.3.47 — 2026-11-14
 
 - **Review: forex trade cards show the percent** next to R (1R is about 1% at 1% risk), in Trades to plan, Trades not to plan and Missed trades.

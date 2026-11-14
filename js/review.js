@@ -642,22 +642,6 @@ function prTradesHTML(list) {
     })
     .join("")}</tbody></table></div>`;
 }
-function prSnippet(d) {
-  const v = [
-    ...(d.secs || []).map(x => {
-      const q = (d.sec || {})[x.id] || {};
-      return (
-        q.text ||
-        (q.rows || [])
-          .map(r => [r.pair, r.dir].filter(Boolean).join(" "))
-          .filter(Boolean)
-          .join(", ")
-      );
-    }),
-    ...PR_Q.map(([k]) => d[k]),
-  ].find(x => x && x.trim());
-  return v ? v.trim().replace(/\s+/g, " ").slice(0, 90) + (v.trim().length > 90 ? "…" : "") : "";
-}
 function prDueUpd() {
   const b = document.querySelector('nav button[data-tab="review"]');
   if (!b) return;
@@ -723,12 +707,12 @@ function prRender() {
     <div class="panel" style="margin-top:20px"><div class="row spread" style="align-items:center"><div><span class="eyebrow">Saved</span><h2 style="margin:2px 0 0">Your reviews <small class="hint" style="margin:0;font-weight:400">${prDocs().length}</small></h2></div><div class="segs">${[["", "All"], ...PR_PER].map(([v, l]) => `<button type="button" class="rvb${prFilt === v ? " on" : ""}" data-prfilt="${v}">${l}</button>`).join("")}</div></div>
     ${
       L.length
-        ? `<div style="overflow-x:auto;margin-top:8px"><table class="rvdt prlist"><thead><tr><th>Period</th><th>Trades</th><th>Result</th><th>Notes</th></tr></thead><tbody>${L.map(
+        ? `<div style="overflow-x:auto;margin-top:8px"><table class="rvdt prlist"><thead><tr><th>Period</th><th>Trades</th><th>Result</th><th>Win rate</th></tr></thead><tbody>${L.map(
             d => {
               const r = prRange(d.per, d.from),
                 tl = prTrades(r),
                 ps = stats(tl);
-              return `<tr data-prgo="${d.per}|${d.from}"><td><span class="prtype">${prPerL(d.per)}</span> ${esc(r.label)}</td><td>${taken(tl).length}</td><td class="num ${ps.total > 0 ? "pos" : ps.total < 0 ? "neg" : ""}">${taken(tl).length ? fmtR(ps.total) : "—"}</td><td class="hint" style="margin:0">${esc(prSnippet(d))}</td></tr>`;
+              return `<tr data-prgo="${d.per}|${d.from}"><td><span class="prtype">${prPerL(d.per)}</span> ${esc(r.label)}</td><td>${taken(tl).length}${(n => (n ? ` <span class="hint" style="margin:0">+ ${n} open</span>` : ""))(tl.filter(t => t.status !== "missed").length - taken(tl).length)}${(n => (n ? ` <span class="hint" style="margin:0">· ${n} missed</span>` : ""))(tl.filter(t => t.status === "missed").length)}</td><td class="num ${ps.total > 0 ? "pos" : ps.total < 0 ? "neg" : ""}">${taken(tl).length ? fmtR(ps.total) : "—"}</td><td class="num">${taken(tl).length ? fmtP(ps.wr) : "—"}</td></tr>`;
             }
           ).join("")}</tbody></table></div>`
         : `<p class="hint" style="margin:10px 0 0">No ${prFilt ? prPerL(prFilt).toLowerCase() + " " : ""}reviews saved yet.</p>`
