@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.3.56 — 2026-11-14
+
+- **Share page: the Result card is called "Trade" until there is a result**, without the "ROI: Open" row (the tag at the top says where the trade stands). Expired trades show a logged result as "if filled". Forex: same, and the card is left out when it would be empty.
+
 ## 1.3.55 — 2026-11-14
 
 - **Expired status** (forex and Invest, next to Pending): the limit never filled. It stays out of every count, win rate and chart like Pending, but you can still log what the price did afterwards (win, loss, BE and the result), kept as "if filled". Tag in the lists and on the share page ("Expired · +2R if filled"). Analyze: "Expired only" in the Status filter and in each set's Taken / Missed switch (hypothetical results, like Missed), an Expired group in "Group by status", and "Taken + missed" no longer picks up Pending or Expired trades. Extension 1.4.34 keeps it when editing.

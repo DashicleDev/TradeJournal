@@ -143,8 +143,9 @@
         row("Bullish CC", yes(t.s1cc)),
       ]),
       card("Weekly", [row("Market structure", ms(t.swMs)), row("Pattern", esc(t.swPat || ""))]),
-      card("Result", [
-        row("ROI", unf(t) ? (t.status === "expired" && roiTxt ? roiTxt + " if filled" : unf(t)) : roiTxt || (oc ? "—" : "Open")),
+      // "Result" only once there is one; before that (open, pending) the status tag at the top says where it stands
+      card(oc && !unf(t) ? "Result" : "Trade", [
+        row(t.status === "expired" ? "ROI if filled" : "ROI", roiTxt || (oc && !unf(t) ? "—" : "")),
         row("Entry", px(t.sEntry)),
         row("Stop", px(t.sStop)),
         // each exit: price on the row, date and how in small type under it
@@ -188,12 +189,12 @@
         ${row("Scale-in", t.scaleIn ? "Yes" : "")}
         ${row("Market structure", ms(t.hMs))}
       </section>
-      <section class="shr-card"><span class="eyebrow">Result</span>
-        ${row("Result", t.status === "expired" && oc && oc !== "open" ? "Expired · " + esc(fmtR(t.r)) + " if filled" : oc && oc !== "open" && !unf(t) ? esc(fmtR(t.r)) : unf(t) || "Open")}
-        ${row("Max reached", t.maxR != null ? esc(fmtR(t.maxR)) : "")}
-        ${row("Exit", esc(t.exitReason || ""))}
-        ${row("According to plan", t.evaluation ? (t.evaluation === "plan" ? "Yes" : "No") : "")}
-      </section>`
+      ${card(oc && oc !== "open" && !unf(t) ? "Result" : "Trade", [
+        row(t.status === "expired" ? "Result if filled" : "Result", oc && oc !== "open" ? esc(fmtR(t.r)) : ""),
+        row("Max reached", t.maxR != null ? esc(fmtR(t.maxR)) : ""),
+        row("Exit", esc(t.exitReason || "")),
+        row("According to plan", t.evaluation ? (t.evaluation === "plan" ? "Yes" : "No") : ""),
+      ])}`
     }
     </div>
     ${t.notes ? `<section class="shr-card shr-notes"><span class="eyebrow">Notes</span><p>${esc(t.notes)}</p></section>` : ""}
