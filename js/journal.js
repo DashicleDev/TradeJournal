@@ -895,6 +895,14 @@ function stocksOverviewHTML(all, per, P) {
       })()}<td class="r">${shotCount(t) ? `<button class="camb chico" data-view="${t.id}" title="View charts"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 3v18h18"/><path d="M7 15l4-4 3 3 5-6"/></svg>${shotCount(t)}</button>` : ""}</td></tr>`;
     })
     .join("");
+  // limit orders not filled yet (Status: Pending); not counted anywhere else
+  const pend = all.filter(isPend).sort((a, b) => (a.date || "").localeCompare(b.date || "")),
+    pendRows = pend
+      .map(
+        t =>
+          `<tr class="clickrow" data-edit="${t.id}" tabindex="0" title="Open trade"><td class="c-pair"><b>${esc(t.ticker || t.pair || "")}</b></td><td>${esc([t.sPhase ? "Phase " + t.sPhase : "", t.swPat || ""].filter(Boolean).join(" · ") || "—")}</td><td class="num">${esc(fmtD(t.date) || "")} <span class="hint" style="margin:0">· ${daysBetween(t.date)}d</span></td><td class="r num">${t.sEntry != null ? t.sEntry : "—"}</td><td class="r num">${t.sStop != null ? t.sStop : "—"}</td><td class="r">${shotCount(t) ? `<button class="camb chico" data-view="${t.id}" title="View charts"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 3v18h18"/><path d="M7 15l4-4 3 3 5-6"/></svg>${shotCount(t)}</button>` : ""}</td></tr>`
+      )
+      .join("");
   const bars = closed.map(t => ({
     v: +(t.retPct || 0).toFixed(1),
     x: t.ticker || t.pair || "",
@@ -902,6 +910,7 @@ function stocksOverviewHTML(all, per, P) {
   }));
   return `<div class="sov" style="margin-top:16px"><div class="panel"><div class="row spread"><div><span class="eyebrow">Now</span><h2>Open positions</h2></div><span class="hint" style="margin:0">${open.length} open</span></div>
     ${open.length ? `<div class="tbl"><table class="opentab"><thead><tr><th>Ticker</th><th>Setup</th><th>Since</th><th class="r">Shares left</th><th class="r">Entry</th><th class="r">Realised %</th><th class="r">Realised</th><th></th></tr></thead><tbody>${openRows}</tbody></table></div>` : `<p class="hint" style="margin:0">No open positions.</p>`}</div>
+${pend.length ? `<div class="panel" style="margin-top:16px"><div class="row spread"><div><span class="eyebrow">Waiting for a fill</span><h2>Pending orders</h2></div><span class="hint" style="margin:0">${pend.length} pending</span></div><div class="tbl"><table class="opentab"><thead><tr><th>Ticker</th><th>Setup</th><th>Since</th><th class="r">Entry</th><th class="r">Stop</th><th></th></tr></thead><tbody>${pendRows}</tbody></table></div></div>` : ""}
 </div>`;
 }
 function stockTableHTML(list, title) {

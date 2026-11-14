@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.3.54 — 2026-11-14
+
+- **Invest: a Pending orders panel** under Open positions (only shown when you have Pending trades): ticker, setup, date set and days waiting, entry and stop. Click a row to open the trade and set it to Taken once it fills. Pending trades stay out of the counts, win rate and chart.
+- The Status option reads just "Pending".
+
 ## 1.3.53 — 2026-11-14
 
 - **Status dropdown on the trade forms** (forex and Invest, live trades): Taken, **Pending** (limit not filled yet) or Missed, replacing the Missed checkbox. Pending shows as a tag in the lists and on the share page, and stays out of open positions, results and win rate. Analyze's Status filter has it too. Edited in the extension (1.4.33), a Pending trade stays Pending.
