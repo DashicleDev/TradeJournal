@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.3.47 — 2026-11-14
+
+- **Review: forex trade cards show the percent** next to R (1R is about 1% at 1% risk), in Trades to plan, Trades not to plan and Missed trades.
+
 ## 1.3.46 — 2026-11-14
 
 - **Analyze: one "4H pros" filter** (Engulfing candle, Channel; pick one or more) instead of separate Channel and Engulfing candle filters, like Weekly and Daily pros. "Group by 4H pros" does the same: Engulfing candle, Channel, both, or none. An Engulfing entry counts as Engulfing candle.

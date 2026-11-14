@@ -411,6 +411,8 @@ const prTF = (type, list) => {
         ? tk.filter(t => (fx ? t.evaluation && t.evaluation !== "plan" : t.r < 0))
         : tk;
 };
+// forex: at 1% risk, 1R is about 1% of the account
+const fxPct = t => (market === "fx" && t.r != null && !isNaN(t.r) ? `<span class="hint num" style="margin:0">${t.r > 0 ? "+" : ""}${(+t.r).toFixed(2)}%</span>` : "");
 function prTList(type, list, sid) {
   const a = prTF(type, list);
   if (!a.length) return `<p class="hint" style="margin:0">None</p>`;
@@ -419,7 +421,7 @@ function prTList(type, list, sid) {
     .map(t => {
       const oc = t.outcome || (t.r > 0 ? "win" : t.r < 0 ? "loss" : t.r === 0 ? "be" : "");
       const gr = market === "fx" ? tGrade(t) : null;
-      return `<button type="button" class="prtr" data-propen="${t.id}">${gr ? `<b class="grade g${gr}">${gr}</b>` : market === "fx" ? `<b class="grade" style="opacity:.35">–</b>` : ""}<b>${esc(t.ticker || t.pair || "?")}</b><span class="dirar ${t.dir}">${t.dir === "long" ? "↑" : t.dir === "short" ? "↓" : ""}</span>${t.status === "missed" ? `<span class="hint" style="margin:0">${esc(fmtD(t.date))}</span>` : oc ? `<span class="restag ${oc}">${{ win: "Win", loss: "Loss", be: "BE", open: "Open" }[oc]}${oc === "open" ? "" : `<b class="num">${fmtR(t.r)}</b>`}</span>` : `<span class="restag open">Open</span>`}</button><textarea rows="1" class="prgrow" data-prs="${sid}" data-f="tc" data-t="${t.id}" placeholder="Comment" aria-label="Comment on ${esc(t.ticker || t.pair || "trade")}">${esc(tc[t.id] || "")}</textarea>`;
+      return `<button type="button" class="prtr" data-propen="${t.id}">${gr ? `<b class="grade g${gr}">${gr}</b>` : market === "fx" ? `<b class="grade" style="opacity:.35">–</b>` : ""}<b>${esc(t.ticker || t.pair || "?")}</b><span class="dirar ${t.dir}">${t.dir === "long" ? "↑" : t.dir === "short" ? "↓" : ""}</span>${t.status === "missed" ? `<span class="hint" style="margin:0">${esc(fmtD(t.date))}</span>${fxPct(t)}` : oc ? `<span class="restag ${oc}">${{ win: "Win", loss: "Loss", be: "BE", open: "Open" }[oc]}${oc === "open" ? "" : `<b class="num">${fmtR(t.r)}</b>`}</span>${fxPct(t)}` : `<span class="restag open">Open</span>`}</button><textarea rows="1" class="prgrow" data-prs="${sid}" data-f="tc" data-t="${t.id}" placeholder="Comment" aria-label="Comment on ${esc(t.ticker || t.pair || "trade")}">${esc(tc[t.id] || "")}</textarea>`;
     })
     .map(x => `<div class="prtrow">${x}</div>`)
     .join("");
