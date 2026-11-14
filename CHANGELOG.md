@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.3.49 — 2026-11-14
+
+- **Invest: no "Open" tag before you have an entry.** A trade with no entry price yet (limit not set) shows no result tag on the share page or in the Invest list. It reads Open once the entry is filled in.
+
 ## 1.3.48 — 2026-11-14
 
 - **Review: saved reviews list.** The Notes column (it only repeated your SMB pairs) is now a Win rate column. Trades also counts open and missed trades next to the closed ones ("0 + 1 open · 1 missed"), so a week no longer reads 0 trades when it has some.

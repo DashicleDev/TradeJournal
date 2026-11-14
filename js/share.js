@@ -154,7 +154,7 @@
         · ${esc(fmtD(t.date))}${t.closeDate && t.closeDate !== t.date ? " → " + esc(fmtD(t.closeDate)) : ""}</p>
         ${INV && ph ? `<p class="shr-concept"><span>Phase</span> ${esc(ph)}</p>` : ""}
         ${!INV && t.concept ? `<p class="shr-concept"><span>Concept</span> ${t.concept === "Weekly - 4H" ? "Weekly - 4H" : "Weekly - Daily - 4H"}</p>` : ""}</div>
-      ${oc ? `<span class="restag ${oc} shr-res">${{ win: "Win", loss: "Loss", be: "BE", open: "Open" }[oc]}${oc === "open" ? "" : `<b class="num">${INV ? pct(t.retPct) : fmtR(t.r)}</b>`}</span>` : INV && t.status !== "missed" ? `<span class="restag open shr-res">Open${t.roi != null && sold ? `<b class="num">${pct(t.roi)}</b>` : ""}</span>` : ""}
+      ${oc ? `<span class="restag ${oc} shr-res">${{ win: "Win", loss: "Loss", be: "BE", open: "Open" }[oc]}${oc === "open" ? "" : `<b class="num">${INV ? pct(t.retPct) : fmtR(t.r)}</b>`}</span>` : INV && t.status !== "missed" && t.sEntry ? `<span class="restag open shr-res">Open${t.roi != null && sold ? `<b class="num">${pct(t.roi)}</b>` : ""}</span>` : ""}
     </div>
     <div class="shr-grid">${
       INV
