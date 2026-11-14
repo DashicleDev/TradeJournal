@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.3.45 — 2026-11-14
+
+- **The 4H pros can be picked with any entry** (Engulfing candle, Channel, Room): no more greying out, your call. The only locked one is Engulfing candle on an Engulfing entry, which has it by itself. Channel now counts for the grade whatever the entry; Room is saved as yes/no for every trade, and Analyze's Channel, Room and Engulfing candle filters include all trades with a 4H entry. Same in the extension (1.4.31).
+
 ## 1.3.44 — 2026-11-14
 
 - **An Engulfing candle entry shows the Engulfing candle pro ticked and locked** in the 4H pros (trade form and Re-evaluate game); extension 1.4.30 does the same. Nothing extra is saved: Analyze already counts these trades as Engulfing candle.

@@ -139,7 +139,7 @@ const WLAB = k =>
 const WKEYS = ["ms", "trend", "fibc", "fiba", "ic", "pattern", "whl", "sd", "pz", "lcc", "ec"];
 const hasStruct = e => e === "Reversal" || e === "Continuation" || e === "Pattern in Pattern";
 // engulfing candle: the pro on a Reversal / Continuation / Deceleration entry, or the Engulfing entry itself
-const engOf = t => (t.entry4h === "Engulfing Candle" || (engOk(t.entry4h) && t.engulf) ? true : engOk(t.entry4h) ? false : null);
+const engOf = t => (t.entry4h === "Engulfing Candle" || t.engulf ? true : t.entry4h ? false : null);
 const structOf = t => t.struct || (t.bos === "ja" ? "bos" : t.bos === "nee" && hasStruct(t.entry4h) ? "som" : "");
 const rrOf = t => (t.slPips > 0 && t.tpPips != null ? t.tpPips / t.slPips : null);
 const daysOpen = t => (t.date && t.closeDate ? Math.round((new Date(t.closeDate) - new Date(t.date)) / 864e5) : null);
@@ -218,7 +218,7 @@ let SPLITS = {
     ["3/3 with", "2/3 with", "1/3 with", "0/3 with", "2/2 with", "1/2 with", "0/2 with", "1/1 with", "0/1 with"],
   ],
   scale: ["Scale-in", t => (t.scaleIn ? "Scale-in" : "Not a scale-in"), ["Scale-in", "Not a scale-in"]],
-  chan: ["Channel", t => (chanOk(t.entry4h) ? (t.channel ? "Channel" : "No channel") : null), ["Channel", "No channel"]],
+  chan: ["Channel", t => (t.entry4h ? (t.channel ? "Channel" : "No channel") : null), ["Channel", "No channel"]],
   eng: [
     "Engulfing candle pro",
     t => (engOf(t) === null ? null : engOf(t) ? "Engulfing candle" : "No engulfing candle"),
@@ -245,7 +245,7 @@ let SPLITS = {
   struct: ["4H structure", t => ({ bos: "BoS", som: "SoM" })[structOf(t)] || null, ["BoS", "SoM"]],
   room: [
     "4H room",
-    t => (roomOk(t.entry4h, structOf(t)) && t.room ? (t.room === "ja" ? "Room" : "No room") : null),
+    t => (t.room ? (t.room === "ja" ? "Room" : "No room") : null),
     ["Room", "No room"],
   ],
   ectf: [
@@ -538,7 +538,7 @@ let FDEF = [
       ["yes", "Channel"],
       ["no", "No channel"],
     ],
-    t => (chanOk(t.entry4h) ? (t.channel ? "yes" : "no") : ""),
+    t => (t.entry4h ? (t.channel ? "yes" : "no") : ""),
   ],
   [
     "eng",

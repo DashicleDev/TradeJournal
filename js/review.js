@@ -133,8 +133,8 @@ function rvOrig(t) {
     dPros: dProsOf(t),
     entry4h: t.entry4h || "",
     hMs: t.hMs || "",
-    channel: !!t.channel && chanOk(t.entry4h),
-    engulf: !!t.engulf && engOk(t.entry4h),
+    channel: !!t.channel,
+    engulf: !!t.engulf && t.entry4h !== "Engulfing Candle",
     struct: t.struct || (t.bos === "ja" ? "bos" : t.bos === "nee" ? "som" : ""),
     room: t.room === "ja",
     scaleIn: !!t.scaleIn,
@@ -150,7 +150,7 @@ const rvAsTrade = a => ({
   fase: a.fase, // the grade rules are per phase
   concept: a.concept,
   entry4h: a.entry4h,
-  channel: !!a.channel && chanOk(a.entry4h),
+  channel: !!a.channel,
 });
 const rvBlank = () => ({
   wRange: false,
@@ -205,7 +205,7 @@ function rvMsBox(key, label, kind, CR, get, na) {
       no = na && na(k),
       other = no || (v && v !== kind),
       on = v === kind;
-    return `<li data-rvpick="${key}:${k}" class="${other ? "dis" : ""}"><span class="box ${kind}">${on ? "✓" : ""}</span>${esc(l)}${no ? "<em>not for this entry</em>" : other ? `<em>in ${kind === "for" ? "cons" : "pros"}</em>` : ""}</li>`;
+    return `<li data-rvpick="${key}:${k}" class="${other ? "dis" : ""}"><span class="box ${kind}">${on ? "✓" : ""}</span>${esc(l)}${no ? "<em>from the entry</em>" : other ? `<em>in ${kind === "for" ? "cons" : "pros"}</em>` : ""}</li>`;
   }).join("")}</ul></div></div>`;
 }
 function rvStepHTML(a, step) {
@@ -268,14 +268,14 @@ function rvStepHTML(a, step) {
       .replace(/^<div class="f">/, "")
       .replace(/<\/div>$/, "")}</div></div>`;
   return `<div class="fields">${rvF("4H entry", `<select data-rks="entryc">${entryOptHtml(entryKey(a.entry4h, a.struct))}</select>`)}${rvF("Market structure", rvMs("hMs", a.hMs))}</div>
-    <div class="fields" style="margin-top:12px"><div class="f wide">${rvMsBox("hp", "4H pros", "for", HPROS, k => (a[k] || engImplied(k, a.entry4h) ? "for" : ""), k => !engImplied(k, a.entry4h) && !hproOk(k, a.entry4h, a.struct)).replace(/^<div class="f">/, "").replace(/<\/div>$/, "")}</div></div>
+    <div class="fields" style="margin-top:12px"><div class="f wide">${rvMsBox("hp", "4H pros", "for", HPROS, k => (a[k] || engImplied(k, a.entry4h) ? "for" : ""), k => engImplied(k, a.entry4h)).replace(/^<div class="f">/, "").replace(/<\/div>$/, "")}</div></div>
     <div class="row" style="gap:16px;margin-top:12px"><label class="checkline"><input type="checkbox" data-rc="scaleIn" ${a.scaleIn ? "checked" : ""}><span>Scale-in</span></label></div>`;
 }
 const rvPick = (o, k) =>
   k === "wRange"
     ? !!(o.wRange || (o.weekly || {}).trend === "range")
     : k === "channel"
-      ? !!o.channel && chanOk(o.entry4h)
+      ? !!o.channel
       : k === "trend"
         ? trendAbs(o)
         : k === "wpros" || k === "wcons"
@@ -1086,8 +1086,8 @@ function rvApply(t, a, plan, repl) {
       entry4h: a.entry4h,
       hMs: a.hMs,
       struct: hasStruct(a.entry4h) ? a.struct : "",
-      channel: chanOk(a.entry4h) && !!a.channel,
-      engulf: engOk(a.entry4h) && !!a.engulf,
+      channel: !!a.channel,
+      engulf: !!a.engulf && !engImplied("engulf", a.entry4h),
       room: a.room ? "ja" : "nee",
       scaleIn: a.scaleIn,
     });
@@ -1102,7 +1102,7 @@ $("#rvBox").addEventListener("click", e => {
       a = S.cur,
       rem = !!pick.dataset.rvx;
     if (key === "hp") {
-      if (rem || hproOk(k, a.entry4h, a.struct)) a[k] = rem ? false : !a[k];
+      if (!engImplied(k, a.entry4h)) a[k] = rem ? false : !a[k];
     } else if (key === "dp") a.dPros = a.dPros.includes(k) ? a.dPros.filter(x => x !== k) : rem ? a.dPros : [...a.dPros, k];
     else {
       const kind = key === "wp" ? "for" : "against",
@@ -1371,7 +1371,7 @@ $("#rvBox").addEventListener("change", e => {
     else S.cur[k] = el.value;
     if (k === "wPat") S.cur.wPatSub = "";
     if (k === "concept") S.cur.sub = "";
-    if (k === "entryc") HPROS.forEach(([p]) => hproOk(p, S.cur.entry4h, S.cur.struct) || (S.cur[p] = false));
+    if (k === "entryc" && engImplied("engulf", S.cur.entry4h)) S.cur.engulf = false;
     rvSave();
     return rvRender();
   }

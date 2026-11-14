@@ -769,8 +769,8 @@ function msRender() {
     // cons: only criteria that can be against, plus any an older trade already has, so it can still be removed
     ["#f2Cons", WCRIT.filter(([k]) => k !== "trend" && (GR_CAN_AGAINST.has(k) || wcSel[k] === "against")), wcSel],
     ["#f2DPros", DCRIT, dSel],
-    ["#f2HPros", HPROS, hSel, k => !hproOk(k, f2En(), f2St()), k => engImplied(k, f2En())],
-  ].forEach(([id, CR, SEL, NA, IMP]) => {
+    ["#f2HPros", HPROS, hSel, k => engImplied(k, f2En())],
+  ].forEach(([id, CR, SEL, IMP]) => {
     const box = $(id);
     if (!box) return;
     const kind = box.dataset.kind,
@@ -779,10 +779,9 @@ function msRender() {
     box.innerHTML = `<button type="button" class="ms-field" aria-haspopup="listbox" aria-expanded="${open}" aria-labelledby="${id.slice(1)}Lbl">${mine.length ? mine.map(([k, l]) => `<span class="chip-sel ${kind}">${l}${IMP && IMP(k) ? "" : `<span class="x" data-msx="${k}" aria-label="Remove ${l}">×</span>`}</span>`).join("") : '<span class="ph">Choose criteria…</span>'}<span class="caret">▾</span></button>
   <ul class="ms-list" role="listbox" aria-multiselectable="true" ${open ? "" : "hidden"}>${CR.map(([k, l]) => {
     const imp = IMP && IMP(k),
-      na = !imp && NA && NA(k),
-      other = imp || na || (SEL[k] && SEL[k] !== kind),
+      other = imp || (SEL[k] && SEL[k] !== kind),
       on = imp || SEL[k] === kind;
-    return `<li role="option" aria-selected="${on}" aria-disabled="${!!other}" data-msk="${k}" class="${other ? "dis" : ""}"><span class="box ${kind}">${on ? "✓" : ""}</span>${l}${imp ? "<em>from the entry</em>" : na ? "<em>not for this entry</em>" : other ? `<em>in ${kind === "for" ? "cons" : "pros"}</em>` : ""}</li>`;
+    return `<li role="option" aria-selected="${on}" aria-disabled="${!!other}" data-msk="${k}" class="${other ? "dis" : ""}"><span class="box ${kind}">${on ? "✓" : ""}</span>${l}${imp ? "<em>from the entry</em>" : other ? `<em>in ${kind === "for" ? "cons" : "pros"}</em>` : ""}</li>`;
   }).join("")}</ul>`;
   });
 }
@@ -886,7 +885,7 @@ function f2CheckVals() {
   const en = f2En(),
     rev = en === "Reversal";
   if (!hasStruct(en))
-    return { struct: "", bos: "", dfs: "", som: "", room: roomOk(en, "") ? (hSel.room ? "ja" : "nee") : "" };
+    return { struct: "", bos: "", dfs: "", som: "", room: hSel.room ? "ja" : "nee" };
   const st = f2St(),
     bos = st === "bos",
     som = st === "som";
@@ -895,17 +894,15 @@ function f2CheckVals() {
     bos: bos ? "ja" : som ? "nee" : "",
     dfs: "",
     som: som && rev ? "ja" : "",
-    room: roomOk(en, st) ? (hSel.room ? "ja" : "nee") : "",
+    room: hSel.room ? "ja" : "nee",
   };
 }
 function f2Check() {
-  const v = f2CheckVals(),
-    e = f2En();
-  // the 4H pros that don't fit the entry are greyed out in the list and cleared
-  const na = HPROS.filter(([k]) => !hproOk(k, e, v.struct)).map(([k]) => k);
-  if (na.some(k => hSel[k]) || na.join() !== f2Check.na) {
-    na.forEach(k => delete hSel[k]);
-    f2Check.na = na.join();
+  // an Engulfing entry carries the Engulfing candle pro itself: it shows locked, and nothing is stored for it
+  const imp = engImplied("engulf", f2En());
+  if (imp) delete hSel.engulf;
+  if (imp !== f2Check.imp) {
+    f2Check.imp = imp;
     msRender();
   }
 }
@@ -975,7 +972,7 @@ function f2Summaries() {
           fase: radio("f2fase") || "",
           concept: $("#f2Concept").value,
           entry4h: f2En(),
-          channel: chanOk(f2En()) && !!hSel.channel,
+          channel: !!hSel.channel,
         },
         g = gradeOf(tt);
       $("#f2Score").innerHTML = g
@@ -1390,8 +1387,8 @@ function f2Submit(stay) {
     wPat: $("#f2WPat").value === "?" ? "" : $("#f2WPat").value,
     wPatSub: $("#f2WPat").value && $("#f2WPat").value !== "?" ? $("#f2WPatSub").value : "",
     scaleIn: $("#f2Scale").checked,
-    channel: chanOk(f2En()) && !!hSel.channel,
-    engulf: engOk(f2En()) && !!hSel.engulf,
+    channel: !!hSel.channel,
+    engulf: !!hSel.engulf,
     dMs: radio("f2dms") || "",
     hMs: radio("f2hms") || "",
     weekly: wcVals(),
