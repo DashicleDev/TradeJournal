@@ -35,13 +35,12 @@ function preview(t) {
     `${t.ticker || t.pair || "Trade"}${inv ? "" : t.dir ? " - " + (t.dir === "long" ? "Long" : "Short") : ""}`,
     res
   );
-  // one short line: phase, setup and date
+  // one short line: phase and setup
   const desc = inv
-    ? line(t.sPhase ? "Phase " + t.sPhase : "", fmtD(t.date))
+    ? line(t.sPhase ? "Phase " + t.sPhase : "")
     : line(
         t.fase ? "Phase " + t.fase : "",
-        t.concept === "Weekly - 4H" ? "Weekly - 4H" : t.concept ? "Weekly - Daily - 4H" : "",
-        fmtD(t.date)
+        t.concept === "Weekly - 4H" ? "Weekly - 4H" : t.concept ? "Weekly - Daily - 4H" : ""
       );
   // Discord colours the card's edge: green win, red loss, the journal's accent otherwise
   const color = oc === "win" ? "#43c088" : oc === "loss" ? "#f06c60" : "#8590ff";

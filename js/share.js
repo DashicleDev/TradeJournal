@@ -93,7 +93,7 @@
   const oc = t.outcome || (t.r > 0 ? "win" : t.r < 0 ? "loss" : t.r === 0 ? "be" : "");
   const struct = { bos: "Break of structure (BoS)", som: "Switch of momentum (SoM)" }[t.struct] || "";
 
-  document.title = `${t.ticker || t.pair || "Trade"} ${fmtD(t.date)} · Trade Journal`;
+  document.title = `${t.ticker || t.pair || "Trade"} · Trade Journal`;
   const shots = SLOTS.filter(([k]) => (t.shots && t.shots[k]) || (t.shotLinks && t.shotLinks[k]));
 
   // invest: % return, prices and the analysis per timeframe (never shares or amounts)
@@ -150,8 +150,7 @@
   box.innerHTML = `
     <div class="shr-head">
       <div><h2>${esc(t.ticker || t.pair || "Trade")} ${INV ? "" : arrow(t.dir)}</h2>
-        <p class="hint">${esc([t.dir ? (t.dir === "long" ? "Long" : "Short") : "", t.mode === "backtest" ? "Backtest" : "Live", t.status === "missed" ? "Missed" : ""].filter(Boolean).join(" · "))}
-        · ${esc(fmtD(t.date))}${t.closeDate && t.closeDate !== t.date ? " → " + esc(fmtD(t.closeDate)) : ""}</p>
+        <p class="hint">${esc([t.dir ? (t.dir === "long" ? "Long" : "Short") : "", t.mode === "backtest" ? "Backtest" : "Live", t.status === "missed" ? "Missed" : ""].filter(Boolean).join(" · "))}</p>
         ${INV && ph ? `<p class="shr-concept"><span>Phase</span> ${esc(ph)}</p>` : ""}
         ${!INV && t.concept ? `<p class="shr-concept"><span>Concept</span> ${t.concept === "Weekly - 4H" ? "Weekly - 4H" : "Weekly - Daily - 4H"}</p>` : ""}</div>
       ${oc ? `<span class="restag ${oc} shr-res">${{ win: "Win", loss: "Loss", be: "BE", open: "Open" }[oc]}${oc === "open" ? "" : `<b class="num">${INV ? pct(t.retPct) : fmtR(t.r)}</b>`}</span>` : INV && t.status !== "missed" && t.sEntry ? `<span class="restag open shr-res">Open${t.roi != null && sold ? `<b class="num">${pct(t.roi)}</b>` : ""}</span>` : ""}

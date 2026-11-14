@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.3.51 — 2026-11-14
+
+- **Share page: no trade date** under the ticker or in the tab title. The link preview card (Discord) drops it too once the share worker is redeployed.
+
 ## 1.3.50 — 2026-11-14
 
 - **Chat text no longer includes the trade date**, for forex and Invest. It starts with the pair (and direction), then the phase.
