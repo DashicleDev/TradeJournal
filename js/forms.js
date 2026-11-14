@@ -632,8 +632,8 @@ $("#sDel").onclick = e => {
     return;
   }
   closeStock();
-  deleteDoc(id);
-  toast("Trade deleted");
+  binTrades([id]);
+  toast("Trade moved to the bin");
 };
 document.querySelectorAll('input[name="mkt"]').forEach(i => {
   i.checked = i.value === market;
@@ -1324,8 +1324,8 @@ $("#f2Del").onclick = e => {
     return;
   }
   closeSheet2();
-  deleteDoc(id);
-  toast("Trade deleted");
+  binTrades([id]);
+  toast("Trade moved to the bin");
 };
 // the trade open in the form was saved elsewhere (the extension): an untouched form shows the saved values, an edited one asks first
 let f2Dirty = false;
@@ -1544,9 +1544,10 @@ function analysisText(t, link) {
     .join(" · ");
   const parts = [
     // a concept other than Weekly - 4H is a pattern on the daily: the setup is Weekly - Daily - 4H
-    head + (t.concept ? "\nConcept: " + (t.concept === "Weekly - 4H" ? "Weekly - 4H" : "Weekly - Daily - 4H") : ""),
-    // the share link first: WhatsApp only previews the first link in a message
-    link || "",
+    // the share link first (WhatsApp only previews the first link in a message), right under the header
+    head +
+      (t.concept ? "\nConcept: " + (t.concept === "Weekly - 4H" ? "Weekly - 4H" : "Weekly - Daily - 4H") : "") +
+      (link ? "\n" + link : ""),
     block("Weekly", L.weekly, [
       t.wStruct ? (t.wStruct === "inner" ? "Inner" : "Outer") + " structure" : "",
       t.wPat ? t.wPat + " pattern" + (t.wPatSub ? " (" + t.wPatSub + ")" : "") : "",
@@ -1610,14 +1611,12 @@ function investText(t, link) {
       if (!link && !items.length) return "";
       return [title + ":", link || "", ...items.map(i => "- " + i)].filter(Boolean).join("\n");
     };
-  const head =
-    [t.ticker || t.pair || "Trade", t.mode === "backtest" ? "Backtest" : ""]
-      .filter(Boolean)
-      .join(" · ") + (ph ? "\nPhase " + ph : "");
+  const head = [t.ticker || t.pair || "Trade", ph ? "Phase " + ph : "", t.mode === "backtest" ? "Backtest" : ""]
+    .filter(Boolean)
+    .join(" · ");
   return [
-    head,
-    // the share link first: WhatsApp only previews the first link in a message
-    link || "",
+    // the share link first (WhatsApp only previews the first link in a message), right under the header
+    head + (link ? "\n" + link : ""),
     block("12M", L.m12, [
       ms(t.s12Ms),
       t.s12Ms === "for" && t.s12bm ? t.s12bm : "",

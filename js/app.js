@@ -645,6 +645,7 @@ let holdRender = false;
 function render() {
   if (holdRender) return;
   applySettings();
+  binRender();
   if (docsReady) {
     acSeed();
     btSeed();

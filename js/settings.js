@@ -505,6 +505,37 @@ document
   .querySelectorAll("[data-settab]")
   .forEach(b => b.addEventListener("click", () => showSetTab(b.dataset.settab)));
 
+/* ---------- bin: deleted trades wait 7 days, then storage.js removes them for good ---------- */
+function binRender() {
+  const box = $("#binList");
+  if (!box) return;
+  const list = bin.slice().sort((a, b) => b.deletedAt - a.deletedAt);
+  $("#binBlk").hidden = !list.length;
+  box.innerHTML = list
+    .map(t => {
+      const left = Math.max(0, Math.ceil((t.deletedAt + BIN_DAYS * 864e5 - Date.now()) / 864e5));
+      return `<div class="row spread binrow" style="gap:8px;padding:6px 0"><span><b>${esc(t.ticker || t.pair || "Trade")}</b> <span class="hint" style="margin:0">${esc(fmtD(t.date) || "")} · ${left} day${left === 1 ? "" : "s"} left</span></span><span class="row" style="gap:6px"><button type="button" class="btn small" data-binrestore="${t.id}">Restore</button><button type="button" class="btn small ghost danger" data-binpurge="${t.id}">Delete forever</button></span></div>`;
+    })
+    .join("");
+}
+document.addEventListener("click", e => {
+  const r = e.target.closest("[data-binrestore]"),
+    p = e.target.closest("[data-binpurge]");
+  if (r) {
+    restoreTrade(r.dataset.binrestore);
+    toast("Trade restored");
+  } else if (p) {
+    if (p.dataset.armed) deleteDocs([p.dataset.binpurge]);
+    else {
+      p.dataset.armed = "1";
+      p.textContent = "Click again";
+      setTimeout(() => {
+        delete p.dataset.armed;
+        p.textContent = "Delete forever";
+      }, 3000);
+    }
+  }
+});
 const wipeSel = () => {
   const w = $("#wipeWhat").value;
   return docs.filter(
@@ -543,6 +574,7 @@ $("#wipeGo").onclick = async () => {
   holdRender = true;
   try {
     await deleteDocs(list.map(d => d.id));
+    await purgeBin(true); // the bin goes too
   } finally {
     holdRender = false;
   }

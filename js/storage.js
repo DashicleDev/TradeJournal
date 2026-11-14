@@ -5,6 +5,10 @@
  */
 /* ---------- storage: Supabase (one row per doc, private per user) + local cache ---------- */
 let docs = [];
+// deleted trades wait in the bin (deletedAt) for BIN_DAYS before they are removed for good. They are kept out of docs, so nothing else ever sees them.
+let bin = [];
+const BIN_DAYS = 7;
+const binSplit = list => ((bin = list.filter(d => d.deletedAt)), list.filter(d => !d.deletedAt));
 let editingId = null;
 let docsReady = false;
 const ACTYPE = { challenge: "Challenge", funded: "Funded", demo: "Demo", personal: "Personal" };
@@ -37,7 +41,7 @@ function lsLoad() {
 }
 function lsSave() {
   try {
-    localStorage.setItem(LS, JSON.stringify(docs));
+    localStorage.setItem(LS, JSON.stringify(docs.concat(bin)));
   } catch {}
 }
 const CFG = window.TJ_CONFIG || {};
@@ -48,7 +52,7 @@ const SB =
       })
     : null;
 let ME = null;
-docs = lsLoad();
+docs = binSplit(lsLoad());
 function setSync(t) {
   $("#sync").textContent = t;
 }
@@ -131,26 +135,25 @@ async function dbDelMany(ids) {
 async function flushPending() {
   if (!ME) return;
   if (pendingDel.size) await dbDelMany([...pendingDel]);
-  const list = docs.filter(d => pending.has(d.id));
+  const list = docs.concat(bin).filter(d => pending.has(d.id));
   if (list.length) await dbPutMany(list);
 }
 addEventListener("online", () => flushPending());
 async function saveDoc(t) {
-  const i = docs.findIndex(x => x.id === t.id);
-  if (i >= 0) docs[i] = t;
-  else docs.push(t);
+  upsertLocal(t);
   render();
   await dbPut(t);
 }
 const deleteDoc = id => deleteDocs([id]);
 async function deleteDocs(ids) {
   const del = new Set(ids),
-    gone = docs.filter(t => del.has(t.id));
+    gone = docs.concat(bin).filter(t => del.has(t.id));
   docs = docs.filter(t => !del.has(t.id));
+  bin = bin.filter(t => !del.has(t.id));
   render();
   await dbDelMany([...del]);
   // their screenshots too, unless another doc still shows them (a duplicated trade shares the files)
-  const left = new Set(shotIds(docs)),
+  const left = new Set(shotIds(docs.concat(bin))),
     files = shotIds(gone).filter(f => !left.has(f));
   // shortcut: a failed removal (offline) is not retried and leaves the file behind; queue it like deletes if that matters
   for (let i = 0; i < files.length && ME; i += 200) {
@@ -223,10 +226,43 @@ window.TJF = {
   },
 };
 function upsertLocal(t) {
-  const i = docs.findIndex(d => d.id === t.id);
-  if (i >= 0) docs[i] = t;
-  else docs.push(t);
+  const i = docs.findIndex(d => d.id === t.id),
+    j = bin.findIndex(d => d.id === t.id);
+  if (t.deletedAt) {
+    if (i >= 0) docs.splice(i, 1);
+    if (j >= 0) bin[j] = t;
+    else bin.push(t);
+  } else {
+    if (j >= 0) bin.splice(j, 1);
+    if (i >= 0) docs[i] = t;
+    else docs.push(t);
+  }
 }
+// trades: delete moves them to the bin, restore brings them back, purgeBin removes the old ones for good
+function binTrades(ids) {
+  const s = new Set(ids),
+    now = Date.now(),
+    gone = docs.filter(d => s.has(d.id)).map(d => ({ ...d, deletedAt: now }));
+  docs = docs.filter(d => !s.has(d.id));
+  bin = bin.concat(gone);
+  render();
+  return dbPutMany(gone);
+}
+async function restoreTrade(id) {
+  const t = bin.find(d => d.id === id);
+  if (!t) return;
+  const { deletedAt, ...rest } = t;
+  bin = bin.filter(d => d.id !== id);
+  docs.push(rest);
+  render();
+  await dbPut(rest);
+  await ensureShotUrls([rest]);
+  render();
+}
+const purgeBin = all => {
+  const old = bin.filter(t => all || Date.now() - t.deletedAt > BIN_DAYS * 864e5).map(t => t.id);
+  return old.length ? deleteDocs(old) : null;
+};
 async function startSession(user) {
   if (ME === user.id) return;
   ME = user.id;
@@ -236,7 +272,7 @@ async function startSession(user) {
   setSync("Connecting…");
   try {
     const rows = await loadAll(),
-      local = docs.slice();
+      local = docs.concat(bin);
     const at = new Map(rows.map(r => [r.id, Date.parse(r.updated_at) || 0]));
     // an unsent change here wins only when it's newer than the server copy (another device may have edited it since)
     const keep = local.filter(l => pending.has(l.id) && (!at.has(l.id) || pending.get(l.id) > at.get(l.id)));
@@ -244,13 +280,16 @@ async function startSession(user) {
       [...pending.keys()].filter(id => !keep.some(k => k.id === id)),
       false
     );
-    docs = rows
-      .map(r => ({ ...r.data, id: r.id }))
-      .filter(s => !pendingDel.has(s.id) && !keep.some(k => k.id === s.id))
-      .concat(keep);
+    docs = binSplit(
+      rows
+        .map(r => ({ ...r.data, id: r.id }))
+        .filter(s => !pendingDel.has(s.id) && !keep.some(k => k.id === s.id))
+        .concat(keep)
+    );
     docsReady = true;
     lsSave();
     await flushPending();
+    await purgeBin();
     await refreshShotUrls();
     if (!keep.length) setSync("Synced");
   } catch (e) {
@@ -286,6 +325,7 @@ async function startSession(user) {
     .on("postgres_changes", { event: "DELETE", schema: "public", table: "docs" }, p => {
       if (p.old && p.old.id && (!p.old.user_id || p.old.user_id === ME)) {
         docs = docs.filter(d => d.id !== p.old.id);
+        bin = bin.filter(d => d.id !== p.old.id);
         lsSave();
         render();
       }
@@ -344,6 +384,7 @@ $("#signOut").onclick = async () => {
   await SB.auth.signOut();
   ME = null;
   docs = [];
+  bin = [];
   try {
     [LS, PK, PKD].forEach(k => localStorage.removeItem(k));
   } catch {}
@@ -358,6 +399,7 @@ $("#signOut").onclick = async () => {
   if (data && data.session) startSession(data.session.user);
   else {
     docs = [];
+    bin = [];
     showAuth();
   }
   SB.auth.onAuthStateChange((ev, sess) => {

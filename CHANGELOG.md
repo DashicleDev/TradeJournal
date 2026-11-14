@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.3.57 — 2026-11-14
+
+- **Bin for deleted trades.** Deleting a trade moves it to the bin instead of removing it. Settings → Data → Bin lists them with the days left; **Restore** brings one back, **Delete forever** removes it now. After 7 days they are removed for good (when you open the app). A binned trade's share link stops working until you restore it, and the extension's Replay skips it (1.4.35). Projects, accounts and reviews still delete straight away; "Delete data" also empties the bin.
+- **Share pages show the Engulfing candle, 3M Bullish CC and Monthly BM rows** (the share function never passed those fields through).
+- **Chat text:** Invest reads "NAMS · Phase A" on one line like forex, and the share link sits right under the header, with no blank line, in both texts.
+
 ## 1.3.56 — 2026-11-14
 
 - **Share page: the Result card is called "Trade" until there is a result**, without the "ROI: Open" row (the tag at the top says where the trade stands). Expired trades show a logged result as "if filled". Forex: same, and the card is left out when it would be empty.
