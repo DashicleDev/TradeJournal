@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.3.52 — 2026-11-14
+
+- **Forex share links load again.** The share page stopped on "Loading…" for forex trades (since 1.3.17, the Market trend row used two helpers the share page doesn't have).
+- **Invest: the Open tag needs "Shares bought".** Entry and stop are also filled in while you plan, so a trade only shows Open (share page and Invest list) once shares are bought.
+
 ## 1.3.51 — 2026-11-14
 
 - **Share page: no trade date** under the ticker or in the tab title. The link preview card (Discord) drops it too once the share worker is redeployed.

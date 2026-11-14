@@ -73,6 +73,13 @@
         ["h4", "4H"],
         ["ltf", t.ecTf ? t.ecTf.toUpperCase() : "1H/2H"],
       ];
+  // same as core.js: the share page doesn't load it
+  const TREND_LAB = { bull: "↑ Bullish", bear: "↓ Bearish", range: "↔ Ranging" };
+  const trendAbs = t => {
+    const r = (t.weekly || {}).trend;
+    if (t.wRange || r === "range") return "range";
+    return r && t.dir ? ((r === "for") === (t.dir === "long") ? "bull" : "bear") : "";
+  };
   const fmtR = r => (r == null || r === "" ? "—" : (r > 0 ? "+" : "") + Number(r).toFixed(2) + "R");
   const fmtD = d =>
     d ? new Date(d + "T12:00:00").toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" }) : "";
@@ -153,7 +160,7 @@
         <p class="hint">${esc([t.dir ? (t.dir === "long" ? "Long" : "Short") : "", t.mode === "backtest" ? "Backtest" : "Live", t.status === "missed" ? "Missed" : ""].filter(Boolean).join(" · "))}</p>
         ${INV && ph ? `<p class="shr-concept"><span>Phase</span> ${esc(ph)}</p>` : ""}
         ${!INV && t.concept ? `<p class="shr-concept"><span>Concept</span> ${t.concept === "Weekly - 4H" ? "Weekly - 4H" : "Weekly - Daily - 4H"}</p>` : ""}</div>
-      ${oc ? `<span class="restag ${oc} shr-res">${{ win: "Win", loss: "Loss", be: "BE", open: "Open" }[oc]}${oc === "open" ? "" : `<b class="num">${INV ? pct(t.retPct) : fmtR(t.r)}</b>`}</span>` : INV && t.status !== "missed" && t.sEntry ? `<span class="restag open shr-res">Open${t.roi != null && sold ? `<b class="num">${pct(t.roi)}</b>` : ""}</span>` : ""}
+      ${oc ? `<span class="restag ${oc} shr-res">${{ win: "Win", loss: "Loss", be: "BE", open: "Open" }[oc]}${oc === "open" ? "" : `<b class="num">${INV ? pct(t.retPct) : fmtR(t.r)}</b>`}</span>` : INV && t.status !== "missed" && Number(t.sShares) ? `<span class="restag open shr-res">Open${t.roi != null && sold ? `<b class="num">${pct(t.roi)}</b>` : ""}</span>` : ""}
     </div>
     <div class="shr-grid">${
       INV

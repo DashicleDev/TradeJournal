@@ -912,7 +912,7 @@ function stockTableHTML(list, title) {
       sh = Number(t.sShares) || 0,
       hol = t.status === "missed" ? " hollow" : "";
     if (!(t.closeDate && (!sh || sold >= sh)))
-      return !t.sEntry ? "" : `<span class="restag open${hol}">Open${sh ? `<b class="num">${sh - sold}/${sh}</b>` : ""}</span>`;
+      return !sh ? "" : `<span class="restag open${hol}">Open${sh ? `<b class="num">${sh - sold}/${sh}</b>` : ""}</span>`;
     const oc = t.outcome || (t.pnl > 0 ? "win" : t.pnl < 0 ? "loss" : "be");
     return `<span class="restag ${oc}${hol}">${{ win: "Win", loss: "Loss", be: "BE", open: "Open" }[oc]}${t.retPct != null ? `<b class="num">${t.retPct > 0 ? "+" : ""}${t.retPct.toFixed(1)}%</b>` : ""}</span>`;
   };
