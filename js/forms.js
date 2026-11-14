@@ -769,19 +769,20 @@ function msRender() {
     // cons: only criteria that can be against, plus any an older trade already has, so it can still be removed
     ["#f2Cons", WCRIT.filter(([k]) => k !== "trend" && (GR_CAN_AGAINST.has(k) || wcSel[k] === "against")), wcSel],
     ["#f2DPros", DCRIT, dSel],
-    ["#f2HPros", HPROS, hSel, k => !hproOk(k, f2En(), f2St())],
-  ].forEach(([id, CR, SEL, NA]) => {
+    ["#f2HPros", HPROS, hSel, k => !hproOk(k, f2En(), f2St()), k => engImplied(k, f2En())],
+  ].forEach(([id, CR, SEL, NA, IMP]) => {
     const box = $(id);
     if (!box) return;
     const kind = box.dataset.kind,
       open = box.classList.contains("open");
-    const mine = CR.filter(([k]) => SEL[k] === kind);
-    box.innerHTML = `<button type="button" class="ms-field" aria-haspopup="listbox" aria-expanded="${open}" aria-labelledby="${id.slice(1)}Lbl">${mine.length ? mine.map(([k, l]) => `<span class="chip-sel ${kind}">${l}<span class="x" data-msx="${k}" aria-label="Remove ${l}">×</span></span>`).join("") : '<span class="ph">Choose criteria…</span>'}<span class="caret">▾</span></button>
+    const mine = CR.filter(([k]) => SEL[k] === kind || (IMP && IMP(k)));
+    box.innerHTML = `<button type="button" class="ms-field" aria-haspopup="listbox" aria-expanded="${open}" aria-labelledby="${id.slice(1)}Lbl">${mine.length ? mine.map(([k, l]) => `<span class="chip-sel ${kind}">${l}${IMP && IMP(k) ? "" : `<span class="x" data-msx="${k}" aria-label="Remove ${l}">×</span>`}</span>`).join("") : '<span class="ph">Choose criteria…</span>'}<span class="caret">▾</span></button>
   <ul class="ms-list" role="listbox" aria-multiselectable="true" ${open ? "" : "hidden"}>${CR.map(([k, l]) => {
-    const na = NA && NA(k),
-      other = na || (SEL[k] && SEL[k] !== kind),
-      on = SEL[k] === kind;
-    return `<li role="option" aria-selected="${on}" aria-disabled="${!!other}" data-msk="${k}" class="${other ? "dis" : ""}"><span class="box ${kind}">${on ? "✓" : ""}</span>${l}${na ? "<em>not for this entry</em>" : other ? `<em>in ${kind === "for" ? "cons" : "pros"}</em>` : ""}</li>`;
+    const imp = IMP && IMP(k),
+      na = !imp && NA && NA(k),
+      other = imp || na || (SEL[k] && SEL[k] !== kind),
+      on = imp || SEL[k] === kind;
+    return `<li role="option" aria-selected="${on}" aria-disabled="${!!other}" data-msk="${k}" class="${other ? "dis" : ""}"><span class="box ${kind}">${on ? "✓" : ""}</span>${l}${imp ? "<em>from the entry</em>" : na ? "<em>not for this entry</em>" : other ? `<em>in ${kind === "for" ? "cons" : "pros"}</em>` : ""}</li>`;
   }).join("")}</ul>`;
   });
 }

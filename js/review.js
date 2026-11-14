@@ -268,7 +268,7 @@ function rvStepHTML(a, step) {
       .replace(/^<div class="f">/, "")
       .replace(/<\/div>$/, "")}</div></div>`;
   return `<div class="fields">${rvF("4H entry", `<select data-rks="entryc">${entryOptHtml(entryKey(a.entry4h, a.struct))}</select>`)}${rvF("Market structure", rvMs("hMs", a.hMs))}</div>
-    <div class="fields" style="margin-top:12px"><div class="f wide">${rvMsBox("hp", "4H pros", "for", HPROS, k => (a[k] ? "for" : ""), k => !hproOk(k, a.entry4h, a.struct)).replace(/^<div class="f">/, "").replace(/<\/div>$/, "")}</div></div>
+    <div class="fields" style="margin-top:12px"><div class="f wide">${rvMsBox("hp", "4H pros", "for", HPROS, k => (a[k] || engImplied(k, a.entry4h) ? "for" : ""), k => !engImplied(k, a.entry4h) && !hproOk(k, a.entry4h, a.struct)).replace(/^<div class="f">/, "").replace(/<\/div>$/, "")}</div></div>
     <div class="row" style="gap:16px;margin-top:12px"><label class="checkline"><input type="checkbox" data-rc="scaleIn" ${a.scaleIn ? "checked" : ""}><span>Scale-in</span></label></div>`;
 }
 const rvPick = (o, k) =>

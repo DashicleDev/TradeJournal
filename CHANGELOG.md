@@ -1,5 +1,14 @@
 # Changelog
 
+## 1.3.44 — 2026-11-14
+
+- **An Engulfing candle entry shows the Engulfing candle pro ticked and locked** in the 4H pros (trade form and Re-evaluate game); extension 1.4.30 does the same. Nothing extra is saved: Analyze already counts these trades as Engulfing candle.
+
+## 1.3.43 — 2026-11-14
+
+- **Analyze filter list tidied.** Same order as the form (4H: entry, structure, timeframe, market structure, then the pros, then Scale-in), Structure alignment moved to Context, and consistent names: Weekly trend, Weekly range, Daily concept, 4H engulfing candle, 4H channel, Engulfing timeframe.
+- **Fix: the 4H channel filter** showed as "eng" in the list (a typo from 1.3.38) and couldn't be used.
+
 ## 1.3.42 — 2026-11-13
 
 - **Trade forms walk-through is in random order** (before: oldest first), like the game.

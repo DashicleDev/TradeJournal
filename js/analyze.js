@@ -474,7 +474,7 @@ let FDEF = [
   ],
   [
     "wtrend",
-    "Market trend",
+    "Weekly trend",
     () => [
       ["", "Any"],
       ["for", "With"],
@@ -484,7 +484,7 @@ let FDEF = [
   ],
   [
     "wrange",
-    "Ranging",
+    "Weekly range",
     () => [
       ["", "Any"],
       ["yes", "Ranging"],
@@ -532,8 +532,7 @@ let FDEF = [
   ],
   [
     "chan",
-    "eng",
-    "Channel",
+    "4H channel",
     () => [
       ["", "Any"],
       ["yes", "Channel"],
@@ -543,7 +542,7 @@ let FDEF = [
   ],
   [
     "eng",
-    "Engulfing candle pro",
+    "4H engulfing candle",
     () => [
       ["", "Any"],
       ["yes", "Engulfing candle"],
@@ -571,7 +570,7 @@ let FDEF = [
     ],
     t => t.hMs,
   ],
-  ["concept", "Trade concept", () => [["", "Any"], ...Object.keys(PLAN.concepts).map(c => [c, c])], t => t.concept],
+  ["concept", "Daily concept", () => [["", "Any"], ...Object.keys(PLAN.concepts).map(c => [c, c])], t => t.concept],
   [
     "sub",
     "Daily variant",
@@ -602,7 +601,7 @@ let FDEF = [
   ],
   [
     "ectf",
-    "Reversal timeframe",
+    "Engulfing timeframe",
     () => [
       ["", "Any"],
       ["1h", "1H"],
@@ -760,10 +759,10 @@ function describe(f) {
   return p.join(" · ");
 }
 let FGROUPS = [
-  ["Weekly", ["fase", "wpat", "wstruct", "wms", "wtrend", "wrange", "align", "pro", "con"]],
+  ["Weekly", ["fase", "wpat", "wstruct", "wms", "wtrend", "wrange", "pro", "con"]],
   ["Daily", ["dms", "concept", "sub", "dpro"]],
-  ["4H", ["hms", "entry4h", "struct", "room", "chan", "eng", "scale", "ectf"]],
-  ["Context", ["grade", "cwhy", "pair", "dir", "account", "actype", "dates"]],
+  ["4H", ["entry4h", "struct", "ectf", "hms", "eng", "chan", "room", "scale"]],
+  ["Context", ["grade", "cwhy", "align", "pair", "dir", "account", "actype", "dates"]],
   ["Result", ["outcome", "eval", "rev", "exit"]],
 ];
 /* ---------- Analyze definitions per market ---------- */
