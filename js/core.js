@@ -2,7 +2,7 @@
  * core.js — Shared basics: the trading plan (concepts, entries, exits), formatting and small DOM helpers.
  * Loaded first; every other file uses these.
  */
-const APP_VERSION = "1.3.59";
+const APP_VERSION = "1.3.60";
 const PLAN = {
   concepts: {
     Continuation: ["First Structure", "100 level", "Fake Out", "New Action"],
@@ -97,6 +97,9 @@ const entryOpts = k =>
 const entryOptHtml = k =>
   `<option value="">Choose…</option>${entryOpts(k).map(([v, l]) => `<option value="${esc(v)}"${v === k ? " selected" : ""}>${esc(l)}</option>`).join("")}`;
 // The pair's 4H OANDA chart on TradingView; the extension reads #tj-replay and starts bar replay at the trade's close date (else its date)
+// a trade still running (Open) or waiting for its limit (Pending): the button edits it on the live chart instead of replaying
+const tvIsLive = t => !!t && (t.status === "pending" || (t.status === "taken" && (t.r == null || isNaN(t.r))));
+const tvReplayLabel = t => (tvIsLive(t) ? "Edit ↗" : "Replay ↗");
 const tvReplayUrl = t => {
   const p = String((t && t.pair) || "")
     .replace(/[^A-Za-z0-9]/g, "")
@@ -107,11 +110,13 @@ const tvReplayUrl = t => {
     day = close ? close.toISOString().slice(0, 10) : t.date;
   // &tj-trade: the extension (1.4.22+) also opens the trade in its panel for editing
   const id = /^[A-Za-z0-9_-]{1,40}$/.test(t.id || "") ? `&tj-trade=${t.id}` : "";
+  // no replay date: the live chart, with only the trade for the panel (the extension reads #tj-trade= on its own)
+  if (tvIsLive(t)) return p && id ? `https://www.tradingview.com/chart/?symbol=OANDA:${p}&interval=240#${id.slice(1)}` : "";
   return p && day ? `https://www.tradingview.com/chart/?symbol=OANDA:${p}&interval=240#tj-replay=${day}${id}` : "";
 };
 const tvReplayBtn = t =>
   tvReplayUrl(t)
-    ? `<a class="btn small ghost tvrp" href="${esc(tvReplayUrl(t))}" target="_blank" rel="noopener" title="Open the 4H chart on TradingView; with the extension, bar replay starts at the trade's date">Replay ↗</a>`
+    ? `<a class="btn small ghost tvrp" href="${esc(tvReplayUrl(t))}" target="_blank" rel="noopener" title="${tvIsLive(t) ? "Open the live 4H chart on TradingView with this trade in the extension, to edit it" : "Open the 4H chart on TradingView; with the extension, bar replay starts at the trade's date"}">${tvReplayLabel(t)}</a>`
     : "";
 // Replay opens a chart window of its own. The extension's panel there loads the trade from the address and the window
 // closes when you save it. This goes first, so no extension script has to catch the click. While that window is open the
@@ -140,7 +145,7 @@ addEventListener("message", e => e.source === window && e.data && e.data.tjRepla
 addEventListener(
   "click",
   e => {
-    const a = e.target.closest && e.target.closest('a[href*="#tj-replay="]');
+    const a = e.target.closest && e.target.closest('a[href*="#tj-replay="], a[href*="#tj-trade="]');
     if (!a || e.button || e.ctrlKey || e.metaKey || e.shiftKey || e.altKey) return;
     e.preventDefault();
     e.stopImmediatePropagation();

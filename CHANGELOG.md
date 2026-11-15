@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.3.60 — 2026-11-15
+
+- **Replay becomes Edit for open and pending forex trades.** The button reads "Edit ↗" and opens the live 4H chart with the trade loaded in the extension's panel (no bar replay); saving closes the window like before. Closed, missed and expired trades keep Replay.
+
 ## 1.3.59 — 2026-11-15
 
 - **Invest weekly pattern: PinP** next to BM and IHS, also in Analyze (filter and Group by) and in the extension (1.4.36).
