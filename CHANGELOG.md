@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.3.59 — 2026-11-15
+
+- **Invest weekly pattern: PinP** next to BM and IHS, also in Analyze (filter and Group by) and in the extension (1.4.36).
+
 ## 1.3.58 — 2026-11-14
 
 - **New accounts need approval.** Anyone can still create an account, but it starts as Pending: it sees only "waiting for approval" (and the database shows it no data) until you approve it in Admin → Users, where Pending people sit at the top with an **Approve** button. The waiting screen rechecks by itself. Everyone who had an account stays approved.

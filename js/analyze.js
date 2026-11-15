@@ -858,6 +858,7 @@ const ST_DEFS = {
         ["", "Any"],
         ["BM", "BM"],
         ["IHS", "IHS"],
+        ["PinP", "PinP"],
       ],
       t => t.swPat || "",
     ],
@@ -937,7 +938,7 @@ const ST_DEFS = {
     s1bm: ["Monthly BM", t => (t.s1bm ? "BM" : "No BM")],
     s1cc: ["Monthly bullish CC", t => (t.s1cc ? "Bullish CC" : "No bullish CC")],
     swms: ["Weekly market structure", t => msL(t.swMs), ["With", "Against"]],
-    swpat: ["Weekly pattern", t => t.swPat || null, ["BM", "IHS"]],
+    swpat: ["Weekly pattern", t => t.swPat || null, ["BM", "IHS", "PinP"]],
     exit: ["Exit strategy (each)", t => sHows(t)],
     hold: [
       "Holding time",

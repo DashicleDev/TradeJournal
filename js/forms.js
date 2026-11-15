@@ -345,6 +345,7 @@ seg("seg-s6ret", "s6ret", [
 seg("seg-swpat", "swpat", [
   ["BM", "BM"],
   ["IHS", "IHS"],
+  ["PinP", "PinP"],
 ]);
 // 3M and Monthly pros (invest): field is "s3" / "s1" + the key
 const SPROS = [
