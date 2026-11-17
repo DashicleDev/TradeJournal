@@ -259,7 +259,6 @@ $("#sExits").addEventListener("click", e => {
     prev = exHows(x),
     h = c.dataset.exhow || c.dataset.exx;
   const next = prev.includes(h) ? prev.filter(v => v !== h) : [...prev, h];
-  if (xx) exOpen = -1;
   x.hows = next;
   delete x.how;
   const pp = exPct(ph, prev),

@@ -16,6 +16,7 @@ body {
   --line: #dcdfeb;
   --soft: #eceef6;
   --accent: #2230d6;
+  --on-fill: #fff; /* text on accent, bt and live fills */
   --bt: #2230d6;
   --live: #d0601b;
   --good: #1d8657;
@@ -43,6 +44,7 @@ body {
     --line: #283050;
     --soft: #1d2238;
     --accent: #8590ff;
+    --on-fill: #0e1120; /* dark accents are pastel: white text fails contrast */
     --bt: #8590ff;
     --live: #f08c4c;
     --good: #43c088;
@@ -68,6 +70,7 @@ body {
   --line: #283050;
   --soft: #1d2238;
   --accent: #8590ff;
+  --on-fill: #0e1120; /* dark accents are pastel: white text fails contrast */
   --bt: #8590ff;
   --live: #f08c4c;
   --good: #43c088;
@@ -92,6 +95,7 @@ body {
   --line: #24242a;
   --soft: #151518;
   --accent: #8590ff;
+  --on-fill: #0e1120; /* dark accents are pastel: white text fails contrast */
   --bt: #8590ff;
   --live: #f08c4c;
   --good: #43c088;
@@ -254,6 +258,7 @@ main {
   display: grid;
   gap: 20px;
   padding-top: 20px;
+  padding-bottom: 96px; /* room for the + button */
 }
 .panel {
   background: var(--surface);
@@ -1576,7 +1581,7 @@ textarea.prtext {
 .rvb.on {
   background: var(--accent);
   border-color: var(--accent);
-  color: #fff;
+  color: var(--on-fill);
 }
 .rvb.ok.on {
   background: var(--good);
@@ -1633,7 +1638,7 @@ textarea.prtext {
 }
 .rvdots .on {
   background: var(--accent);
-  color: #fff;
+  color: var(--on-fill);
 }
 .rvdots .done {
   color: var(--ink);
@@ -1834,7 +1839,7 @@ textarea.prtext {
 .ms-list li[aria-selected="true"] .box.extra {
   background: var(--accent);
   border-color: var(--accent);
-  color: #fff;
+  color: var(--on-fill);
 }
 @media (max-width: 620px) {
   .grline {
@@ -1960,17 +1965,17 @@ svg text {
 .btn.primary {
   background: var(--accent);
   border-color: var(--accent);
-  color: #fff;
+  color: var(--on-fill);
 }
 .btn.liveb {
   background: var(--live);
   border-color: var(--live);
-  color: #fff;
+  color: var(--on-fill);
 }
 .btn.btb {
   background: var(--bt);
   border-color: var(--bt);
-  color: #fff;
+  color: var(--on-fill);
 }
 .btn.ghost {
   background: none;
@@ -2135,6 +2140,7 @@ svg text {
   padding: 8px;
   max-height: min(420px, 70vh);
   overflow-y: auto;
+  overscroll-behavior: contain; /* reaching the end does not scroll the page behind */
 }
 .fpg {
   display: grid;
@@ -2603,7 +2609,7 @@ label.seg span {
 label.seg input:checked + span {
   background: var(--accent);
   border-color: var(--accent);
-  color: #fff;
+  color: var(--on-fill);
 }
 .mode-live label.seg input:checked + span {
   background: var(--live);
@@ -2661,6 +2667,7 @@ label.seg input:checked + span {
   justify-content: center;
   align-items: flex-start;
   overflow-y: auto;
+  overscroll-behavior: contain; /* reaching the end does not scroll the page behind */
   padding: calc(24px + env(safe-area-inset-top, 0px)) max(12px, env(safe-area-inset-right, 0px)) 0
     max(12px, env(safe-area-inset-left, 0px));
 }
@@ -2711,10 +2718,13 @@ label.seg input:checked + span {
   border-radius: 50%;
   border: 0;
   background: var(--live);
-  color: #fff;
+  color: var(--on-fill);
   font: 400 34px/1 var(--body);
   cursor: pointer;
   box-shadow: 0 6px 20px color-mix(in srgb, var(--ink) 30%, transparent);
+}
+body:has(.sheet:not([hidden])) .fab {
+  display: none;
 }
 .fab.btmode {
   background: var(--bt);
@@ -3239,6 +3249,7 @@ fieldset.subs-closed .legend-toggle .chev {
   z-index: 6;
   max-height: 264px;
   overflow-y: auto;
+  overscroll-behavior: contain; /* reaching the end does not scroll the page behind */
   margin: 0;
   padding: 4px;
   list-style: none;
@@ -4050,7 +4061,7 @@ fieldset.subs-closed .legend-toggle .chev {
     display: none;
   }
   nav[role="tablist"] button {
-    padding: 10px 4px;
+    padding: 10px 10px;
     font-size: 13.5px;
     min-width: 0;
   }
@@ -4534,7 +4545,8 @@ main > *,
   }
   nav {
     gap: 0;
-    overflow: hidden;
+    overflow-x: auto;
+    scrollbar-width: none;
   }
   nav button {
     padding: 10px 8px;

@@ -1,5 +1,14 @@
 # Changelog
 
+## 1.3.63 — 2026-11-17
+
+- **Tabs fit on a phone.** The six tabs get proper spacing at phone width, and the row scrolls sideways instead of cutting tabs off on narrower screens.
+- **The + button hides while a form or window is open**, and pages leave room at the bottom so it no longer covers the last table row or calendar week.
+- **Readable selected buttons in dark mode.** Text on accent-filled buttons (period, filters, main actions, +) is dark instead of white, which was too faint on the light dark-mode accents. Light mode keeps white.
+- **"Closed trades"** instead of "Trades" on the Journal tiles, so it no longer looks like it contradicts the trade count below.
+- **Scrolling past the end of a list stays in the list.** The Analyze filter popup, forms and the pair dropdown no longer start scrolling the page behind them.
+- **Removing a chip with × keeps the list open** in the invest exit strategies and the Review tab. The extension follows in 1.4.39.
+
 ## 1.3.62 — 2026-11-17
 
 - **Invest: Monthly bullish CC is a required yes / no in Phase B.** Phase B shows "Bullish CC: ✓ Yes / ✗ No" under the Monthly market structure instead of the pro; Phase A keeps it as a pro. Old Phase B trades with it ticked open as Yes. Shown in the summary, the copied text, the share card and the CSV. The extension follows in 1.4.38.

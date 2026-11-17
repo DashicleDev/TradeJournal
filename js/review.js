@@ -1093,7 +1093,6 @@ $("#rvBox").addEventListener("click", e => {
       } else if (v === kind || rem) delete a.weekly[k];
       else a.weekly[k] = kind;
     }
-    if (rem) rvOpen = "";
     rvSave();
     return rvRender();
   }

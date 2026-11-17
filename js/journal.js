@@ -208,7 +208,7 @@ function overviewHTML(tk, ps, o, P) {
               tile("Avg ROI", fmtR(ps.avg), ps.avg > 0 ? "pos" : ps.avg < 0 ? "neg" : "")
             );
           })()
-        : tile("Trades", n) +
+        : tile("Closed trades", n) +
           tile("Win rate", fmtP(ps.wr)) +
           tile("Total R", fmtR(ps.total), ps.total > 0 ? "pos" : ps.total < 0 ? "neg" : "") +
           tile("Average R", fmtR(ps.avg), ps.avg > 0 ? "pos" : ps.avg < 0 ? "neg" : "")
