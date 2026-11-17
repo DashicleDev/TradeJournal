@@ -592,7 +592,18 @@
                 ><small class="hint" style="margin:0" id="f2WNum"></small
                 ><button type="button" class="btn small ghost" id="f2WNext">Skip ›</button></span
               >
-              <button type="button" class="btn small ghost closex" data-closesheet2>Close</button>
+              <span class="fhr"
+                ><a
+                  class="btn small ghost tvrp"
+                  id="f2Replay"
+                  target="_blank"
+                  rel="noopener"
+                  hidden
+                  title="Open the 4H chart on TradingView; with the extension, bar replay starts at the trade's close date"
+                  >Replay ↗</a
+                ><button type="button" class="btn small ghost" id="f2ViewCharts" hidden></button
+                ><button type="button" class="btn small ghost closex" data-closesheet2>Close</button></span
+              >
             </div>
             <p class="hint" id="f2Stale" hidden>
               This trade was saved elsewhere. <button type="button" class="btn small" id="f2Reload">Load the saved version</button>
@@ -651,16 +662,6 @@
                 </button>
               </legend>
               <p class="scoreline" id="f2Score"></p>
-              <button type="button" class="btn small ghost f2charts" id="f2ViewCharts" hidden></button>
-              <a
-                class="btn small ghost f2charts tvrp"
-                id="f2Replay"
-                target="_blank"
-                rel="noopener"
-                hidden
-                title="Open the 4H chart on TradingView; with the extension, bar replay starts at the trade's close date"
-                >Replay ↗</a
-              >
               <div class="fields">
                 <div class="f">
                   <span>Setup</span>

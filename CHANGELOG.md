@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.3.64 — 2026-11-17
+
+- **Replay / Edit and View charts moved to the top of the forex trade form**, next to Close. They stay visible when Analysis is folded, and are the same size. Replay and Edit stay hidden on phones and tablets, which have no extension.
+
 ## 1.3.63 — 2026-11-17
 
 - **Tabs fit on a phone.** The six tabs get proper spacing at phone width, and the row scrolls sideways instead of cutting tabs off on narrower screens.

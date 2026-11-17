@@ -5149,8 +5149,18 @@ button.pill.simpill {
     width: 100%;
   }
 }
-.f2charts {
-  margin: 0 0 12px;
+.fhr {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+/* a link and buttons side by side: the same line height, so they are the same size */
+.fhr .btn {
+  display: inline-flex;
+  align-items: center;
+  line-height: 1.2;
+  text-decoration: none;
 }
 .rvfilt {
   margin-top: 16px;
