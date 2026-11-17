@@ -135,7 +135,7 @@ language sql stable security definer set search_path to '' as $$
             's1Ms','s1bm','s1room','s1cc','swMs','swPat','sEntry','sStop','sCur','retPct',
             -- invest pros per timeframe: s<12|6|3|1><fc|sd|cc|ic|bm>
             's12fc','s12sd','s12cc','s12ic','s12bmp','s6fc','s6sd','s6cc','s6ic','s6bm',
-            's3fc','s3sd','s3ic','s1fc','s1sd','s1ic']))
+            's3fc','s3sd','s3ic','s1fc','s1sd','s1ic','s1ccM']))
          || jsonb_build_object('owner', s.user_id, 'views', s.views)
          || case when jsonb_typeof(d.data->'sExits') = 'array' then jsonb_build_object(
               -- each exit with the share of the position it closed (%), not the number of shares

@@ -129,6 +129,7 @@ const INVCOLS = amounts => [
   ...prosCols("3M", "3"),
   ["Monthly MS", t => wa(t.s1Ms), (t, v) => (t.s1Ms = aw(v))],
   ...prosCols("Monthly", "1"),
+  ["Monthly CC required", t => (t.sPhase === "B" ? wa(t.s1ccM || (t.s1cc ? "for" : "")) : ""), (t, v) => (t.s1ccM = aw(v))],
   ["Weekly MS", t => wa(t.swMs), (t, v) => (t.swMs = aw(v))],
   ["Weekly pattern", t => t.swPat, (t, v) => (t.swPat = v)],
   ["Currency", t => t.sCur, (t, v) => (t.sCur = v)],

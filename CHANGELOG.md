@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.3.62 — 2026-11-17
+
+- **Invest: Monthly bullish CC is a required yes / no in Phase B.** Phase B shows "Bullish CC: ✓ Yes / ✗ No" under the Monthly market structure instead of the pro; Phase A keeps it as a pro. Old Phase B trades with it ticked open as Yes. Shown in the summary, the copied text, the share card and the CSV. The extension follows in 1.4.38.
+
 ## 1.3.61 — 2026-11-17
 
 - **Invest form: pros on every timeframe.** 12M, 6M, 3M and Monthly each get the same Pros list: FC, SD zone, Bullish CC, IC and BM (no BM on the 6M, which has its own BM type). The Weekly keeps its pattern.

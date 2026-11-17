@@ -351,6 +351,8 @@ const sProsOf = tf => (tf === "w" ? [] : SPROS.filter(([k]) => k !== "bm" || tf 
 const sKey = (tf, k) => "s" + tf + k + (tf === "12" && k === "bm" ? "p" : "");
 // a pro is on when its field is set; an old 12M pattern (s12bm: FS / 100 / PinP) counts as the 12M BM
 const sHas = (t, tf, k) => !!(t[sKey(tf, k)] || (tf === "12" && k === "bm" && t.s12bm));
+// in the form, Phase B takes the Monthly Bullish CC out of the pros: it is a required yes / no there (s1ccM)
+const sProsForm = tf => sProsOf(tf).filter(([k]) => !(tf === "1" && k === "cc" && radio("sphase") === "B"));
 const STF = [
   ["12", "m12"],
   ["6", "m6"],
@@ -369,6 +371,7 @@ function sPhase() {
   $("#sStopL").textContent = p === "IHS" ? "Initial stop (head)" : p === "BM" ? "Initial stop (BOC)" : "Initial stop";
   $("#sWHint").textContent = "";
   $("#sWHint").hidden = true;
+  msRender();
   sSum();
 }
 function sSum() {
@@ -376,9 +379,10 @@ function sSum() {
     L = k => ($("#sl-" + k).value.trim() ? " · chart ✓" : ""),
     j = a => a.filter(Boolean).join(" · ");
   const M = n => (radio(n) ? (radio(n) === "for" ? "MS ✓" : "MS ✗") : "");
-  const pl = tf => sProsOf(tf).filter(([k]) => sSel[tf][k]).map(([, l]) => l);
+  const pl = tf => sProsForm(tf).filter(([k]) => sSel[tf][k]).map(([, l]) => l);
   const lead = {
     6: ph === "B" ? (radio("s6ret") ? "Returned to " + radio("s6ret") : "") : ph === "A" && radio("s6bm") ? "BM " + radio("s6bm") : "",
+    1: ph === "B" && radio("s1ccm") ? "Bullish CC " + (radio("s1ccm") === "for" ? "✓" : "✗") : "",
     w: radio("swpat"),
   };
   const ids = { 12: "#sSum12", 6: "#sSum6", 3: "#sSum3", 1: "#sSumM", w: "#sSumW" };
@@ -444,6 +448,7 @@ function openStock(t, dup) {
   });
   document.querySelectorAll("#stockForm .ms.open").forEach(b => b.classList.remove("open"));
   msRender();
+  setRadio("s1ccm", A.s1ccM || (A.sPhase === "B" && A.s1cc ? "for" : ""));
   setRadio("s12mss", A.s12Ms || "");
   setRadio("s6mss", A.s6Ms || (A.s6ms ? "for" : ""));
   setRadio("s3mss", A.s3Ms || (A.s3ms ? "for" : ""));
@@ -528,6 +533,8 @@ $("#stockForm").onsubmit = e => {
     s6ret: radio("s6ret"),
     swPat: radio("swpat"),
     ...Object.fromEntries(STF.flatMap(([tf]) => sProsOf(tf).map(([k]) => [sKey(tf, k), !!sSel[tf][k]]))),
+    s1cc: radio("sphase") === "B" ? radio("s1ccm") === "for" : !!sSel["1"].cc,
+    s1ccM: radio("sphase") === "B" ? radio("s1ccm") : "",
     s12Ms: radio("s12mss"),
     s6Ms: radio("s6mss"),
     s3Ms: radio("s3mss"),
@@ -746,7 +753,7 @@ function msRender() {
     ["#f2Cons", WCRIT.filter(([k]) => k !== "trend" && (GR_CAN_AGAINST.has(k) || wcSel[k] === "against")), wcSel],
     ["#f2DPros", DCRIT, dSel],
     ["#f2HPros", HPROS, hSel, k => engImplied(k, f2En())],
-    ...STF.map(([tf]) => ["#sPros" + tf, sProsOf(tf), sSel[tf]]),
+    ...STF.map(([tf]) => ["#sPros" + tf, sProsForm(tf), sSel[tf]]),
   ].forEach(([id, CR, SEL, IMP]) => {
     const box = $(id);
     if (!box) return;
@@ -1604,7 +1611,11 @@ function investText(t, link) {
       ...pros("6"),
     ]),
     block("3M", L.m3, [ms(t.s3Ms), ...pros("3")]),
-    block("Monthly", L.mo, [ms(t.s1Ms), ...pros("1")]),
+    block("Monthly", L.mo, [
+      ms(t.s1Ms),
+      ph === "B" && t.s1ccM === "against" ? "✗ Bullish CC" : "",
+      ...pros("1"),
+    ]),
     block("Weekly", L.wk, [ms(t.swMs), t.swPat || ""]),
     t.notes || "",
   ]

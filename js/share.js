@@ -111,11 +111,11 @@
       ? ""
       : esc(Number(v).toLocaleString("en-GB", { maximumFractionDigits: 4 }) + (t.sCur ? " " + t.sCur : ""));
   const PRO = { fc: "FC", sd: "SD zone", cc: "Bullish CC", ic: "IC", bm: "BM" };
-  const pros = tf => [
+  const pros = (tf, skip) => [
     row(
       "Pros",
       Object.keys(PRO)
-        .filter(k => (t["s" + tf + k + (tf === "12" && k === "bm" ? "p" : "")] || (tf === "12" && k === "bm" && t.s12bm)) && !(tf === "6" && k === "bm")) // s6bm is the 6M BM type, not a pro; the 12M BM pro is s12bmp or an old s12bm pattern
+        .filter(k => k !== skip).filter(k => (t["s" + tf + k + (tf === "12" && k === "bm" ? "p" : "")] || (tf === "12" && k === "bm" && t.s12bm)) && !(tf === "6" && k === "bm")) // s6bm is the 6M BM type, not a pro; the 12M BM pro is s12bmp or an old s12bm pattern
         .map(k => PRO[k])
         .join(", ")
     ),
@@ -139,7 +139,11 @@
         ...pros("6"),
       ]),
       card("3 Monthly", [row("Market structure", ms(t.s3Ms)), ...pros("3")]),
-      card("Monthly", [row("Market structure", ms(t.s1Ms)), ...pros("1")]),
+      card("Monthly", [
+        row("Market structure", ms(t.s1Ms)),
+        row("Bullish CC (required)", ph === "B" ? (t.s1ccM === "against" ? "No" : t.s1cc ? "Yes" : "") : ""),
+        ...(ph === "B" ? pros("1", "cc") : pros("1")),
+      ]),
       card("Weekly", [row("Market structure", ms(t.swMs)), row("Pattern", esc(t.swPat || ""))]),
       // "Result" only once there is one; before that (open, pending) the status tag at the top says where it stands
       card(oc && !unf(t) ? "Result" : "Trade", [
