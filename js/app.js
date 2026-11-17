@@ -102,6 +102,14 @@ const invRoi = t => {
   if (!xs.length || !(t.sEntry > 0) || !(t.sShares > 0)) return "";
   return +((xs.reduce((a, x) => a + (x.price - t.sEntry) * x.shares, 0) / (t.sEntry * t.sShares)) * 100).toFixed(2);
 };
+// per timeframe: the ticked pros ("FC; IC"), see sProsOf / sKey in forms.js
+const prosCols = (head, tf) => [
+  [
+    head + " pros",
+    t => sProsOf(tf).filter(([k]) => sHas(t, tf, k)).map(([, l]) => l).join("; "),
+    (t, v) => sProsOf(tf).forEach(([k, l]) => (t[sKey(tf, k)] = v.split(/\s*;\s*/).includes(l))),
+  ],
+];
 const INVCOLS = amounts => [
   ["ID", t => t.id, (t, v) => (t.id = v)],
   ["Mode", t => t.mode, (t, v) => (t.mode = v)],
@@ -112,17 +120,15 @@ const INVCOLS = amounts => [
   ["Ticker", t => t.ticker || t.pair, (t, v) => (t.ticker = t.pair = v.toUpperCase())],
   ["Phase", t => t.sPhase, (t, v) => (t.sPhase = v)],
   ["12M MS", t => wa(t.s12Ms), (t, v) => (t.s12Ms = aw(v))],
-  ["12M pattern", t => (t.s12Ms === "for" ? t.s12bm : ""), (t, v) => (t.s12bm = v)],
-  ["12M back to", t => (t.s12Ms === "against" ? t.s12ret : ""), (t, v) => (t.s12ret = v)],
+  ...prosCols("12M", "12"),
   ["6M MS", t => wa(t.s6Ms), (t, v) => (t.s6Ms = aw(v))],
   ["6M BM", t => (t.sPhase === "A" ? t.s6bm : ""), (t, v) => (t.s6bm = v)],
   ["6M back to previous MS", t => (t.sPhase === "B" ? t.s6ret : ""), (t, v) => (t.s6ret = v)],
+  ...prosCols("6M", "6"),
   ["3M MS", t => wa(t.s3Ms), (t, v) => (t.s3Ms = aw(v))],
-  ["3M BM", t => yn(!!t.s3bm), (t, v) => (t.s3bm = v === "yes")],
-  ["3M bullish CC", t => yn(!!t.s3cc), (t, v) => (t.s3cc = v === "yes")],
+  ...prosCols("3M", "3"),
   ["Monthly MS", t => wa(t.s1Ms), (t, v) => (t.s1Ms = aw(v))],
-  ["Monthly BM", t => yn(!!t.s1bm), (t, v) => (t.s1bm = v === "yes")],
-  ["Monthly bullish CC", t => yn(!!t.s1cc), (t, v) => (t.s1cc = v === "yes")],
+  ...prosCols("Monthly", "1"),
   ["Weekly MS", t => wa(t.swMs), (t, v) => (t.swMs = aw(v))],
   ["Weekly pattern", t => t.swPat, (t, v) => (t.swPat = v)],
   ["Currency", t => t.sCur, (t, v) => (t.sCur = v)],

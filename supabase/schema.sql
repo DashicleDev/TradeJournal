@@ -132,7 +132,10 @@ language sql stable security definer set search_path to '' as $$
             'exitReason','evaluation','notes','shots','shotLinks','channel','engulf',
             -- invest: analysis, prices and percentages; never shares, amounts, P&L or exchange rates
             'ticker','sPhase','s12Ms','s12bm','s12ret','s6Ms','s6bm','s6ret','s3Ms','s3bm','s3cc','s3room','s3roomB',
-            's1Ms','s1bm','s1room','s1cc','swMs','swPat','sEntry','sStop','sCur','retPct']))
+            's1Ms','s1bm','s1room','s1cc','swMs','swPat','sEntry','sStop','sCur','retPct',
+            -- invest pros per timeframe: s<12|6|3|1><fc|sd|cc|ic|bm>
+            's12fc','s12sd','s12cc','s12ic','s12bmp','s6fc','s6sd','s6cc','s6ic','s6bm',
+            's3fc','s3sd','s3ic','s1fc','s1sd','s1ic']))
          || jsonb_build_object('owner', s.user_id, 'views', s.views)
          || case when jsonb_typeof(d.data->'sExits') = 'array' then jsonb_build_object(
               -- each exit with the share of the position it closed (%), not the number of shares

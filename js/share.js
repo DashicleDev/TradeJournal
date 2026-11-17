@@ -110,7 +110,16 @@
     v == null || v === ""
       ? ""
       : esc(Number(v).toLocaleString("en-GB", { maximumFractionDigits: 4 }) + (t.sCur ? " " + t.sCur : ""));
-  const yes = v => (v ? "Yes" : "");
+  const PRO = { fc: "FC", sd: "SD zone", cc: "Bullish CC", ic: "IC", bm: "BM" };
+  const pros = tf => [
+    row(
+      "Pros",
+      Object.keys(PRO)
+        .filter(k => (t["s" + tf + k + (tf === "12" && k === "bm" ? "p" : "")] || (tf === "12" && k === "bm" && t.s12bm)) && !(tf === "6" && k === "bm")) // s6bm is the 6M BM type, not a pro; the 12M BM pro is s12bmp or an old s12bm pattern
+        .map(k => PRO[k])
+        .join(", ")
+    ),
+  ];
   const ph = t.sPhase;
   const card = (title, rows) => {
     const h = rows.join("");
@@ -122,26 +131,15 @@
     roiTxt = oc && t.retPct != null ? pct(t.retPct) : t.roi != null && sold ? pct(t.roi) + " so far" : "";
   const invGrid = () =>
     [
-      card("12 Monthly", [
-        row("Market structure", ms(t.s12Ms)),
-        row("Pattern", t.s12Ms === "for" ? esc(t.s12bm || "") : ""),
-        row("Back to", t.s12Ms === "against" ? esc(t.s12ret || "") : ""),
-      ]),
+      card("12 Monthly", [row("Market structure", ms(t.s12Ms)), ...pros("12")]),
       card("6 Monthly", [
         row("Market structure", ms(t.s6Ms)),
-        row("BM", ph === "A" ? esc(t.s6bm || "") : ""),
-        row("Back to previous MS", ph === "B" ? esc(t.s6ret || "") : ""),
+        row("BM type", ph === "A" ? esc(t.s6bm || "") : ""),
+        row("Returned to", ph === "B" ? esc(t.s6ret || "") : ""),
+        ...pros("6"),
       ]),
-      card("3 Monthly", [
-        row("Market structure", ms(t.s3Ms)),
-        row("BM", yes(t.s3bm)),
-        row("Bullish CC", yes(t.s3cc)),
-      ]),
-      card("Monthly", [
-        row("Market structure", ms(t.s1Ms)),
-        row("BM", yes(t.s1bm)),
-        row("Bullish CC", yes(t.s1cc)),
-      ]),
+      card("3 Monthly", [row("Market structure", ms(t.s3Ms)), ...pros("3")]),
+      card("Monthly", [row("Market structure", ms(t.s1Ms)), ...pros("1")]),
       card("Weekly", [row("Market structure", ms(t.swMs)), row("Pattern", esc(t.swPat || ""))]),
       // "Result" only once there is one; before that (open, pending) the status tag at the top says where it stands
       card(oc && !unf(t) ? "Result" : "Trade", [

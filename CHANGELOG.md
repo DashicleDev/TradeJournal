@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.3.61 — 2026-11-17
+
+- **Invest form: pros on every timeframe.** 12M, 6M, 3M and Monthly each get the same Pros list: FC, SD zone, Bullish CC, IC and BM (no BM on the 6M, which has its own BM type). The Weekly keeps its pattern.
+- **6M picker follows the phase:** "BM type" (FS / 100 / PinP) in Phase A, "Returned to" (FS / 100) in Phase B.
+- **Removed from the form:** the 12M pattern and the 12M "back to previous structure". An old 12M pattern now counts as the 12M BM pro; old values are kept in the trade.
+- The share card, the copied chat text and the CSV show the new pros. Shared pages need the new database function (applied). The extension follows in 1.4.37.
+
 ## 1.3.60 — 2026-11-15
 
 - **Replay becomes Edit for open and pending forex trades.** The button reads "Edit ↗" and opens the live 4H chart with the trade loaded in the extension's panel (no bar replay); saving closes the window like before. Closed, missed and expired trades keep Replay.

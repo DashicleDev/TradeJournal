@@ -930,7 +930,7 @@ const ST_DEFS = {
     salign: ["Structure alignment (12M · 6M · 3M · M · W)", sAlign],
     s12ms: ["12M market structure", t => msL(t.s12Ms), ["With", "Against"]],
     s6ms: ["6M market structure", t => msL(t.s6Ms), ["With", "Against"]],
-    s6bm: ["6M BM", t => (t.sPhase === "B" ? (t.s6ret ? "Back to " + t.s6ret : null) : t.s6bm || null)],
+    s6bm: ["6M BM type", t => (t.sPhase === "B" ? (t.s6ret ? "Returned to " + t.s6ret : null) : t.s6bm || null)],
     s3ms: ["3M market structure", t => msL(t.s3Ms), ["With", "Against"]],
     s1ms: ["Monthly market structure", t => msL(t.s1Ms), ["With", "Against"]],
     s3bm: ["3M BM", t => (t.s3bm ? "BM" : "No BM")],

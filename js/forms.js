@@ -324,15 +324,6 @@ seg("seg-sphase", "sphase", [
   ["A", "Phase A"],
   ["B", "Phase B"],
 ]);
-seg("seg-s12bm", "s12bm", [
-  ["FS", "FS"],
-  ["100", "100"],
-  ["PinP", "PinP"],
-]);
-seg("seg-s12ret", "s12ret", [
-  ["FS", "FS"],
-  ["100", "100"],
-]);
 seg("seg-s6bm", "s6bm", [
   ["FS", "FS"],
   ["100", "100"],
@@ -347,20 +338,28 @@ seg("seg-swpat", "swpat", [
   ["IHS", "IHS"],
   ["PinP", "PinP"],
 ]);
-// 3M and Monthly pros (invest): field is "s3" / "s1" + the key
+// Invest pros, the same list on every timeframe: stored as booleans "s" + timeframe + key (s12fc, s6sd, s3bm, ...)
 const SPROS = [
-  ["bm", "BM"],
+  ["fc", "FC"],
+  ["sd", "SD zone"],
   ["cc", "Bullish CC"],
+  ["ic", "IC"],
+  ["bm", "BM"],
 ];
-let s3Sel = {},
-  s1Sel = {};
-function s12Vis() {
-  const m = radio("s12mss");
-  document.querySelectorAll("#stockForm .s12w").forEach(e => (e.hidden = m !== "for"));
-  document.querySelectorAll("#stockForm .s12a").forEach(e => (e.hidden = m !== "against"));
-}
+// no BM pro on 6M: s6bm is the BM type there (FS / 100 / PinP). On 12M the BM pro is s12bmp, as s12bm holds the old 12M pattern.
+const sProsOf = tf => (tf === "w" ? [] : SPROS.filter(([k]) => k !== "bm" || tf !== "6")); // the Weekly has the pattern and no pros
+const sKey = (tf, k) => "s" + tf + k + (tf === "12" && k === "bm" ? "p" : "");
+// a pro is on when its field is set; an old 12M pattern (s12bm: FS / 100 / PinP) counts as the 12M BM
+const sHas = (t, tf, k) => !!(t[sKey(tf, k)] || (tf === "12" && k === "bm" && t.s12bm));
+const STF = [
+  ["12", "m12"],
+  ["6", "m6"],
+  ["3", "m3"],
+  ["1", "mo"],
+  ["w", "wk"],
+];
+const sSel = { 12: {}, 6: {}, 3: {}, 1: {}, w: {} };
 function sPhase() {
-  s12Vis();
   const ph = radio("sphase");
   document.querySelectorAll("#stockForm .sA").forEach(e => (e.hidden = ph !== "A"));
   document.querySelectorAll("#stockForm .sB").forEach(e => (e.hidden = ph !== "B"));
@@ -373,45 +372,27 @@ function sPhase() {
   sSum();
 }
 function sSum() {
-  s12Vis();
   const ph = radio("sphase"),
-    c = id => $("#" + id).checked,
     L = k => ($("#sl-" + k).value.trim() ? " · chart ✓" : ""),
     j = a => a.filter(Boolean).join(" · ");
   const M = n => (radio(n) ? (radio(n) === "for" ? "MS ✓" : "MS ✗") : "");
-  const m12 = radio("s12mss"),
-    t12 = j([
-      M("s12mss"),
-      m12 === "for" && radio("s12bm") ? radio("s12bm") : "",
-      m12 === "against" && radio("s12ret") ? "Back to " + radio("s12ret") : "",
-    ]);
-  const t6 = j([
-    M("s6mss"),
-    ...(ph === "B"
-      ? [radio("s6ret") ? "Back to " + radio("s6ret") : ""]
-      : ph === "A"
-        ? [radio("s6bm") ? "BM " + radio("s6bm") : ""]
-        : []),
-  ]);
-  const pl = S => SPROS.filter(([k]) => S[k]).map(([, l]) => l),
-    t3 = j([M("s3mss"), ...pl(s3Sel)]),
-    tm = j([M("s1mss"), ...pl(s1Sel)]);
-  const p = radio("swpat"),
-    tw = j([M("swmss"), p]);
-  [
-    ["#sSum12", t12, "m12"],
-    ["#sSum6", t6, "m6"],
-    ["#sSum3", t3, "m3"],
-    ["#sSumM", tm, "mo"],
-    ["#sSumW", tw, "wk"],
-  ].forEach(([id, t, k]) => ($(id).textContent = (t + L(k)).replace(/^ · /, "")));
+  const pl = tf => sProsOf(tf).filter(([k]) => sSel[tf][k]).map(([, l]) => l);
+  const lead = {
+    6: ph === "B" ? (radio("s6ret") ? "Returned to " + radio("s6ret") : "") : ph === "A" && radio("s6bm") ? "BM " + radio("s6bm") : "",
+    w: radio("swpat"),
+  };
+  const ids = { 12: "#sSum12", 6: "#sSum6", 3: "#sSum3", 1: "#sSumM", w: "#sSumW" };
+  const ms = { 12: "s12mss", 6: "s6mss", 3: "s3mss", 1: "s1mss", w: "swmss" };
+  STF.forEach(([tf, k]) => {
+    const t = j([M(ms[tf]), lead[tf], ...pl(tf)]);
+    $(ids[tf]).textContent = (t + L(k)).replace(/^ · /, "");
+  });
 }
 $("#stockForm").addEventListener("change", e => {
   if (["sphase", "swpat"].includes(e.target.name)) {
     sPhase();
     exRender();
   } else {
-    if (e.target.name === "s12mss") s12Vis();
     if (["sCur", "sDate", "sEntry", "sAccount"].includes(e.target.id)) exFx();
     sSum();
   }
@@ -458,13 +439,12 @@ function openStock(t, dup) {
   setRadio("s6bm", A.s6bm || "");
   setRadio("s6ret", A.s6ret || "");
   setRadio("swpat", A.swPat || "");
-  s3Sel = Object.fromEntries(SPROS.filter(([k]) => A["s3" + k]).map(([k]) => [k, "for"]));
-  s1Sel = Object.fromEntries(SPROS.filter(([k]) => A["s1" + k]).map(([k]) => [k, "for"]));
+  STF.forEach(([tf]) => {
+    sSel[tf] = Object.fromEntries(sProsOf(tf).filter(([k]) => sHas(A, tf, k)).map(([k]) => [k, "for"]));
+  });
   document.querySelectorAll("#stockForm .ms.open").forEach(b => b.classList.remove("open"));
   msRender();
   setRadio("s12mss", A.s12Ms || "");
-  setRadio("s12bm", A.s12bm || "");
-  setRadio("s12ret", A.s12ret || "");
   setRadio("s6mss", A.s6Ms || (A.s6ms ? "for" : ""));
   setRadio("s3mss", A.s3Ms || (A.s3ms ? "for" : ""));
   setRadio("s1mss", A.s1Ms || "");
@@ -547,13 +527,8 @@ $("#stockForm").onsubmit = e => {
     s6bm: radio("s6bm"),
     s6ret: radio("s6ret"),
     swPat: radio("swpat"),
-    s3bm: !!s3Sel.bm,
-    s3cc: !!s3Sel.cc,
-    s1bm: !!s1Sel.bm,
-    s1cc: !!s1Sel.cc,
+    ...Object.fromEntries(STF.flatMap(([tf]) => sProsOf(tf).map(([k]) => [sKey(tf, k), !!sSel[tf][k]]))),
     s12Ms: radio("s12mss"),
-    s12bm: radio("s12mss") === "for" ? radio("s12bm") : "",
-    s12ret: radio("s12mss") === "against" ? radio("s12ret") : "",
     s6Ms: radio("s6mss"),
     s3Ms: radio("s3mss"),
     s1Ms: radio("s1mss"),
@@ -771,8 +746,7 @@ function msRender() {
     ["#f2Cons", WCRIT.filter(([k]) => k !== "trend" && (GR_CAN_AGAINST.has(k) || wcSel[k] === "against")), wcSel],
     ["#f2DPros", DCRIT, dSel],
     ["#f2HPros", HPROS, hSel, k => engImplied(k, f2En())],
-    ["#sPros3", SPROS, s3Sel],
-    ["#sPros1", SPROS, s1Sel],
+    ...STF.map(([tf]) => ["#sPros" + tf, sProsOf(tf), sSel[tf]]),
   ].forEach(([id, CR, SEL, IMP]) => {
     const box = $(id);
     if (!box) return;
@@ -798,7 +772,7 @@ document.addEventListener("click", e => {
   });
   if (!box) return;
   const kind = box.dataset.kind,
-    SEL = { f2DPros: dSel, f2HPros: hSel, sPros3: s3Sel, sPros1: s1Sel }[box.id] || wcSel,
+    SEL = box.id.startsWith("sPros") ? sSel[box.id.slice(5)] : { f2DPros: dSel, f2HPros: hSel }[box.id] || wcSel,
     FORM = $(box.id.startsWith("sPros") ? "#stockForm" : "#tradeForm2");
   const x = e.target.closest("[data-msx]");
   if (x) {
@@ -1610,6 +1584,7 @@ function investText(t, link) {
   const L = t.shotLinks || {},
     ph = t.sPhase,
     ms = v => (v === "for" ? "✓ MS" : v === "against" ? "✗ MS" : ""),
+    pros = tf => sProsOf(tf).filter(([k]) => sHas(t, tf, k)).map(([, l]) => l),
     block = (title, link, items) => {
       items = items.filter(Boolean);
       if (!link && !items.length) return "";
@@ -1621,22 +1596,15 @@ function investText(t, link) {
   return [
     // the share link first (WhatsApp only previews the first link in a message), right under the header
     head + (link ? "\n" + link : ""),
-    block("12M", L.m12, [
-      ms(t.s12Ms),
-      t.s12Ms === "for" && t.s12bm ? t.s12bm : "",
-      t.s12Ms === "against" && t.s12ret ? "Back to " + t.s12ret : "",
-    ]),
+    block("12M", L.m12, [ms(t.s12Ms), ...pros("12")]),
     block("6M", L.m6, [
       ms(t.s6Ms),
       ph === "A" && t.s6bm ? "BM " + t.s6bm : "",
-      ph === "B" && t.s6ret ? "Back to " + t.s6ret : "",
+      ph === "B" && t.s6ret ? "Returned to " + t.s6ret : "",
+      ...pros("6"),
     ]),
-    block("3M", L.m3, [
-      ms(t.s3Ms),
-      t.s3bm ? "BM" : "",
-      t.s3cc ? "Bullish CC" : "",
-    ]),
-    block("Monthly", L.mo, [ms(t.s1Ms), t.s1bm ? "BM" : "", t.s1cc ? "Bullish CC" : ""]),
+    block("3M", L.m3, [ms(t.s3Ms), ...pros("3")]),
+    block("Monthly", L.mo, [ms(t.s1Ms), ...pros("1")]),
     block("Weekly", L.wk, [ms(t.swMs), t.swPat || ""]),
     t.notes || "",
   ]
