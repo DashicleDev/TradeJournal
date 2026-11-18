@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.3.65 — 2026-11-18
+
+- **News: an event an admin marked heavy keeps its ★**, so it can be unmarked again. The star was hidden because the calendar already passes a marked event on as Heavy, so a mark could not be undone from the journal.
+
 ## 1.3.64 — 2026-11-17
 
 - **Replay / Edit and View charts moved to the top of the forex trade form**, next to Close. They stay visible when Analysis is folded, and are the same size. Replay and Edit stay hidden on phones and tablets, which have no extension.

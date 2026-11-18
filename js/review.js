@@ -1612,8 +1612,9 @@ async function renderNews(C) {
         head = d !== last ? `<div class="nwday">${esc(d)}</div>` : "";
       last = d;
       return `${head}<div class="nwrow${h.length ? " hit" : ""}"><span class="num nwt">${esc(timeOf(e))}</span><b class="nwc">${esc(e.cur)}</b><span class="nwtt">${esc(e.title)}<span class="nwl ${nLevel(e).toLowerCase()}">${esc(nLevel(e))}</span></span><span class="nwend">${h.length ? `<span class="nwhit" title="${e.cur === "USD" && nLevel(e) === "Heavy" ? "USD heavy news moves every pair" : "Open trade in this currency"}">${esc(h.join(", "))}</span>` : ""}${
-        // the feed's own heavy events (CPI, NFP, rate decisions…) are always heavy, so only others get the toggle
-        APPADMIN && e.level !== "Heavy"
+        // the feed's own heavy events (CPI, NFP, rate decisions…) are always heavy, so only others get the toggle;
+        // one an admin marked is heavy in the feed too, so it keeps its star to be unmarked
+        APPADMIN && (e.level !== "Heavy" || newsMarks.has(nKey(e)))
           ? `<button type="button" class="nwmark" data-nwmark="${esc(nKey(e))}" aria-pressed="${newsMarks.has(nKey(e))}" title="${newsMarks.has(nKey(e)) ? "Heavy (marked by an admin): click to unmark" : "Mark as heavy, every time it comes around"}">${newsMarks.has(nKey(e)) ? "★" : "☆"}</button>`
           : ""
       }</span></div>`;
