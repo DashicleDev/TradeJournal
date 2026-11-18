@@ -744,6 +744,34 @@ const WCRIT = [
   ["ec", "Engulfing candle"],
 ];
 let wcSel = {}; /* key -> "for"|"against" */
+// the forex trade form's accounts: a trade can sit on several, picked in the same kind of list as the pros
+const acSel = {}; // name -> "for"
+const acList = () => {
+  const have = accounts("fx")
+    .filter(a => acStat(a) === "active" || acSel[a.name])
+    .map(a => [a.name, esc(a.name)]);
+  Object.keys(acSel)
+    .filter(n => !have.some(h => h[0] === n))
+    .forEach(n => have.push([n, esc(n)])); // a removed account the trade still names
+  return have;
+};
+function acFillMulti(cur) {
+  // cur: the trade's account text; null for a new trade (the account used last)
+  let v = cur;
+  if (v === null) {
+    try {
+      v = localStorage.getItem("tj-lastacct-fx") || "";
+    } catch {
+      v = "";
+    }
+  }
+  const offered = new Set(accounts("fx").filter(a => acStat(a) === "active").map(a => a.name));
+  Object.keys(acSel).forEach(k => delete acSel[k]);
+  acNames(v).forEach(n => {
+    if (cur !== null || offered.has(n)) acSel[n] = "for";
+  });
+  msRender();
+}
 function msRender() {
   setRadio("f2wms", wcSel.ms || "");
   [
@@ -753,18 +781,19 @@ function msRender() {
     ["#f2DPros", DCRIT, dSel],
     ["#f2HPros", HPROS, hSel, k => engImplied(k, f2En())],
     ...STF.map(([tf]) => ["#sPros" + tf, sProsForm(tf), sSel[tf]]),
+    ["#f2Acc", acList(), acSel],
   ].forEach(([id, CR, SEL, IMP]) => {
     const box = $(id);
     if (!box) return;
     const kind = box.dataset.kind,
       open = box.classList.contains("open");
     const mine = CR.filter(([k]) => SEL[k] === kind || (IMP && IMP(k)));
-    box.innerHTML = `<button type="button" class="ms-field" aria-haspopup="listbox" aria-expanded="${open}" aria-labelledby="${id.slice(1)}Lbl">${mine.length ? mine.map(([k, l]) => `<span class="chip-sel ${kind}">${l}${IMP && IMP(k) ? "" : `<span class="x" data-msx="${k}" aria-label="Remove ${l}">×</span>`}</span>`).join("") : '<span class="ph">Choose criteria…</span>'}<span class="caret">▾</span></button>
+    box.innerHTML = `<button type="button" class="ms-field" aria-haspopup="listbox" aria-expanded="${open}" aria-labelledby="${id.slice(1)}Lbl">${mine.length ? mine.map(([k, l]) => `<span class="chip-sel ${kind}">${l}${IMP && IMP(k) ? "" : `<span class="x" data-msx="${esc(k)}" aria-label="Remove ${l}">×</span>`}</span>`).join("") : `<span class="ph">${esc(box.dataset.ph || "Choose criteria…")}</span>`}<span class="caret">▾</span></button>
   <ul class="ms-list" role="listbox" aria-multiselectable="true" ${open ? "" : "hidden"}>${CR.map(([k, l]) => {
     const imp = IMP && IMP(k),
       other = imp || (SEL[k] && SEL[k] !== kind),
       on = imp || SEL[k] === kind;
-    return `<li role="option" aria-selected="${on}" aria-disabled="${!!other}" data-msk="${k}" class="${other ? "dis" : ""}"><span class="box ${kind}">${on ? "✓" : ""}</span>${l}${imp ? "<em>from the entry</em>" : other ? `<em>in ${kind === "for" ? "cons" : "pros"}</em>` : ""}</li>`;
+    return `<li role="option" aria-selected="${on}" aria-disabled="${!!other}" data-msk="${esc(k)}" class="${other ? "dis" : ""}"><span class="box ${kind}">${on ? "✓" : ""}</span>${l}${imp ? "<em>from the entry</em>" : other ? `<em>in ${kind === "for" ? "cons" : "pros"}</em>` : ""}</li>`;
   }).join("")}</ul>`;
   });
 }
@@ -778,7 +807,7 @@ document.addEventListener("click", e => {
   });
   if (!box) return;
   const kind = box.dataset.kind,
-    SEL = box.id.startsWith("sPros") ? sSel[box.id.slice(5)] : { f2DPros: dSel, f2HPros: hSel }[box.id] || wcSel,
+    SEL = box.id.startsWith("sPros") ? sSel[box.id.slice(5)] : { f2DPros: dSel, f2HPros: hSel, f2Acc: acSel }[box.id] || wcSel,
     FORM = $(box.id.startsWith("sPros") ? "#stockForm" : "#tradeForm2");
   const x = e.target.closest("[data-msx]");
   if (x) {
@@ -1128,7 +1157,7 @@ function openSheet2(t, dup) {
   }
   $("#f2Date").value = new Date().toISOString().slice(0, 10);
   $("#f2Status").value = "taken";
-  acFill("#f2Account", "fx", null);
+  acFillMulti(null);
   f2Shots = {};
   f2Active = null;
   f2Links = {};
@@ -1186,7 +1215,7 @@ function f2Fill(t) {
   $("#f2Date").value = t.date || "";
   $("#f2Close").value = t.closeDate || "";
   $("#f2Status").value = ["missed", "pending", "expired"].includes(t.status) ? t.status : "taken";
-  acFill("#f2Account", "fx", t.account || "");
+  acFillMulti(t.account || "");
   setRadio("f2dir", t.dir || "");
   $("#f2Concept").value = t.concept || "";
   f2SetupShow();
@@ -1363,7 +1392,10 @@ function f2Submit(stay) {
     market: old ? mktOf(old) : f2Market,
     project: mode === "backtest" && $("#f2Project").value !== "none" ? $("#f2Project").value : null,
     status: mode === "live" ? $("#f2Status").value : "taken", // only live trades can be missed, pending or expired
-    account: $("#f2Account").value,
+    account: acList()
+      .map(([n]) => n)
+      .filter(n => acSel[n])
+      .join(", "),
     btDate: mode === "backtest" ? $("#f2BtDate").value || todayISO() : null,
     date: $("#f2Date").value,
     closeDate: $("#f2Close").value,

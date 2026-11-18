@@ -100,7 +100,7 @@ function rvPool(o) {
       mktOf(t) === "fx" &&
       (o.open === "form" || (t.status !== "missed" && !unfilled(t) && t.r != null)) &&
       (o.mode === "both" || t.mode === o.mode) &&
-      (o.mode !== "live" || !o.acct || t.account === o.acct) &&
+      (o.mode !== "live" || !o.acct || inAc(t, o.acct)) &&
       (o.mode !== "backtest" || !o.proj || t.project === o.proj) &&
       (() => {
         const r = rvRange(o);

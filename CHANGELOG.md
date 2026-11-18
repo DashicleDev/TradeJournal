@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.3.67 — 2026-11-18
+
+- **One forex trade on several accounts.** The Account field in the trade form is a list you pick from, with a chip per account. The trade counts on every account's card in the Accounts tab (its own trades, win rate, total R) and once in the overall figures. Renaming or removing an account follows the trades that use it. Lists that show a percentage of the account use the trade's first account. Invest keeps one account. The extension follows in 1.4.41.
+
 ## 1.3.66 — 2026-11-18
 
 - **Replay and Edit open a window the size of your screen's work area**, instead of a 1400 × 900 window in the middle.

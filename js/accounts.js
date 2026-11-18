@@ -16,7 +16,16 @@ const acKey = t => {
       .filter(p => have.has(p));
   return parts.length ? parts.join(", ") : "Removed account";
 };
-const acOf = name => docs.find(d => d.kind === "account" && d.name === name);
+// a trade can sit on several accounts: its account is the names joined by ", " ("FTMO #1, FTMO #2")
+const acNames = s =>
+  String(s || "")
+    .split(/\s*,\s*/)
+    .filter(Boolean);
+const inAc = (t, name) => t.account === name || acNames(t.account).includes(name);
+// an account by name; for a trade on several accounts, the first one (the capital % in lists uses it)
+const acOf = name =>
+  docs.find(d => d.kind === "account" && d.name === name) ||
+  docs.find(d => d.kind === "account" && d.name === acNames(name)[0]);
 const acRemember = (mk, name) => {
   try {
     localStorage.setItem("tj-lastacct-" + mk, name || "");
@@ -118,12 +127,12 @@ function acRender() {
     card(
       a,
       a.name,
-      all.filter(t => t.account === a.name),
+      all.filter(t => inAc(t, a.name)),
       true
     )
   );
   const known = new Set(L.map(a => a.name)),
-    other = [...new Set(all.map(t => t.account).filter(n => n && !known.has(n)))];
+    other = [...new Set(all.flatMap(t => acNames(t.account)).filter(n => n && !known.has(n)))];
   $("#acList").innerHTML = cards.length
     ? cards.join("")
     : `<div class="panel"><p class="hint" style="margin:0">No ${mk.toLowerCase()} accounts yet. Add one above.</p></div>`;
@@ -220,7 +229,7 @@ $("#acList").addEventListener("click", e => {
   if (del) {
     const a = docs.find(d => d.id === del.dataset.acdel);
     if (!a) return;
-    const n = docs.filter(t => !t.kind && t.account === a.name).length;
+    const n = docs.filter(t => !t.kind && inAc(t, a.name)).length;
     if (!del.classList.contains("armed")) {
       del.classList.add("armed");
       del.textContent = n ? `Remove (${n} trades keep the name)` : "Remove";
@@ -261,7 +270,9 @@ $("#acList").addEventListener("click", e => {
         }
         const oldn = a.name;
         saveDoc({ ...a, name: nn });
-        docs.filter(t => !t.kind && t.account === oldn).forEach(t => saveDoc({ ...t, account: nn }));
+        docs
+          .filter(t => !t.kind && inAc(t, oldn))
+          .forEach(t => saveDoc({ ...t, account: t.account === oldn ? nn : acNames(t.account).map(n => (n === oldn ? nn : n)).join(", ") }));
         toast("Account renamed");
       }
       acRender();
