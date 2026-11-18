@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.3.66 — 2026-11-18
+
+- **Replay and Edit open a window the size of your screen's work area**, instead of a 1400 × 900 window in the middle.
+- **Replay and Edit layout (Settings → Forex).** Paste the link of a TradingView layout of your own, and Replay and Edit open in it, so the drawings in your main layout are left alone. Empty: TradingView picks the layout, as before.
+
 ## 1.3.65 — 2026-11-18
 
 - **News: an event an admin marked heavy keeps its ★**, so it can be unmarked again. The star was hidden because the calendar already passes a marked event on as Heavy, so a mark could not be undone from the journal.

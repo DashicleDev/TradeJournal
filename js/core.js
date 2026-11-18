@@ -2,7 +2,7 @@
  * core.js — Shared basics: the trading plan (concepts, entries, exits), formatting and small DOM helpers.
  * Loaded first; every other file uses these.
  */
-const APP_VERSION = "1.3.65";
+const APP_VERSION = "1.3.66";
 const PLAN = {
   concepts: {
     Continuation: ["First Structure", "100 level", "Fake Out", "New Action"],
@@ -100,6 +100,11 @@ const entryOptHtml = k =>
 // a trade still running (Open) or waiting for its limit (Pending): the button edits it on the live chart instead of replaying
 const tvIsLive = t => !!t && (t.status === "pending" || (t.status === "taken" && (t.r == null || isNaN(t.r))));
 const tvReplayLabel = t => (tvIsLive(t) ? "Edit ↗" : "Replay ↗");
+// the chart's address: /chart/<layout>/ opens your own layout (settings), plain /chart/ lets TradingView choose one
+const tvChart = () => {
+  const id = ((typeof docs !== "undefined" && docs.find(x => x.id === "settings")) || {}).replayLayout;
+  return /^[A-Za-z0-9]{6,16}$/.test(id || "") ? `https://www.tradingview.com/chart/${id}/` : "https://www.tradingview.com/chart/";
+};
 const tvReplayUrl = t => {
   const p = String((t && t.pair) || "")
     .replace(/[^A-Za-z0-9]/g, "")
@@ -111,8 +116,8 @@ const tvReplayUrl = t => {
   // &tj-trade: the extension (1.4.22+) also opens the trade in its panel for editing
   const id = /^[A-Za-z0-9_-]{1,40}$/.test(t.id || "") ? `&tj-trade=${t.id}` : "";
   // no replay date: the live chart, with only the trade for the panel (the extension reads #tj-trade= on its own)
-  if (tvIsLive(t)) return p && id ? `https://www.tradingview.com/chart/?symbol=OANDA:${p}&interval=240#${id.slice(1)}` : "";
-  return p && day ? `https://www.tradingview.com/chart/?symbol=OANDA:${p}&interval=240#tj-replay=${day}${id}` : "";
+  if (tvIsLive(t)) return p && id ? `${tvChart()}?symbol=OANDA:${p}&interval=240#${id.slice(1)}` : "";
+  return p && day ? `${tvChart()}?symbol=OANDA:${p}&interval=240#tj-replay=${day}${id}` : "";
 };
 const tvReplayBtn = t =>
   tvReplayUrl(t)
@@ -151,10 +156,8 @@ addEventListener(
     e.stopImmediatePropagation();
     const inForm = a.id === "f2Replay";
     if (inForm && !$("#tradeForm2").reportValidity()) return;
-    const w = Math.min(1400, screen.availWidth),
-      h = Math.min(900, screen.availHeight),
-      // opened now (inside the click), pointed at the chart once the form is saved
-      win = window.open("", "_blank", `popup=yes,width=${w},height=${h},left=${(screen.availWidth - w) / 2},top=${(screen.availHeight - h) / 2}`);
+    // opened now (inside the click), the size of the screen's work area, pointed at the chart once the form is saved
+    const win = window.open("", "_blank", `popup=yes,width=${screen.availWidth},height=${screen.availHeight},left=0,top=0`);
     if (!win) return void window.open(a.href, "_blank"); // pop-ups blocked: a normal tab
     win.focus();
     replayLock();

@@ -639,6 +639,24 @@ function newsLinks() {
   $("#nCopy").dataset.url = https;
 }
 $("#nLvl").onchange = () => nSave({ newsLvl: $("#nLvl").value });
+/* ---------- Replay / Edit layout: a TradingView layout of your own, so the main layout's drawings are left alone ---------- */
+const RP_HINT = $("#rpLayoutMsg").textContent;
+const rpLayoutShow = () => {
+  const id = getSet().replayLayout || "";
+  $("#rpLayout").value = id ? "https://www.tradingview.com/chart/" + id + "/" : "";
+  $("#rpLayoutMsg").textContent = RP_HINT;
+};
+$("#rpLayout").onchange = () => {
+  const v = $("#rpLayout").value.trim(),
+    id = (v.match(/tradingview\.com\/chart\/([A-Za-z0-9]{6,16})(?:[/?#]|$)/) || [])[1] || "";
+  if (v && !id) {
+    $("#rpLayoutMsg").textContent = "That is not a layout link. Open your layout in TradingView and copy its address (tradingview.com/chart/…).";
+    return;
+  }
+  nSave({ replayLayout: id });
+  rpLayoutShow();
+  $("#rpLayoutMsg").textContent = id ? "Saved. Replay and Edit now open in this layout." : "Cleared. TradingView picks the layout again.";
+};
 $("#nRemAdd").onclick = () => {
   const r = nRemsOf(getSet());
   r.push(r.includes(15) ? 5 : 15);
@@ -673,6 +691,7 @@ function openSettings() {
   $("#extGuide").innerHTML = feat("ext") ? extGuideHTML() : "";
   showSetTab(setTab);
   newsLinks();
+  rpLayoutShow();
   $("#wipeBox").hidden = true;
   $("#wipeOpen").hidden = false;
   $("#setIo").textContent = "";
