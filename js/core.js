@@ -2,7 +2,7 @@
  * core.js — Shared basics: the trading plan (concepts, entries, exits), formatting and small DOM helpers.
  * Loaded first; every other file uses these.
  */
-const APP_VERSION = "1.3.67";
+const APP_VERSION = "1.3.68";
 const PLAN = {
   concepts: {
     Continuation: ["First Structure", "100 level", "Fake Out", "New Action"],
@@ -119,6 +119,31 @@ const tvReplayUrl = t => {
   if (tvIsLive(t)) return p && id ? `${tvChart()}?symbol=OANDA:${p}&interval=240#${id.slice(1)}` : "";
   return p && day ? `${tvChart()}?symbol=OANDA:${p}&interval=240#tj-replay=${day}${id}` : "";
 };
+// the chart with the trade for the extension and no replay: also what opens when no chart is open to take it
+const tvLoadUrl = t => {
+  const p = String((t && t.pair) || "")
+      .replace(/[^A-Za-z0-9]/g, "")
+      .toUpperCase(),
+    id = /^[A-Za-z0-9_-]{1,40}$/.test((t && t.id) || "") ? t.id : "";
+  return p && id ? `${tvChart()}?symbol=OANDA:${p}&interval=240#tj-trade=${id}` : "";
+};
+// ask the extension to show a saved trade in a chart tab that is already open; resolves with whether one took it
+const tvLoad = t =>
+  new Promise(done => {
+    const f = e => {
+      if (e.source === window && e.data && "tjLoaded" in e.data) {
+        clearTimeout(to);
+        removeEventListener("message", f);
+        done(!!e.data.tjLoaded);
+      }
+    };
+    const to = setTimeout(() => {
+      removeEventListener("message", f);
+      done(false); // no extension on this page, or nothing answered
+    }, 1500);
+    addEventListener("message", f);
+    postMessage({ tjLoad: { id: t.id } }, location.origin);
+  });
 const tvReplayBtn = t =>
   tvReplayUrl(t)
     ? `<a class="btn small ghost tvrp" href="${esc(tvReplayUrl(t))}" target="_blank" rel="noopener" title="${tvIsLive(t) ? "Open the live 4H chart on TradingView with this trade in the extension, to edit it" : "Open the 4H chart on TradingView; with the extension, bar replay starts at the trade's date"}">${tvReplayLabel(t)}</a>`

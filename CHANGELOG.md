@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.3.68 — 2026-11-18
+
+- **Load in extension** (top of the forex trade form, next to Edit / Replay): saves the form and shows the trade in the extension on a TradingView chart you already have open, on your current layout. No new window and no replay. Handy for updating a recent trade's 4H screenshot. When no chart with the extension is open, it says so. Needs extension 1.4.42; hidden on phones and tablets.
+
 ## 1.3.67 — 2026-11-18
 
 - **One forex trade on several accounts.** The Account field in the trade form is a list you pick from, with a chip per account. The trade counts on every account's card in the Accounts tab (its own trades, win rate, total R) and once in the overall figures. Renaming or removing an account follows the trades that use it. Lists that show a percentage of the account use the trade's first account. Invest keeps one account. The extension follows in 1.4.41.

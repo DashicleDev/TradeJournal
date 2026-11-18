@@ -1188,6 +1188,7 @@ function openSheet2(t, dup) {
   $("#f2Share").hidden = $("#f2CopyAn").hidden = !t || !!dup || !feat("share");
   const rpUrl = t && !dup ? tvReplayUrl(t) : "";
   $("#f2Replay").hidden = !rpUrl;
+  $("#f2Load").hidden = !rpUrl;
   if (rpUrl) {
     $("#f2Replay").href = rpUrl;
     $("#f2Replay").textContent = tvReplayLabel(t);
@@ -1870,6 +1871,18 @@ function vGallery(t) {
     }))
     .filter(g => g.src && g.src !== BLANK);
 }
+// Load in extension: show this trade in the extension on a chart you already have open (your layout), no new window and no replay
+$("#f2Load").onclick = async () => {
+  if (!$("#tradeForm2").reportValidity()) return;
+  await f2Submit(true).catch(() => {}); // the extension starts from what is in the form
+  const t = docs.find(x => x.id === editingId);
+  if (!t) return;
+  toast(
+    (await tvLoad(t))
+      ? "Loaded in the extension"
+      : "No TradingView chart with the extension is open to take it. Open one, or use Edit / Replay."
+  );
+};
 $("#f2ViewCharts").onclick = () => {
   const gal = vGallery({ shots: f2Shots, shotLinks: f2Links, ecTf: radio("f2ectf") });
   if (gal.length) zOpen(gal[0].src, false, gal, 0);
