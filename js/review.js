@@ -605,7 +605,7 @@ const prPerL = p => (PR_PER.find(x => x[0] === p) || ["", ""])[1];
 function prTrades(R) {
   const all = market === "stocks" ? trades().map(sPct) : trades();
   return all
-    .filter(t => t.mode === "live" && (t.date || "") >= R.from && (t.date || "") <= R.to)
+    .filter(t => t.mode === "live" && (t.date || "") >= R.from && (t.date || "") <= R.to && acShows(t, "review"))
     .sort((a, b) => (a.date || "").localeCompare(b.date || ""));
 }
 function prStatsHTML(list) {
@@ -1756,7 +1756,13 @@ function renderLive() {
     pushWeek();
   }
   const P = jRange(),
-    per = all.filter(t => t.date && (!P.from || t.date >= P.from) && (!P.to || t.date <= P.to));
+    per = all.filter(
+      t =>
+        t.date &&
+        (!P.from || t.date >= P.from) &&
+        (!P.to || t.date <= P.to) &&
+        (C.key !== "live" || acShows(t, "journal"))
+    );
   const ps = stats(per),
     tk = taken(per).sort((x, z) => (x.date || "").localeCompare(z.date || "") || (x.created || 0) - (z.created || 0));
   const wins = tk.filter(t => t.r > 0).length,

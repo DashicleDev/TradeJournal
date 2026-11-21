@@ -22,6 +22,15 @@ const acNames = s =>
     .split(/\s*,\s*/)
     .filter(Boolean);
 const inAc = (t, name) => t.account === name || acNames(t.account).includes(name);
+// where an account's trades show up; unticked on the account card = left out there.
+// A trade on several accounts shows when any of them shows it.
+const AC_SHOW = { review: "Reviews", journal: "Journal stats" };
+const acShows = (t, where) =>
+  !t.account ||
+  acNames(t.account).some(n => {
+    const a = acOf(n);
+    return !a || !(a.hideIn || {})[where];
+  });
 // an account by name; for a trade on several accounts, the first one (the capital % in lists uses it)
 const acOf = name =>
   docs.find(d => d.kind === "account" && d.name === name) ||
@@ -118,7 +127,12 @@ function acRender() {
               ACTYPE
             )
               .map(([k, l]) => `<option value="${k}" ${a.type === k ? "selected" : ""}>${l}</option>`)
-              .join("")}</select></label></div>`
+              .join("")}</select></label></div><div class="acshow"><span>Show in</span>${Object.entries(AC_SHOW)
+              .map(
+                ([k, l]) =>
+                  `<label><input type="checkbox" data-acshow="${k}" data-acid="${a.id}" ${(a.hideIn || {})[k] ? "" : "checked"}>${l}</label>`
+              )
+              .join("")}</div>`
           : ""
       }${a && a.market === "stocks" && getSet().cgtOn !== false ? `<label class="checkline acwh"><input type="checkbox" data-acwh="${a.id}" ${a.cgtWh !== false ? "checked" : ""}><span>Tax withheld on sales<small>This broker keeps ${+(Number(getSet().cgtRate) || 0)}% of each gain for the tax office. Untick if you chose opt-out.</small></span></label>` : ""}</div>`;
   };
@@ -201,6 +215,16 @@ $("#acList").addEventListener("change", e => {
   if (ty) {
     const a = docs.find(d => d.id === ty.dataset.actype);
     if (a) saveDoc({ ...a, type: ty.value });
+  }
+  const sh = e.target.closest("[data-acshow]");
+  if (sh) {
+    const a = docs.find(d => d.id === sh.dataset.acid);
+    if (a) {
+      const hideIn = { ...(a.hideIn || {}) };
+      if (sh.checked) delete hideIn[sh.dataset.acshow];
+      else hideIn[sh.dataset.acshow] = true;
+      saveDoc({ ...a, hideIn });
+    }
   }
   const wh = e.target.closest("[data-acwh]");
   if (wh) {

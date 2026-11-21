@@ -1422,6 +1422,23 @@ textarea.prtext {
     justify-content: flex-end;
   }
 }
+.acshow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 14px;
+  margin-top: 10px;
+  font: 13px var(--body);
+}
+.acshow > span {
+  color: var(--muted);
+}
+.acshow label {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+}
 .prnew {
   display: flex;
   flex-wrap: wrap;
