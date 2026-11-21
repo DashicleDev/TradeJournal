@@ -249,8 +249,18 @@ const grHas = (t, k, kind) =>
         ? t.entry4h === k.slice(2)
         : critV(t, k) === (kind === "against" ? "against" : "for");
 const GR_THIN = 5; // fewer trades than this: too few to go on, shown faded
-// evidence for one option: the trades with it against the trades without it
-function grEvid(T, k, kind) {
+const GR_SUG_N = 8, // a suggestion needs at least this many trades on the side it judges
+  GR_SUG_GAP = 0.2; // and, for A and at-most-B, at least this much avg R difference
+// when the evidence backs ticking an option in a list (a = trades with it, b = without)
+const GR_SUG = {
+  without: (a, b) => b.n >= GR_SUG_N && b.avg < 0 && a.avg > 0, // require it: trades without it lose
+  loses: a => a.n >= GR_SUG_N && a.avg < 0, // C: trades with it lose
+  beats: (a, b) => a.n >= GR_SUG_N && b.n > 0 && a.avg > 0 && a.avg - b.avg >= GR_SUG_GAP, // A extra
+  trails: (a, b) => a.n >= GR_SUG_N && b.n > 0 && a.avg - b.avg <= -GR_SUG_GAP, // at most B
+};
+// evidence for one option: the trades with it against the trades without it.
+// avg R is coloured by its sign (making or losing money); "Suggested" marks what the list's rule backs.
+function grEvid(T, k, kind, sug) {
   const st = L => ({
     n: L.length,
     wr: L.length ? Math.round((L.filter(t => t.r > 0).length / L.length) * 100) : null,
@@ -259,8 +269,10 @@ function grEvid(T, k, kind) {
   const a = st(T.filter(t => grHas(t, k, kind))),
     b = st(T.filter(t => !grHas(t, k, kind)));
   if (!a.n) return `<span class="grev thin">no trades</span>`;
-  const d = b.n ? a.avg - b.avg : 0;
-  return `<span class="grev${a.n < GR_THIN ? " thin" : ""}" title="With it: ${a.n} trades, ${a.wr}% win, ${fmtR(a.avg)} avg. Without it: ${b.n} trades${b.n ? `, ${b.wr}% win, ${fmtR(b.avg)} avg` : ""}."><span class="num">${a.n}</span> · <span class="num">${a.wr}%</span> · <b class="num ${a.n < GR_THIN ? "" : d > 0.05 ? "pos" : d < -0.05 ? "neg" : ""}">${fmtR(a.avg)}</b>${b.n ? ` <small class="num">vs ${fmtR(b.avg)}</small>` : ""}</span>`;
+  const thin = a.n < GR_THIN,
+    yes = GR_SUG[sug](a, b),
+    sg = v => (v > 0.005 ? "pos" : v < -0.005 ? "neg" : "");
+  return `${yes ? `<span class="grsug">Suggested</span>` : ""}<span class="grev${thin ? " thin" : ""}" title="With it: ${a.n} trades, ${a.wr}% win, ${fmtR(a.avg)} avg. Without it: ${b.n} trades${b.n ? `, ${b.wr}% win, ${fmtR(b.avg)} avg` : ""}."><span class="num">${a.n}</span> · <span class="num">${a.wr}%</span> · <b class="num ${thin ? "" : sg(a.avg)}">${fmtR(a.avg)}</b>${b.n ? ` <small class="num">vs ${fmtR(b.avg)}</small>` : ""}</span>`;
 }
 const grFiltLab = () =>
   [
@@ -311,15 +323,17 @@ function grList(L) {
     .join("")}</ul>`;
 }
 let grMs = ""; // which list is open: "req" | "flags" | "extras" | "capB" | "capC"
-// hint: which evidence colour argues for ticking an option in that list
+// sug: when an option is marked Suggested (GR_SUG); hint says so in the list's header
+const GR_LOSE = `Suggested when its trades lose money (${GR_SUG_N}+ trades)`,
+  GR_TRAIL = `Suggested when its trades do ${GR_SUG_GAP}R+ worse than the rest (${GR_SUG_N}+ trades)`;
 const GR_LISTS = {
-  req: { kind: "for", ph: "Nothing", hint: "Green = worth requiring" },
-  flags: { kind: "against", ph: "Nothing", hint: "Red = worth a C" },
-  extras: { kind: "extra", ph: "Nothing, so never A", hint: "Green = worth an A" },
-  capB: { kind: "extra", ph: "Nothing", hint: "Red = worth at most B" },
-  capC: { kind: "against", ph: "Nothing", hint: "Red = worth a C" },
-  strB: { kind: "extra", ph: "Nothing", hint: "Red = worth at most B" },
-  strC: { kind: "against", ph: "Nothing", hint: "Red = worth a C" },
+  req: { kind: "for", ph: "Nothing", sug: "without", hint: `Suggested when trades without it lose money (${GR_SUG_N}+ trades)` },
+  flags: { kind: "against", ph: "Nothing", sug: "loses", hint: GR_LOSE },
+  extras: { kind: "extra", ph: "Nothing, so never A", sug: "beats", hint: `Suggested when its trades do ${GR_SUG_GAP}R+ better than the rest (${GR_SUG_N}+ trades)` },
+  capB: { kind: "extra", ph: "Nothing", sug: "trails", hint: GR_TRAIL },
+  capC: { kind: "against", ph: "Nothing", sug: "loses", hint: GR_LOSE },
+  strB: { kind: "extra", ph: "Nothing", sug: "trails", hint: GR_TRAIL },
+  strC: { kind: "against", ph: "Nothing", sug: "loses", hint: GR_LOSE },
 };
 // the grade limits: "cap…" lists hold 4H entry types ("e:Reversal", …, stored in ent), "str…" the weekly structure and
 // setup type ("inner" stored in inner, "s:outer" / "s:wd4h" / "s:w4h" in setup)
@@ -371,7 +385,7 @@ function grMsHTML(list) {
     open = grMs === list,
     T = open ? grTrades() : [];
   return `<div class="ms grms${open ? " open" : ""}" data-grms="${list}"><button type="button" class="ms-field" aria-haspopup="listbox" aria-expanded="${open}">${sel.length ? sel.map(k => `<span class="chip-sel ${kind}">${esc(lab(k))}<span class="x" data-grx="${k}" aria-label="Remove ${esc(lab(k))}">×</span></span>`).join("") : `<span class="ph">${ph}</span>`}<span class="caret">▾</span></button>
-  <ul class="ms-list" role="listbox" aria-multiselectable="true" ${open ? "" : "hidden"}>${open ? `<li class="grevh" role="presentation"><span>${esc(grFiltLab())}: ${T.length} trades</span><span>${cap ? "Trades with it" : kind === "against" ? "Against you" : "With you"} · win · avg R <small>vs without</small></span><b class="grevhint ${GR_LISTS[list].hint.startsWith("Red") ? "neg" : "pos"}">${GR_LISTS[list].hint}</b></li>` : ""}${(cap
+  <ul class="ms-list" role="listbox" aria-multiselectable="true" ${open ? "" : "hidden"}>${open ? `<li class="grevh" role="presentation"><span>${esc(grFiltLab())}: ${T.length} trades</span><span>${cap ? "Trades with it" : kind === "against" ? "Against you" : "With you"} · win · avg R <small>vs without</small></span><span class="grevhint"><span class="grsug">Suggested</span> ${GR_LISTS[list].hint.replace(/^Suggested /, "")}</span></li>` : ""}${(cap
     ? grCapGroups(list)
     : GR_GROUPS
   )
@@ -384,7 +398,7 @@ function grMsHTML(list) {
             const l = cap ? lab(k) : lab(k).replace(/^(Weekly|Daily|4H) /, ""),
               on = sel.includes(k),
               dis = other.includes(k);
-            return `<li role="option" aria-selected="${on}" aria-disabled="${dis}" data-grk="${k}" class="${dis ? "dis" : ""}"><span class="box ${kind}">${on ? "✓" : ""}</span><span class="grevl">${esc(l[0].toUpperCase() + l.slice(1))}</span>${dis ? `<em>${why}</em>` : ""}${open ? grEvid(T, k, kind) : ""}</li>`;
+            return `<li role="option" aria-selected="${on}" aria-disabled="${dis}" data-grk="${k}" class="${dis ? "dis" : ""}"><span class="box ${kind}">${on ? "✓" : ""}</span><span class="grevl">${esc(l[0].toUpperCase() + l.slice(1))}</span>${dis ? `<em>${why}</em>` : ""}${open ? grEvid(T, k, kind, GR_LISTS[list].sug) : ""}</li>`;
           })
           .join("")
     )

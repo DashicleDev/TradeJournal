@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.3.75 — 2026-11-21
+
+- **Grading evidence: colour means profit, "Suggested" means the rule is backed.** Average R is green when those trades make money and red when they lose, no longer red for "a bit below the rest" (a profitable +0.30R entry no longer looks like a C). An option is marked **Suggested** only when the list's rule is backed by at least 8 trades: for C, its trades lose money (or, for requirements, the trades without it lose); for A, its trades do 0.2R+ better than the rest; for at most B, 0.2R+ worse. The top of each list says which rule it uses.
+
 ## 1.3.74 — 2026-11-21
 
 - **Grading: weekly criteria with a daily twin say "Weekly"**: Weekly FC, Weekly S&D zone and Weekly last CC, next to Daily FC, Daily S&D zone and Daily last CC. In chips, grade explanations and the all-phases table; plan.json follows, so the extension uses the same names.

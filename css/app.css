@@ -3120,13 +3120,15 @@ body:has(.sheet:not([hidden])) .fab {
 .grevhint {
   flex-basis: 100%;
   font-size: 12px;
-  font-weight: 600;
+  color: var(--ink);
 }
-.grevhint.pos {
-  color: var(--good);
-}
-.grevhint.neg {
-  color: var(--bad);
+.grsug {
+  font: 600 11px var(--body);
+  color: var(--accent);
+  border: 1px solid color-mix(in srgb, var(--accent) 50%, transparent);
+  border-radius: 999px;
+  padding: 1px 7px;
+  white-space: nowrap;
 }
 .ms-list li.grevh:hover {
   background: none;
