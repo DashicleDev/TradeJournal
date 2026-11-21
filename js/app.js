@@ -521,7 +521,7 @@ document.addEventListener("keydown", e => {
 });
 document.addEventListener("click", e => {
   const el = e.target.closest(
-    "[data-go],[data-edit],[data-dup],[data-del],[data-proj],[data-newproj],[data-editproj],[data-editsim],[data-closesim],[data-closeproj],[data-export],[data-preset],[data-addset],[data-dupset],[data-rmset],[data-resetset],[data-closesheet],[data-backup],[data-day],[data-mon],[data-view],[data-closeviewer],[data-vtab],[data-shotdel],[data-closesheet2],[data-zoom],[data-backproj],[data-closenp],[data-closeps],[data-delproj]"
+    "[data-go],[data-edit],[data-dup],[data-del],[data-proj],[data-newproj],[data-editproj],[data-editsim],[data-closesim],[data-closeproj],[data-export],[data-preset],[data-addset],[data-dupset],[data-rmset],[data-resetset],[data-closesheet],[data-backup],[data-day],[data-mon],[data-calgo],[data-view],[data-closeviewer],[data-vtab],[data-shotdel],[data-closesheet2],[data-zoom],[data-backproj],[data-closenp],[data-closeps],[data-delproj]"
   );
   if (!el) return;
   const d = el.dataset;
@@ -591,12 +591,29 @@ document.addEventListener("click", e => {
     selDay = d.day && selDay !== d.day ? d.day : null;
     renderLive();
   } else if (d.mon) {
-    const [y, m] = calMonth.split("-").map(Number);
-    const dt = new Date(Date.UTC(y, m - 1 + Number(d.mon), 1));
-    calMonth = dt.toISOString().slice(0, 7);
+    // ‹ › step by the period the calendar shows
+    if (jPeriod === "week") {
+      const w = new Date(jRange().from + "T12:00:00");
+      w.setDate(w.getDate() + 7 * Number(d.mon));
+      calWeek = isoD(w);
+      calMonth = calWeek.slice(0, 7);
+    } else {
+      const [y, m] = calMonth.split("-").map(Number);
+      const dt = new Date(Date.UTC(y, m - 1 + Number(d.mon) * ({ quarter: 3, year: 12 }[jPeriod] || 1), 1));
+      calMonth = dt.toISOString().slice(0, 7);
+    }
     calTouched = true;
     selDay = null;
     renderLive();
+  } else if (d.calgo) {
+    // a month or year tile: open that period
+    const [p, ym] = d.calgo.split("|");
+    jPeriod = p;
+    calMonth = ym.slice(0, 7);
+    calTouched = true;
+    selDay = null;
+    renderLive();
+    $("#liveCal").scrollIntoView({ block: "nearest" });
   } else if ("export" in d) exportCSV(el);
   else if ("backup" in d) backupAll(el);
   else if (d.preset) {

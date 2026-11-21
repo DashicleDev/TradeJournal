@@ -1547,7 +1547,8 @@ function kpis(list) {
 }
 let calMonth = new Date().toISOString().slice(0, 7),
   selDay = null,
-  calTouched = false;
+  calTouched = false,
+  calWeek = ""; // Monday of the week the week view shows; "" = this week
 const MONTHS = [
   "January",
   "February",
@@ -1566,16 +1567,17 @@ let jvKey = "live";
 const JVS = {};
 function jvSwap(key) {
   if (key === jvKey) return;
-  JVS[jvKey] = { calMonth, selDay, calTouched, jPeriod, jFrom, jTo };
+  JVS[jvKey] = { calMonth, selDay, calTouched, calWeek, jPeriod, jFrom, jTo };
   const st = JVS[key] || {
     calMonth: new Date().toISOString().slice(0, 7),
     selDay: null,
     calTouched: false,
+    calWeek: "",
     jPeriod: key === "live" ? "month" : "all",
     jFrom: "",
     jTo: "",
   };
-  ({ calMonth, selDay, calTouched, jPeriod, jFrom, jTo } = st);
+  ({ calMonth, selDay, calTouched, calWeek, jPeriod, jFrom, jTo } = st);
   jvKey = key;
 }
 function renderNotes(C) {

@@ -1655,7 +1655,11 @@ function renderLive() {
       .pop();
     if (last) calMonth = last.slice(0, 7);
   }
-  const month = all.filter(t => (t.date || "").startsWith(calMonth));
+  // the calendar follows the period picker: week, month, quarter, year or all time (custom shows its month)
+  const cv = jPeriod === "custom" ? "month" : jPeriod,
+    P0 = jRange(),
+    CR = cv === "month" ? { from: `${calMonth}-01`, to: `${calMonth}-31` } : cv === "all" ? { from: "", to: "" } : P0;
+  const month = all.filter(t => t.date && (!CR.from || t.date >= CR.from) && (!CR.to || t.date <= CR.to));
   const [y, m] = calMonth.split("-").map(Number);
   const days = {};
   taken(month).forEach(t => {
@@ -1671,89 +1675,154 @@ function renderLive() {
   month
     .filter(t => t.date && (t.status === "missed" || isOpenT(t)))
     .forEach(t => (extra[t.date] = extra[t.date] || []).push(t));
-  const dv = Object.values(days),
-    greens = dv.filter(d => d.r > 0).length;
-  const best = Object.entries(days).sort((a, b) => b[1].r - a[1].r)[0],
-    worst = Object.entries(days).sort((a, b) => a[1].r - b[1].r)[0];
-  const s = stats(month),
-    today = new Date().toISOString().slice(0, 10);
-  const first = new Date(Date.UTC(y, m - 1, 1)),
-    dim = new Date(Date.UTC(y, m, 0)).getUTCDate(),
-    off = (first.getUTCDay() + 6) % 7;
+  const dv = Object.values(days);
+  const today = new Date().toISOString().slice(0, 10);
   const maxAbs = Math.max(1, ...dv.map(d => Math.abs(d.r)));
-  let cells = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sa", "Su", "Week"]
-    .map(
-      d => `<div class="dow${d === "Week" ? " wkh" : ""}" ${d === "Week" ? 'style="text-align:right"' : ""}>${d}</div>`
-    )
-    .join("");
-  let wkR = 0,
-    wkN = 0,
-    wkM = 0,
-    wkO = 0,
-    col = 0;
-  const pushWeek = () => {
-    const mt = (wkO ? `<span class="dc">${wkO} open</span>` : "") + (wkM ? `<span class="dc">${wkM} missed</span>` : "");
-    cells += wkN
-      ? `<div class="wk"><span class="dr ${wkR > 0 ? "pos" : wkR < 0 ? "neg" : ""}">${fmtR(wkR)}</span><span class="dc">${wkN} trade${wkN > 1 ? "s" : ""}</span>${mt}</div>`
-      : mt
-        ? `<div class="wk">${mt}</div>`
-        : `<div class="wk empty"></div>`;
-    wkR = 0;
-    wkN = 0;
-    wkM = 0;
-    wkO = 0;
-    col = 0;
+  const tintOf = (r, mx) =>
+    `background:color-mix(in srgb,var(${r > 0 ? "--good" : r < 0 ? "--bad" : "--be"}) ${r ? Math.round(10 + Math.min(1, Math.abs(r) / mx) * 28) : 22}%,var(--surface))`;
+  const cls = r => (r > 0 ? "pos" : r < 0 ? "neg" : "");
+  const ymd = (yy, mm, dd) => `${yy}-${String(mm).padStart(2, "0")}-${String(dd).padStart(2, "0")}`;
+  const sumOf = list => {
+    const tk = taken(list),
+      w = tk.filter(t => t.r > 0).length,
+      l = tk.filter(t => t.r < 0).length;
+    return { n: tk.length, r: tk.reduce((a, t) => a + (t.r || 0), 0), wr: w + l ? Math.round((w / (w + l)) * 100) : null };
   };
-  for (let i = 0; i < off; i++) {
-    cells += `<div class="day empty" aria-hidden="true"></div>`;
-    col++;
-  }
-  for (let d = 1; d <= dim; d++) {
-    const ds = `${calMonth}-${String(d).padStart(2, "0")}`,
-      a = days[ds],
+  const dowH = (wk = true) =>
+    ["Mon", "Tue", "Wed", "Thu", "Fri", "Sa", "Su", ...(wk ? ["Week"] : [])]
+      .map(d => `<div class="dow${d === "Week" ? " wkh" : ""}" ${d === "Week" ? 'style="text-align:right"' : ""}>${d}</div>`)
+      .join("");
+  // one day; full = list every pair with its R (week view)
+  const dayCell = (ds, we, full) => {
+    const a = days[ds],
       ms = extra[ds] || [],
       nOpen = ms.filter(isOpenT).length,
       nMiss = ms.length - nOpen,
-      we = col >= 5;
+      dt = new Date(ds + "T12:00:00"),
+      lim = full ? 99 : 3;
     const mchips = ms
-      .slice(0, 3)
+      .slice(0, lim)
       .map(t =>
         isOpenT(t)
           ? `<span class="dp open" title="Open"><i></i><span>${esc(t.pair || "?")}</span></span>`
           : `<span class="dp miss" title="Missed${t.r != null ? " · " + fmtR(t.r) : ""}"><i></i><span>${esc(t.pair || "?")}</span></span>`
       )
       .join("");
-    const tint = a
-      ? `background:color-mix(in srgb,var(${a.r > 0 ? "--good" : a.r < 0 ? "--bad" : "--be"}) ${a.r ? Math.round(10 + (Math.abs(a.r) / maxAbs) * 28) : 22}%,var(--surface))`
-      : "";
-    cells += `<button type="button" class="day ${we ? "we" : ""} ${we && !a && !ms.length ? "off" : ""} ${ds === today ? "today" : ""}" data-day="${ds}" aria-pressed="${selDay === ds}" style="${tint}" aria-label="${d} ${MONTHS[m - 1]}${a ? `, ${fmtR(a.r)}, ${a.n} trades` : ", no trades"}${nOpen ? `, ${nOpen} open` : ""}${nMiss ? `, ${nMiss} missed` : ""}"><span class="dn">${d}</span>${
+    return `<button type="button" class="day ${we ? "we" : ""} ${we && !a && !ms.length ? "off" : ""} ${ds === today ? "today" : ""}" data-day="${ds}" aria-pressed="${selDay === ds}" style="${a ? tintOf(a.r, maxAbs) : ""}" aria-label="${dt.getDate()} ${MONTHS[dt.getMonth()]}${a ? `, ${fmtR(a.r)}, ${a.n} trades` : ", no trades"}${nOpen ? `, ${nOpen} open` : ""}${nMiss ? `, ${nMiss} missed` : ""}"><span class="dn">${full ? `${["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"][dt.getDay()]} ` : ""}${dt.getDate()}</span>${
       a
-        ? `<span class="dr ${a.r > 0 ? "pos" : a.r < 0 ? "neg" : ""}">${fmtR(a.r)}</span><span class="dpairs">${a.tr
-            .slice(0, 3)
+        ? `<span class="dr ${cls(a.r)}">${fmtR(a.r)}</span><span class="dpairs">${a.tr
+            .slice(0, lim)
             .map(
               t =>
-                `<span class="dp"><i style="background:var(${t.r > 0 ? "--good" : t.r < 0 ? "--bad" : "--be"})"></i><span>${esc(t.pair || "?")}</span></span>`
+                `<span class="dp"><i style="background:var(${t.r > 0 ? "--good" : t.r < 0 ? "--bad" : "--be"})"></i><span>${esc(t.pair || "?")}${full ? ` ${fmtR(t.r)}` : ""}</span></span>`
             )
-            .join("")}${a.tr.length > 3 ? `<span class="dp more">+${a.tr.length - 3}</span>` : ""}${mchips}</span>`
+            .join("")}${a.tr.length > lim ? `<span class="dp more">+${a.tr.length - lim}</span>` : ""}${mchips}</span>`
         : ms.length
-          ? `<span class="dr" aria-hidden="true">&nbsp;</span><span class="dpairs">${mchips}${ms.length > 3 ? `<span class="dp more">+${ms.length - 3}</span>` : ""}</span>`
+          ? `<span class="dr" aria-hidden="true">&nbsp;</span><span class="dpairs">${mchips}${ms.length > lim ? `<span class="dp more">+${ms.length - lim}</span>` : ""}</span>`
           : ""
     }</button>`;
-    if (a) {
-      wkR += a.r;
-      wkN += a.n;
-    }
-    wkM += nMiss;
-    wkO += nOpen;
-    col++;
-    if (col === 7) pushWeek();
-  }
-  if (col) {
-    while (col < 7) {
-      cells += `<div class="day empty" aria-hidden="true"></div>`;
+  };
+  // the week total at the end of a row
+  const weekCell = dss => {
+    let wkR = 0,
+      wkN = 0,
+      wkM = 0,
+      wkO = 0;
+    dss.forEach(ds => {
+      const a = days[ds],
+        ms = extra[ds] || [];
+      if (a) {
+        wkR += a.r;
+        wkN += a.n;
+      }
+      wkO += ms.filter(isOpenT).length;
+      wkM += ms.filter(t => !isOpenT(t)).length;
+    });
+    const mt = (wkO ? `<span class="dc">${wkO} open</span>` : "") + (wkM ? `<span class="dc">${wkM} missed</span>` : "");
+    return wkN
+      ? `<div class="wk"><span class="dr ${cls(wkR)}">${fmtR(wkR)}</span><span class="dc">${wkN} trade${wkN > 1 ? "s" : ""}</span>${mt}</div>`
+      : mt
+        ? `<div class="wk">${mt}</div>`
+        : `<div class="wk empty"></div>`;
+  };
+  // a month grid; mini = small coloured squares only (quarter view)
+  const monthGrid = (yy, mm, mini) => {
+    const first = new Date(Date.UTC(yy, mm - 1, 1)),
+      dim = new Date(Date.UTC(yy, mm, 0)).getUTCDate(),
+      off = (first.getUTCDay() + 6) % 7,
+      pad = `<div class="day empty" aria-hidden="true"></div>`;
+    let h = mini ? "" : dowH(),
+      row = [],
+      col = off;
+    h += pad.repeat(off);
+    for (let d = 1; d <= dim; d++) {
+      const ds = ymd(yy, mm, d),
+        a = days[ds],
+        ms = extra[ds] || [];
+      h += mini
+        ? `<button type="button" class="day mini ${ds === today ? "today" : ""}" data-day="${ds}" aria-pressed="${selDay === ds}" style="${a ? tintOf(a.r, maxAbs) : ""}" title="${d} ${MONTHS[mm - 1]}${a ? ` · ${fmtR(a.r)}` : ""}${ms.length ? ` · ${ms.length} open or missed` : ""}" aria-label="${d} ${MONTHS[mm - 1]}${a ? `, ${fmtR(a.r)}` : ", no trades"}"><span class="dn">${d}</span></button>`
+        : dayCell(ds, col % 7 >= 5);
+      row.push(ds);
       col++;
+      if (col % 7 === 0) {
+        if (!mini) h += weekCell(row);
+        row = [];
+      }
     }
-    pushWeek();
+    if (col % 7) {
+      while (col % 7) {
+        h += pad;
+        col++;
+      }
+      if (!mini) h += weekCell(row);
+    }
+    return h;
+  };
+  const mSums = {};
+  taken(month).forEach(t => (mSums[t.date.slice(0, 7)] = (mSums[t.date.slice(0, 7)] || 0) + t.r));
+  const mMax = Math.max(1, ...Object.values(mSums).map(Math.abs));
+  // a month tile (year and all-time views); a click opens that month
+  const monthTile = (yy, mm, small) => {
+    const ym = ymd(yy, mm, 1).slice(0, 7),
+      s = sumOf(month.filter(t => t.date.startsWith(ym)));
+    return `<button type="button" class="mtile${small ? " sm" : ""}" data-calgo="month|${ym}" style="${s.n ? tintOf(s.r, mMax) : ""}" aria-label="${MONTHS[mm - 1]} ${yy}${s.n ? `, ${fmtR(s.r)}, ${s.n} trades` : ", no trades"}">${small ? "" : `<b>${MONTHS[mm - 1].slice(0, 3)}</b>`}${s.n ? `<span class="dr ${cls(s.r)}">${fmtR(s.r)}</span>${small ? "" : `<span class="dc">${s.n} trade${s.n > 1 ? "s" : ""}${s.wr != null ? ` · ${s.wr}% win` : ""}</span>`}` : small ? "" : `<span class="dc">No trades</span>`}</button>`;
+  };
+  let calBody, calTitle;
+  if (cv === "week") {
+    const ds7 = [...Array(7)].map((_, i) => {
+      const d = new Date(P0.from + "T12:00:00");
+      d.setDate(d.getDate() + i);
+      return isoD(d);
+    });
+    calTitle = P0.label;
+    calBody = `<div class="cal calweek">${dowH()}${ds7.map((ds, i) => dayCell(ds, i >= 5, true)).join("")}${weekCell(ds7)}</div>`;
+  } else if (cv === "quarter") {
+    const q0 = Math.floor((m - 1) / 3) * 3 + 1;
+    calTitle = P0.label;
+    calBody = `<div class="calq">${[q0, q0 + 1, q0 + 2]
+      .map(mm => {
+        const ym = ymd(y, mm, 1).slice(0, 7),
+          s = sumOf(month.filter(t => t.date.startsWith(ym)));
+        return `<div><button type="button" class="calqh" data-calgo="month|${ym}"><b>${MONTHS[mm - 1]}</b>${s.n ? `<span class="dr ${cls(s.r)}">${fmtR(s.r)}</span>` : `<span class="dc">No trades</span>`}</button><div class="calmini">${dowH(false)}${monthGrid(y, mm, true)}</div></div>`;
+      })
+      .join("")}</div>`;
+  } else if (cv === "year") {
+    calTitle = String(y);
+    calBody = `<div class="calyear">${[...Array(12)].map((_, i) => monthTile(y, i + 1)).join("")}</div>`;
+  } else if (cv === "all") {
+    const ys = all.map(t => +(t.date || "").slice(0, 4)).filter(Boolean),
+      y0 = ys.length ? Math.min(...ys) : y,
+      y1 = ys.length ? Math.max(...ys) : y;
+    calTitle = "All time";
+    let h = `<div class="calall"><div></div>${MONTHS.map(n => `<div class="dow">${n.slice(0, 3)}</div>`).join("")}<div class="dow" style="text-align:right">Year</div>`;
+    for (let yy = y1; yy >= y0; yy--) {
+      const s = sumOf(month.filter(t => t.date.startsWith(yy + "-")));
+      h += `<button type="button" class="calyh" data-calgo="year|${yy}-01">${yy}</button>${[...Array(12)].map((_, i) => monthTile(yy, i + 1, true)).join("")}<div class="wk">${s.n ? `<span class="dr ${cls(s.r)}">${fmtR(s.r)}</span><span class="dc">${s.n} trades</span>` : ""}</div>`;
+    }
+    calBody = h + "</div>";
+  } else {
+    calTitle = `${MONTHS[m - 1]} ${y}`;
+    calBody = `<div class="cal">${monthGrid(y, m)}</div>`;
   }
   const P = jRange(),
     per = all.filter(t => t.date && (!P.from || t.date >= P.from) && (!P.to || t.date <= P.to));
@@ -1816,20 +1885,20 @@ function renderLive() {
   lastTk = tk;
   fitEquity();
   $("#liveCal").innerHTML =
-    `<div class="panel calblock"><div class="row spread"><div class="calnav"><button class="btn small ghost" data-mon="-1" aria-label="Previous month">‹</button><b>${MONTHS[m - 1]} ${y}</b><button class="btn small ghost" data-mon="1" aria-label="Next month">›</button></div>
+    `<div class="panel calblock"><div class="row spread"><div class="calnav">${cv === "all" ? `<b>${calTitle}</b>` : `<button class="btn small ghost" data-mon="-1" aria-label="Previous ${cv}">‹</button><b>${esc(calTitle)}</b><button class="btn small ghost" data-mon="1" aria-label="Next ${cv}">›</button>`}</div>
       <span class="calsum">${(() => {
         const mt = taken(month),
           n = mt.length,
           nm = month.filter(t => t.status === "missed").length,
           no = month.filter(isOpenT).length,
           mtx = (no ? ` · ${no} open` : "") + (nm ? ` · ${nm} missed` : "");
-        if (!n) return mtx ? `No closed trades${mtx}` : "No trades this month";
+        if (!n) return mtx ? `No closed trades${mtx}` : `No trades this ${cv === "all" ? "period" : cv}`;
         const tr = mt.reduce((a, t) => a + (t.r || 0), 0),
           w = mt.filter(t => t.r > 0).length,
           l = mt.filter(t => t.r < 0).length;
         return `<b class="${tr > 0 ? "pos" : tr < 0 ? "neg" : ""}">${fmtR(tr)}</b> · ${n} trade${n > 1 ? "s" : ""} · Win rate ${w + l ? Math.round((w / (w + l)) * 100) + "%" : "—"}${mtx}`;
       })()}</span></div>
-    <div class="calwrap"><div class="cal">${cells}</div></div></div>`;
+    <div class="calwrap">${calBody}</div></div>`;
   renderNotes(C);
   const list = selDay ? all.filter(t => t.date === selDay) : per;
   const dd2 = selDay ? new Date(selDay + "T12:00:00") : null;

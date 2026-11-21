@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.3.72 — 2026-11-21
+
+- **The Journal calendar follows the period picker.** Week: one row of 7 days with every pair and its R. Month: as before. Quarter: three small months, days coloured by result, each with its total. Year: 12 month tiles with R, trades and win rate. All time: a row per year with month cells and a year total. Custom keeps the month calendar.
+- **‹ › step by the chosen period** (a week, month, quarter or year). The Week period can now go back to earlier weeks instead of always showing this week.
+- **Click to zoom in:** a month tile or a quarter's month name opens that month; a year in All time opens that year.
+
 ## 1.3.71 — 2026-11-21
 
 - **Show in → Journal now covers the whole Journal tab.** An unticked account's trades are also left out of the calendar (days, week totals, the month line), not only the stats and charts. The tick is renamed from "Journal stats" to "Journal". The account's own card and Analyze still show them.

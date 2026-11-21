@@ -4070,6 +4070,150 @@ fieldset.subs-closed .legend-toggle .chev {
 .calwrap {
   overflow-x: auto;
 }
+/* week view: one tall row, every pair listed, weekends too */
+.cal.calweek .day {
+  min-height: 130px;
+  align-content: start;
+  gap: 6px;
+}
+.cal.calweek .day.we .dpairs {
+  display: flex;
+}
+.cal.calweek .dpairs {
+  display: grid;
+  gap: 3px;
+}
+/* quarter view: three small months */
+.calq {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 18px;
+}
+.calqh {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  width: 100%;
+  margin-bottom: 6px;
+  padding: 2px 0;
+  background: none;
+  border: 0;
+  color: var(--ink);
+  font: inherit;
+  cursor: pointer;
+}
+.calqh:hover b {
+  text-decoration: underline;
+}
+.calqh .dr,
+.mtile .dr,
+.calall .wk .dr {
+  font: 600 13px var(--mono);
+}
+.calqh .dc {
+  font-size: 12px;
+  color: var(--muted);
+}
+.calmini {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 3px;
+}
+.calmini .dow {
+  font-size: 10px;
+  text-align: center;
+  padding: 0;
+}
+.calmini .day,
+.day.mini {
+  min-height: 28px;
+  padding: 2px 4px;
+  border-radius: 6px;
+}
+.day.mini .dn {
+  font-size: 10px;
+}
+/* year view: month tiles */
+.calyear {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 6px;
+}
+.mtile {
+  display: grid;
+  align-content: start;
+  gap: 4px;
+  min-height: 78px;
+  padding: 8px 10px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--surface);
+  color: var(--ink);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.mtile:hover {
+  border-color: var(--accent);
+}
+.mtile .dc {
+  font-size: 11px;
+  color: var(--muted);
+}
+/* all time: a row per year */
+.calall {
+  display: grid;
+  grid-template-columns: 48px repeat(12, minmax(28px, 1fr)) minmax(70px, 0.9fr);
+  gap: 4px;
+  min-width: 560px;
+}
+.calall .dow {
+  font-size: 11px;
+  text-align: center;
+}
+.mtile.sm {
+  min-height: 40px;
+  padding: 4px;
+  align-content: center;
+  justify-items: center;
+}
+.mtile.sm .dr {
+  font-size: 11px;
+}
+.calyh {
+  background: none;
+  border: 0;
+  color: var(--muted);
+  font: 600 13px var(--mono);
+  text-align: left;
+  cursor: pointer;
+}
+.calyh:hover {
+  color: var(--ink);
+}
+.calall .wk {
+  min-height: 40px;
+}
+@media (max-width: 640px) {
+  .calq {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .calyear {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+  .cal.calweek {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .cal.calweek .dow {
+    display: none;
+  }
+  .cal.calweek .day {
+    min-height: 0;
+  }
+  .cal.calweek .day.off {
+    display: none;
+  }
+}
 .cal {
   display: grid;
   grid-template-columns: repeat(5, minmax(44px, 1fr)) repeat(2, minmax(26px, 0.32fr)) minmax(56px, 0.9fr);
@@ -4747,6 +4891,9 @@ main > *,
   }
   .dp span {
     display: none;
+  }
+  .cal.calweek .dp span {
+    display: inline;
   }
   .dp i {
     width: 6px;

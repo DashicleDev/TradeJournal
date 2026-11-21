@@ -358,6 +358,11 @@ const fmtD = d => {
 };
 const isoD = x =>
   `${x.getFullYear()}-${String(x.getMonth() + 1).padStart(2, "0")}-${String(x.getDate()).padStart(2, "0")}`;
+const jMonday = x => {
+  const d = new Date(x.getFullYear(), x.getMonth(), x.getDate());
+  d.setDate(d.getDate() - ((d.getDay() + 6) % 7));
+  return d;
+};
 function jRange() {
   const [y, m] = calMonth.split("-").map(Number),
     now = new Date();
@@ -369,12 +374,15 @@ function jRange() {
   }
   if (jPeriod === "year") return { from: `${y}-01-01`, to: `${y}-12-31`, label: String(y) };
   if (jPeriod === "week") {
-    const d = new Date(now.getFullYear(), now.getMonth(), now.getDate()),
-      mon = new Date(d);
-    mon.setDate(d.getDate() - ((d.getDay() + 6) % 7));
-    const sun = new Date(mon);
+    const mon = jMonday(calWeek ? new Date(calWeek + "T12:00:00") : now),
+      sun = new Date(mon);
     sun.setDate(mon.getDate() + 6);
-    return { from: isoD(mon), to: isoD(sun), label: "This week" };
+    const from = isoD(mon);
+    return {
+      from,
+      to: isoD(sun),
+      label: from === isoD(jMonday(now)) ? "This week" : `Week ${prWeekNo(from)}`,
+    };
   }
   if (jPeriod === "custom") return { from: jFrom, to: jTo, label: "Custom range" };
   return { from: "", to: "", label: "All time" };
