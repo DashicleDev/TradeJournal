@@ -24,7 +24,7 @@ const acNames = s =>
 const inAc = (t, name) => t.account === name || acNames(t.account).includes(name);
 // where an account's trades show up; unticked on the account card = left out there.
 // A trade on several accounts shows when any of them shows it.
-const AC_SHOW = { review: "Reviews", journal: "Journal stats" };
+const AC_SHOW = { review: "Reviews", journal: "Journal" };
 const acShows = (t, where) =>
   !t.account ||
   acNames(t.account).some(n => {

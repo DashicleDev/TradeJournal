@@ -1646,7 +1646,7 @@ function renderLive() {
   const C = jvCtx();
   jvSwap(C.key);
   renderNews(C);
-  const all = C.list;
+  const all = C.key === "live" ? C.list.filter(t => acShows(t, "journal")) : C.list;
   $("#liveHead").className = "desk " + C.cls;
   if (market !== "stocks" && !calTouched && all.length && !all.some(t => (t.date || "").startsWith(calMonth))) {
     const last = all
@@ -1756,13 +1756,7 @@ function renderLive() {
     pushWeek();
   }
   const P = jRange(),
-    per = all.filter(
-      t =>
-        t.date &&
-        (!P.from || t.date >= P.from) &&
-        (!P.to || t.date <= P.to) &&
-        (C.key !== "live" || acShows(t, "journal"))
-    );
+    per = all.filter(t => t.date && (!P.from || t.date >= P.from) && (!P.to || t.date <= P.to));
   const ps = stats(per),
     tk = taken(per).sort((x, z) => (x.date || "").localeCompare(z.date || "") || (x.created || 0) - (z.created || 0));
   const wins = tk.filter(t => t.r > 0).length,

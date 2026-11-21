@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.3.71 — 2026-11-21
+
+- **Show in → Journal now covers the whole Journal tab.** An unticked account's trades are also left out of the calendar (days, week totals, the month line), not only the stats and charts. The tick is renamed from "Journal stats" to "Journal". The account's own card and Analyze still show them.
+
 ## 1.3.70 — 2026-11-21
 
 - **Show in, per account (Accounts tab).** Each account card has "Show in: Reviews · Journal stats". Untick one and that account's trades are left out there: of the period reviews (stats, trade lists, the saved list's totals) or of the Journal tab's numbers and charts. The calendar and trade list still show them. A trade on several accounts shows if any of them is ticked; trades without an account always show. Handy for a data account you log trades on but don't trade.
