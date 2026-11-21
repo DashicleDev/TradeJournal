@@ -3077,6 +3077,49 @@ body:has(.sheet:not([hidden])) .fab {
   font-size: 11px;
   color: var(--muted);
 }
+/* grade rules: evidence from your trades next to each option */
+.grms .ms-list li em {
+  margin-left: 0;
+}
+.grms .ms-list .grevl {
+  margin-right: auto;
+}
+.grev {
+  font-size: 12px;
+  color: var(--muted);
+  white-space: nowrap;
+}
+.grev b {
+  font-weight: 600;
+  color: var(--ink);
+}
+.grev b.pos {
+  color: var(--good);
+}
+.grev b.neg {
+  color: var(--bad);
+}
+.grev small {
+  font-size: 11px;
+}
+.grev.thin {
+  opacity: 0.5;
+}
+.ms-list li.grevh {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 2px 12px;
+  cursor: default;
+  font-size: 11px;
+  color: var(--muted);
+  border-bottom: 1px solid var(--line);
+  border-radius: 0;
+  margin-bottom: 4px;
+}
+.ms-list li.grevh:hover {
+  background: none;
+}
 .ms-list .box {
   width: 18px;
   height: 18px;

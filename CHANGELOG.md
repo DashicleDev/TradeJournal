@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.3.73 — 2026-11-21
+
+- **Grading: evidence next to every rule option.** Open a rule list and each criterion, 4H entry or setup shows how many of your trades had it, their win rate and average R, and the average R of the trades without it (e.g. "Proven zone: 17 · 71% · +1.36R vs −0.47R"). The numbers follow the filters above the grade table; the top of the list says which trades they use. Fewer than 5 trades is shown faded. Hover for the full with / without breakdown.
+
 ## 1.3.72 — 2026-11-21
 
 - **The Journal calendar follows the period picker.** Week: one row of 7 days with every pair and its R. Month: as before. Quarter: three small months, days coloured by result, each with its total. Year: 12 month tiles with R, trades and win rate. All time: a row per year with month cells and a year total. Custom keeps the month calendar.

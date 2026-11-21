@@ -224,8 +224,9 @@ function grSave(rules, undo) {
 const grSel = (name, v, opts) =>
   `<select name="${name}" aria-label="Filter">${opts.map(([k, l]) => `<option value="${k}" ${v === k ? "selected" : ""}>${l}</option>`).join("")}</select>`;
 // how the current rules grade your own trades: per grade the count, average R, total R and win rate
-function grPreview() {
-  const T = docs.filter(
+// the trades the grade table and the evidence numbers use: the filters above the table
+const grTrades = () =>
+  docs.filter(
     t =>
       !t.kind &&
       mktOf(t) === "fx" &&
@@ -237,6 +238,41 @@ function grPreview() {
       (!grF.to || (t.date || "") <= grF.to) &&
       (!grF.ph || String(t.fase) === grPh)
   );
+// does a trade have option k of a rule list: a criterion with you ("for" / "extra") or against you,
+// or for the limits its weekly structure, setup type or 4H entry
+const grHas = (t, k, kind) =>
+  k === "inner"
+    ? t.wStruct === "inner"
+    : k.startsWith("s:")
+      ? GR_SETUP.some(([s, , hit]) => s === k.slice(2) && hit(t))
+      : k.startsWith("e:")
+        ? t.entry4h === k.slice(2)
+        : critV(t, k) === (kind === "against" ? "against" : "for");
+const GR_THIN = 5; // fewer trades than this: too few to go on, shown faded
+// evidence for one option: the trades with it against the trades without it
+function grEvid(T, k, kind) {
+  const st = L => ({
+    n: L.length,
+    wr: L.length ? Math.round((L.filter(t => t.r > 0).length / L.length) * 100) : null,
+    avg: L.length ? L.reduce((a, t) => a + t.r, 0) / L.length : null,
+  });
+  const a = st(T.filter(t => grHas(t, k, kind))),
+    b = st(T.filter(t => !grHas(t, k, kind)));
+  if (!a.n) return `<span class="grev thin">no trades</span>`;
+  const d = b.n ? a.avg - b.avg : 0;
+  return `<span class="grev${a.n < GR_THIN ? " thin" : ""}" title="With it: ${a.n} trades, ${a.wr}% win, ${fmtR(a.avg)} avg. Without it: ${b.n} trades${b.n ? `, ${b.wr}% win, ${fmtR(b.avg)} avg` : ""}."><span class="num">${a.n}</span> · <span class="num">${a.wr}%</span> · <b class="num ${a.n < GR_THIN ? "" : d > 0.05 ? "pos" : d < -0.05 ? "neg" : ""}">${fmtR(a.avg)}</b>${b.n ? ` <small class="num">vs ${fmtR(b.avg)}</small>` : ""}</span>`;
+}
+const grFiltLab = () =>
+  [
+    { live: "Live", backtest: "Backtest" }[grF.mode] || "Live and backtest",
+    { plan: "on plan", off: "off plan" }[grF.plan] || "on and off plan",
+    grF.ph ? "phase " + grPh : "all phases",
+    grF.from || grF.to ? `${grF.from ? fmtD(grF.from) : "…"} – ${grF.to ? fmtD(grF.to) : "…"}` : "",
+  ]
+    .filter(Boolean)
+    .join(" · ");
+function grPreview() {
+  const T = grTrades();
   const rows = GRADES.map(g => {
     const L = T.filter(t => tGrade(t) === g),
       tot = L.reduce((a, t) => a + t.r, 0),
@@ -331,9 +367,10 @@ function grMsHTML(list) {
       strB: "gives C",
       strC: "is at most B",
     }[list],
-    open = grMs === list;
+    open = grMs === list,
+    T = open ? grTrades() : [];
   return `<div class="ms grms${open ? " open" : ""}" data-grms="${list}"><button type="button" class="ms-field" aria-haspopup="listbox" aria-expanded="${open}">${sel.length ? sel.map(k => `<span class="chip-sel ${kind}">${esc(lab(k))}<span class="x" data-grx="${k}" aria-label="Remove ${esc(lab(k))}">×</span></span>`).join("") : `<span class="ph">${ph}</span>`}<span class="caret">▾</span></button>
-  <ul class="ms-list" role="listbox" aria-multiselectable="true" ${open ? "" : "hidden"}>${(cap
+  <ul class="ms-list" role="listbox" aria-multiselectable="true" ${open ? "" : "hidden"}>${open ? `<li class="grevh" role="presentation"><span>${esc(grFiltLab())}: ${T.length} trades</span><span>${cap ? "Trades with it" : kind === "against" ? "Against you" : "With you"} · win · avg R <small>vs without</small></span></li>` : ""}${(cap
     ? grCapGroups(list)
     : GR_GROUPS
   )
@@ -346,7 +383,7 @@ function grMsHTML(list) {
             const l = cap ? lab(k) : lab(k).replace(/^(Weekly|Daily|4H) /, ""),
               on = sel.includes(k),
               dis = other.includes(k);
-            return `<li role="option" aria-selected="${on}" aria-disabled="${dis}" data-grk="${k}" class="${dis ? "dis" : ""}"><span class="box ${kind}">${on ? "✓" : ""}</span>${esc(l[0].toUpperCase() + l.slice(1))}${dis ? `<em>${why}</em>` : ""}</li>`;
+            return `<li role="option" aria-selected="${on}" aria-disabled="${dis}" data-grk="${k}" class="${dis ? "dis" : ""}"><span class="box ${kind}">${on ? "✓" : ""}</span><span class="grevl">${esc(l[0].toUpperCase() + l.slice(1))}</span>${dis ? `<em>${why}</em>` : ""}${open ? grEvid(T, k, kind) : ""}</li>`;
           })
           .join("")
     )
