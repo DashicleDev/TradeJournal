@@ -311,14 +311,15 @@ function grList(L) {
     .join("")}</ul>`;
 }
 let grMs = ""; // which list is open: "req" | "flags" | "extras" | "capB" | "capC"
+// hint: which evidence colour argues for ticking an option in that list
 const GR_LISTS = {
-  req: { kind: "for", ph: "Nothing" },
-  flags: { kind: "against", ph: "Nothing" },
-  extras: { kind: "extra", ph: "Nothing, so never A" },
-  capB: { kind: "extra", ph: "Nothing" },
-  capC: { kind: "against", ph: "Nothing" },
-  strB: { kind: "extra", ph: "Nothing" },
-  strC: { kind: "against", ph: "Nothing" },
+  req: { kind: "for", ph: "Nothing", hint: "Green = worth requiring" },
+  flags: { kind: "against", ph: "Nothing", hint: "Red = worth a C" },
+  extras: { kind: "extra", ph: "Nothing, so never A", hint: "Green = worth an A" },
+  capB: { kind: "extra", ph: "Nothing", hint: "Red = worth at most B" },
+  capC: { kind: "against", ph: "Nothing", hint: "Red = worth a C" },
+  strB: { kind: "extra", ph: "Nothing", hint: "Red = worth at most B" },
+  strC: { kind: "against", ph: "Nothing", hint: "Red = worth a C" },
 };
 // the grade limits: "cap…" lists hold 4H entry types ("e:Reversal", …, stored in ent), "str…" the weekly structure and
 // setup type ("inner" stored in inner, "s:outer" / "s:wd4h" / "s:w4h" in setup)
@@ -370,7 +371,7 @@ function grMsHTML(list) {
     open = grMs === list,
     T = open ? grTrades() : [];
   return `<div class="ms grms${open ? " open" : ""}" data-grms="${list}"><button type="button" class="ms-field" aria-haspopup="listbox" aria-expanded="${open}">${sel.length ? sel.map(k => `<span class="chip-sel ${kind}">${esc(lab(k))}<span class="x" data-grx="${k}" aria-label="Remove ${esc(lab(k))}">×</span></span>`).join("") : `<span class="ph">${ph}</span>`}<span class="caret">▾</span></button>
-  <ul class="ms-list" role="listbox" aria-multiselectable="true" ${open ? "" : "hidden"}>${open ? `<li class="grevh" role="presentation"><span>${esc(grFiltLab())}: ${T.length} trades</span><span>${cap ? "Trades with it" : kind === "against" ? "Against you" : "With you"} · win · avg R <small>vs without</small></span></li>` : ""}${(cap
+  <ul class="ms-list" role="listbox" aria-multiselectable="true" ${open ? "" : "hidden"}>${open ? `<li class="grevh" role="presentation"><span>${esc(grFiltLab())}: ${T.length} trades</span><span>${cap ? "Trades with it" : kind === "against" ? "Against you" : "With you"} · win · avg R <small>vs without</small></span><b class="grevhint ${GR_LISTS[list].hint.startsWith("Red") ? "neg" : "pos"}">${GR_LISTS[list].hint}</b></li>` : ""}${(cap
     ? grCapGroups(list)
     : GR_GROUPS
   )
@@ -431,7 +432,7 @@ function grRender() {
       <div class="grline"><span>any of these not with you</span>${grMsHTML("req")}</div>
       <div class="grline"><span>any of these marked against you</span>${grMsHTML("flags")}</div>
       <div class="grline"><span>the 4H entry is</span>${grMsHTML("capC")}</div>
-      <div class="grline"><span>the setup is</span>${grMsHTML("strC")}</div></div>
+      <div class="grline"><span>the structure or setup is</span>${grMsHTML("strC")}</div></div>
     <div class="grblk"><p class="grhead"><span class="grade gA">A</span> if at least <select id="grMin" aria-label="Extras needed for A">${[
       1, 2, 3, 4,
     ]
@@ -439,7 +440,7 @@ function grRender() {
       .join("")}<option value="0" ${P.min === 0 ? "selected" : ""}>no</option></select> of these are with you</p>
       <div class="grline">${grMsHTML("extras")}</div>
       <div class="grline"><span>but only <span class="grade gB">B</span> if the 4H entry is</span>${grMsHTML("capB")}</div>
-      <div class="grline"><span>or the setup is</span>${grMsHTML("strB")}</div></div>
+      <div class="grline"><span>or the structure or setup is</span>${grMsHTML("strB")}</div></div>
     <p class="grhead grelse">Otherwise <span class="grade gB">B</span></p>
     <b class="eyebrow grovh">All phases</b>
     <table class="grov"><thead><tr><th>Phase</th><th>C if</th><th>A with</th><th class="num">Flags</th></tr></thead><tbody>${overview}</tbody></table>

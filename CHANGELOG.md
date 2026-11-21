@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.3.74 — 2026-11-21
+
+- **Grading: weekly criteria with a daily twin say "Weekly"**: Weekly FC, Weekly S&D zone and Weekly last CC, next to Daily FC, Daily S&D zone and Daily last CC. In chips, grade explanations and the all-phases table; plan.json follows, so the extension uses the same names.
+- **Grading: "the structure or setup is"** instead of "the setup is", since that list holds the weekly structure (inner, outer) and the setup type.
+- **Grading: each rule list says which evidence colour to look for**: "Green = worth requiring", "Green = worth an A", "Red = worth a C" or "Red = worth at most B".
+
 ## 1.3.73 — 2026-11-21
 
 - **Grading: evidence next to every rule option.** Open a rule list and each criterion, 4H entry or setup shows how many of your trades had it, their win rate and average R, and the average R of the trades without it (e.g. "Proven zone: 17 · 71% · +1.36R vs −0.47R"). The numbers follow the filters above the grade table; the top of the list says which trades they use. Fewer than 5 trades is shown faded. Hover for the full with / without breakdown.

@@ -3117,6 +3117,17 @@ body:has(.sheet:not([hidden])) .fab {
   border-radius: 0;
   margin-bottom: 4px;
 }
+.grevhint {
+  flex-basis: 100%;
+  font-size: 12px;
+  font-weight: 600;
+}
+.grevhint.pos {
+  color: var(--good);
+}
+.grevhint.neg {
+  color: var(--bad);
+}
 .ms-list li.grevh:hover {
   background: none;
 }
