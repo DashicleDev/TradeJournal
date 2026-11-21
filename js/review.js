@@ -678,8 +678,8 @@ function prRender() {
     box.dataset.sig = sig;
     prCur = { sec: JSON.parse(JSON.stringify(d.sec || {})) };
     const leg = PR_Q.filter(([k]) => d[k]);
-    box.innerHTML = `<div class="panel prhead"><div class="row spread" style="align-items:center"><button type="button" class="btn small ghost" data-prback>‹ All reviews</button><div class="row" style="gap:10px;align-items:center"><span class="hint nstat" id="prStat" style="margin:0"></span><button type="button" class="btn small ghost danger" id="prDel" ${d.id ? "" : "hidden"}>Delete</button></div></div>
-      <div class="prtitle"><div><span class="eyebrow">${prPerL(prOpen.per)}ly review</span><h2>${esc(R.label)}</h2></div></div>
+    box.innerHTML = `<div class="panel prhead"><div class="row spread" style="align-items:center"><nav class="prcrumb" aria-label="Breadcrumb"><button type="button" class="prback" data-prback>← Reviews</button><span aria-hidden="true">/</span><span>${prPerL(prOpen.per)}ly review</span></nav><div class="row" style="gap:10px;align-items:center"><span class="hint nstat" id="prStat" style="margin:0"></span><button type="button" class="btn small ghost danger" id="prDel" ${d.id ? "" : "hidden"}>Delete</button></div></div>
+      <div class="prtitle"><div><h2>${esc(R.label)}</h2></div></div>
       <div id="prStats">${prStatsHTML(list)}</div></div>
       <div class="prsecs">${secs.map(x => prSecHTML(x, list)).join("")}${leg.map(([k, l]) => `<div class="panel prsec full"><h3>${esc(l)}</h3><textarea id="prq-${k}" data-prq="${k}" rows="5">${esc(d[k] || "")}</textarea></div>`).join("")}</div>
       <details class="panel prall"><summary><span class="eyebrow">All trades</span> <span class="hint" style="margin:0">${list.length}</span></summary><div id="prTrades" style="margin-top:8px">${prTradesHTML(list)}</div></details>`;
@@ -687,24 +687,15 @@ function prRender() {
     return;
   }
   box.dataset.sig = "";
-  const R = prRange(prSel.per, prSel.anchor || todayISO()),
+  const R = prRange(prSel.per, prSel.anchor || prLastA(prSel.per)),
     ex = prFind(prSel.per, R.from),
     L = prDocs().filter(d => !prFilt || d.per === prFilt);
-  const last = PR_PER.map(([p, l]) => {
-    const a = new Date();
-    if (p === "week") a.setDate(a.getDate() - 7);
-    else if (p === "month") a.setMonth(a.getMonth() - 1, 1);
-    else if (p === "quarter") a.setMonth(a.getMonth() - 3, 1);
-    else a.setFullYear(a.getFullYear() - 1);
-    const r = prRange(p, isoD(a));
-    return { p, l, r, done: !!prFind(p, r.from) };
-  });
-  box.innerHTML = `<div class="panel"><span class="eyebrow">New review</span><h2>Review a period</h2>
-    <div class="row" style="margin-top:10px;flex-wrap:wrap;gap:6px">${last.map(x => `<button type="button" class="btn small${x.done ? " ghost" : ""}${!x.done && x.p === "week" ? " primary" : ""}" data-prgo="${x.p}|${x.r.from}">${x.done ? "✓ " : ""}Last ${x.l.toLowerCase()}</button>`).join("")}</div>
-    <div class="row" style="margin-top:14px;flex-wrap:wrap;gap:8px;align-items:center"><div class="segs">${PR_PER.map(([v, l]) => `<button type="button" class="rvb${prSel.per === v ? " on" : ""}" data-prper="${v}">${l}</button>`).join("")}</div>
+  const pick = prSel.open
+    ? `<div class="prnew"><div class="segs">${PR_PER.map(([v, l]) => `<button type="button" class="rvb${prSel.per === v ? " on" : ""}" data-prper="${v}">${l}</button>`).join("")}</div>
       <div class="row" style="gap:4px;align-items:center"><button type="button" class="btn small ghost" data-prshift="-1" aria-label="Previous">‹</button><b style="min-width:150px;text-align:center;font-size:14px">${esc(R.label)}</b><button type="button" class="btn small ghost" data-prshift="1" aria-label="Next">›</button></div>
-      <button type="button" class="btn small primary" data-prgo="${prSel.per}|${R.from}">${ex ? "Open review" : "Start review"}</button></div></div>
-    <div class="panel" style="margin-top:20px"><div class="row spread" style="align-items:center"><div><span class="eyebrow">Saved</span><h2 style="margin:2px 0 0">Your reviews <small class="hint" style="margin:0;font-weight:400">${prDocs().length}</small></h2></div><div class="segs">${[["", "All"], ...PR_PER].map(([v, l]) => `<button type="button" class="rvb${prFilt === v ? " on" : ""}" data-prfilt="${v}">${l}</button>`).join("")}</div></div>
+      <div class="row" style="gap:6px;margin-left:auto"><button type="button" class="btn small ghost" data-prnew="0">Cancel</button><button type="button" class="btn small primary" data-prgo="${prSel.per}|${R.from}">${ex ? "Open review" : "Start review"}</button></div></div>`
+    : "";
+  box.innerHTML = `<div class="panel"><div class="row spread" style="align-items:center"><h2 style="margin:0">Your reviews <small class="hint" style="margin:0;font-weight:400">${prDocs().length}</small></h2><div class="row" style="gap:8px"><div class="segs">${[["", "All"], ...PR_PER].map(([v, l]) => `<button type="button" class="rvb${prFilt === v ? " on" : ""}" data-prfilt="${v}">${l}</button>`).join("")}</div>${prSel.open ? "" : `<button type="button" class="btn small primary" data-prnew="1">+ New review</button>`}</div></div>${pick}
     ${
       L.length
         ? `<div style="overflow-x:auto;margin-top:8px"><table class="rvdt prlist"><thead><tr><th>Period</th><th>Trades</th><th>Result</th><th>Win rate</th></tr></thead><tbody>${L.map(
@@ -807,11 +798,15 @@ document.addEventListener("click", e => {
     return prRender();
   }
   if (b.dataset.prper) {
-    prSel = { per: b.dataset.prper, anchor: "" };
+    prSel = { per: b.dataset.prper, anchor: "", open: true };
+    return prRender();
+  }
+  if (b.dataset.prnew) {
+    prSel = { per: prSel.per, anchor: "", open: b.dataset.prnew === "1" };
     return prRender();
   }
   if (b.dataset.prshift) {
-    const o = { per: prSel.per, anchor: prSel.anchor || todayISO() };
+    const o = { per: prSel.per, anchor: prSel.anchor || prLastA(prSel.per) };
     rvShift(o, +b.dataset.prshift);
     prSel.anchor = o.anchor;
     return prRender();

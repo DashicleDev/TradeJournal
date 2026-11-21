@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.3.69 — 2026-11-21
+
+- **Review: trade rows no longer cut off.** The trade box with its result and % was clipped under the comment field; the boxes now size to the widest trade and the comments line up.
+- **Review: clearer way back.** The top of an open review shows "← Reviews / Weekly review" instead of a small "All reviews" button.
+- **Review: one "+ New review" button.** It replaces the "Review a period" panel and opens a picker (Week, Month, Quarter, Year, ‹ ›) that starts on the last finished period.
+
 ## 1.3.68 — 2026-11-18
 
 - **Load in extension** (top of the forex trade form, next to Edit / Replay): saves the form and shows the trade in the extension on a TradingView chart you already have open, on your current layout. No new window and no replay. Handy for updating a recent trade's 4H screenshot. When no chart with the extension is open, it says so. Needs extension 1.4.42; hidden on phones and tablets.

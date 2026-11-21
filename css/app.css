@@ -1255,13 +1255,15 @@ a[id^="slp-"] {
 }
 .prtl {
   display: grid;
-  gap: 8px;
+  grid-template-columns: max-content minmax(0, 1fr);
+  gap: 8px 10px;
+  align-items: start;
+}
+.prtl > .hint {
+  grid-column: 1 / -1;
 }
 .prtrow {
-  display: grid;
-  grid-template-columns: 250px minmax(0, 1fr);
-  gap: 10px;
-  align-items: center;
+  display: contents;
 }
 .prtrow .prtr {
   justify-self: stretch;
@@ -1282,15 +1284,12 @@ textarea.prtext {
   padding: 10px 12px;
   line-height: 1.6;
 }
-.prtrow {
-  align-items: start;
-}
 .prwr {
   align-items: start;
 }
 @media (max-width: 600px) {
-  .prtrow {
-    grid-template-columns: 1fr;
+  .prtl {
+    grid-template-columns: minmax(0, 1fr);
   }
   .prtrow .prtr {
     justify-self: start;
@@ -1422,6 +1421,34 @@ textarea.prtext {
     grid-column: 1/-1;
     justify-content: flex-end;
   }
+}
+.prnew {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+  margin-top: 14px;
+  padding: 12px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+}
+.prcrumb {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font: 14px var(--body);
+  color: var(--muted);
+}
+.prback {
+  font: 600 14px var(--body);
+  color: var(--accent);
+  background: none;
+  border: 0;
+  padding: 4px 0;
+  cursor: pointer;
+}
+.prback:hover {
+  text-decoration: underline;
 }
 .prtitle {
   display: flex;
